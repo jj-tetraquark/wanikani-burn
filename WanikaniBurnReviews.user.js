@@ -14,6 +14,17 @@
 //IMPORTANT: IF THIS IS THE FIRST TIME YOU'VE USED THE SCRIPT AND HAVE NEVER UPDATED THEN YOU NEED TO PUT YOUR API KEY BETWEEN THE DOUBLE QUOTES ON THE LINE BELOW.
 apiKey = "API KEY HERE";
 
+
+// CONSTANTS
+var RADICAL = 0;
+var KANJI = 1;
+var VOCAB = 2;
+
+var MEANING = 0;
+var READING = 1;
+
+
+
 $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
 
 function getSection() {
@@ -107,11 +118,17 @@ function filterBRKanjiData(data) {
     var dataArr = {};
 
     for (var d = 1; d < data.length; d++) {
-        if (data[d].indexOf('"burned":true') > -1) {
-            dataArr[Object.keys(dataArr).length] = {"character": data[d].substring(0, 1), "meaning": data[d].substring(data[d].indexOf('"meaning":"') + 11, data[d].indexOf('","onyomi"')).split(", "),
-            	"onyomi": data[d].substring(data[d].indexOf('"onyomi":"') + 10, data[d].indexOf('","kunyomi"')).split(", "), "kunyomi": data[d].substring(data[d].indexOf('"kunyomi":"') + 11,
-                data[d].indexOf('","important')).split(", "), "important_reading": data[d].substring(data[d].indexOf('"important_reading":"') + 21, data[d].indexOf('","level"')),
-                                                    "usyn": data[d].substring(data[d].indexOf('"user_synonyms":') + 16, data[d].indexOf(',"reading_note"')).replace(/["\[\]]/gi, "").split(",")};
+        var kanji_item = data[d];
+        if (kanji_item.indexOf('"burned":true') > -1) {
+            dataArr[Object.keys(dataArr).length] =
+            {
+                "character": kanji_item.substring(0, 1),
+                "meaning": kanji_item.substring(kanji_item.indexOf('"meaning":"') + 11, kanji_item.indexOf('","onyomi"')).split(", "),
+                "onyomi": kanji_item.substring(kanji_item.indexOf('"onyomi":"') + 10, kanji_item.indexOf('","kunyomi"')).split(", "),
+                "kunyomi": kanji_item.match(/kunyomi":([^,]+)/)[1].replace(/"/g, '').split(", "),
+                "important_reading": kanji_item.substring(kanji_item.indexOf('"important_reading":"') + 21, kanji_item.indexOf('","level"')),
+                "usyn": kanji_item.substring(kanji_item.indexOf('"user_synonyms":') + 16, kanji_item.indexOf(',"reading_note"')).replace(/["\[\]]/gi, "").split(",")
+            };
         }
     }
 
@@ -652,10 +669,25 @@ function checkBurnReviewAnswer() {
 
     $("#user-response").attr("disabled", true);
 
-    if (curBRType == 0) answers = (curBRItemType == 0) ? BRRadicalData[curBRItem]["meaning"] : ((curBRItemType == 1) ? BRKanjiData[curBRItem]["meaning"] : BRVocabData[curBRItem]["meaning"]);
-    else answers = (curBRItemType == 1) ? BRKanjiData[curBRItem][BRKanjiData[curBRItem]["important_reading"]] : BRVocabData[curBRItem]["kana"];
+    if (curBRType == MEANING)
+    {
+        var dataBank = [BRRadicalData, BRKanjiData, BRVocabData][curBRItemType];
+        answers = dataBank[curBRItem]["meaning"];
+    }
+    else
+    {
+        if (curBRItemType == KANJI)
+        {
+            var importantReading = BRKanjiData[curBRItem]["important_reading"];
+            answers = BRKanjiData[curBRItem][importantReading];
+        }
+        else
+        {
+            answers = BRVocabData[curBRItem]["kana"];
+        }
+    }
 
-    if (curBRType == 0) {
+    if (curBRType == MEANING) {
         if (curBRItemType == 0 && BRRadicalData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRRadicalData[curBRItem]["usyn"]);
         else if (curBRItemType == 1 && BRKanjiData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRKanjiData[curBRItem]["usyn"]);
         else if (BRVocabData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRVocabData[curBRItem]["usyn"]);
