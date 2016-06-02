@@ -444,11 +444,6 @@ function initBurnReviews() {
     // Get the stylesheet from the reviews page and append it to the head
     appendReviewsStyleSheets();
 
-    //$("head").append('<link rel="stylesheet" type="text/css" href="https://cdn.wanikani.com/assets/v03/review/application-0a297e6f1c95314ee53decb231d9055d.css" />');
-
-
-
-
     //Undo conflicting CSS from above import
     $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 }</style>');
     $(getFadeCSS()).appendTo($("head"));
