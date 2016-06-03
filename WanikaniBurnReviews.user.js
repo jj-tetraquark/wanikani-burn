@@ -11,9 +11,6 @@
 /* This script is licensed under the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license
 *  Details: http://creativecommons.org/licenses/by-nc/4.0/ */
 
-//IMPORTANT: IF THIS IS THE FIRST TIME YOU'VE USED THE SCRIPT AND HAVE NEVER UPDATED THEN YOU NEED TO PUT YOUR API KEY BETWEEN THE DOUBLE QUOTES ON THE LINE BELOW.
-apiKey = "API KEY HERE";
-
 
 // CONSTANTS
 var RADICAL = 0;
@@ -100,6 +97,29 @@ function rand(low, high) {
     return Math.floor(Math.random()*(high+1)) + low;
 }
 
+function getApiKeyThen(callback) {
+
+    // First check if the API key is in local storage.
+    var api_key = localStorage.getItem('apiKey');
+    if (typeof api_key !== 'string' || api_key.length !== 32) {
+
+        // We don't have the API key.  Fetch it from the /account page.
+        console.log('Fetching api_key');
+        $.get('/account')
+        .done(function(page) {
+            if (typeof page !== 'string') return callback(null);
+
+            // Extract the API key.
+            api_key = $(page).find('#api-button').parent().find('input').attr('value');
+            if (typeof api_key == 'string' && api_key.length == 32) {
+                // Store the updated user info.
+                localStorage.setItem('apiKey', api_key);
+            }
+    });
+    return callback(api_key);
+}
+
+
 function filterBRRadicalData(data) {
     var dataArr = {};
 
@@ -120,8 +140,7 @@ function filterBRKanjiData(data) {
     for (var d = 1; d < data.length; d++) {
         var kanji_item = data[d];
         if (kanji_item.indexOf('"burned":true') > -1) {
-            dataArr[Object.keys(dataArr).length] =
-            {
+            dataArr[Object.keys(dataArr).length] = {
                 "character": kanji_item.substring(0, 1),
                 "meaning": kanji_item.substring(kanji_item.indexOf('"meaning":"') + 11, kanji_item.indexOf('","onyomi"')).split(", "),
                 "onyomi": kanji_item.substring(kanji_item.indexOf('"onyomi":"') + 10, kanji_item.indexOf('","kunyomi"')).split(", "),
@@ -822,67 +841,68 @@ function distanceTolerance(e){
     }
 }
 
-document.addEventListener('keydown', function(event) {
-    if(event.keyCode == 13) { //Enter
-        if (curBRAnswered) getBurnReview(false);
-	}
- });
 
-cancelExecution = false;
 
-if (localStorage.getItem("apiKey") !== null && localStorage.getItem("apiKey").length == 32) apiKey = localStorage.getItem("apiKey");
-else if (apiKey.length == 32) localStorage.setItem("apiKey", apiKey);
-else {
-    cancelExecution = true;
-    alert("Please enter your API key near the top of the WanaKani Burn Reviews userscript.");
-}
+function main() {
 
-if (!cancelExecution) {
+    getApiKey(function(key) {
 
-    useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
-	BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
-    curBRItem = -1;
-    curBRType = -1;
-    curBRItemType = -1;
-    curBRProgress = 0;
-    curBRAnswered = false;
-    queueBRAnim = false;
-    allowQueueBRAnim = true;
-    BRLangJP = (localStorage.getItem("BRLangJP") == null) ? false : true;
-    BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
-    BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
-    BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
-    BRRadicalData = "";
-    BRKanjiData = "";
-    BRVocabData = {};
-
-    String.prototype.trim = function() {
-        return(this.replace(/^ +/,'').replace(/ +$/,''));
-    }
-
-    $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
-    $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
-
-    if (!BRLangJP) $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
-    else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
-    $("#loadingBR a").click( function() {
-
-        if (!useCache) clearBurnedItemData();
-
-        var checkReady = setInterval(function() {
-            if (wanakana !== undefined) {
-                clearInterval(checkReady);
-                getBRWKData();
-            }
-        }, 250);
+        apiKey = key;
+        useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
+        BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
+        curBRItem = -1;
+        curBRType = -1;
+        curBRItemType = -1;
+        curBRProgress = 0;
+        curBRAnswered = false;
+        queueBRAnim = false;
+        allowQueueBRAnim = true;
+        BRLangJP = (localStorage.getItem("BRLangJP") == null) ? false : true;
+        BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
+        BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
+        BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
+        BRRadicalData = "";
+        BRKanjiData = "";
+        BRVocabData = {};
 
         String.prototype.trim = function() {
             return(this.replace(/^ +/,'').replace(/ +$/,''));
         }
 
-    });
+        $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
+        $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
 
-    if (localStorage.getItem("BRStartButton") == null) $("#loadingBR a").click();
+        if (!BRLangJP) $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
+        else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
 
+        $("#loadingBR a").click( function() {
+
+            if (!useCache) clearBurnedItemData();
+
+            var checkReady = setInterval(function() {
+                if (wanakana !== undefined) {
+                    clearInterval(checkReady);
+                    getBRWKData();
+                }
+            }, 250);
+
+            String.prototype.trim = function() {
+                return(this.replace(/^ +/,'').replace(/ +$/,''));
+            }
+
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if(event.keyCode == 13) { //Enter
+                if (curBRAnswered) getBurnReview(false);
+            }
+         });
+
+        if (localStorage.getItem("BRStartButton") == null) $("#loadingBR a").click();
+    }
 }
+
+window.addEventListener("load", main, false);
+
+
 // ==/UserScript==
