@@ -4,7 +4,7 @@
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
 // @exclude		*.wanikani.com
 // @include     *.wanikani.com/dashboard*
-// @version     2.0.1.3
+// @version     2.0.1.4
 // @author      Jonny Dark
 // @grant       none
 
@@ -846,7 +846,7 @@ function distanceTolerance(e){
 
 function main() {
 
-    getApiKey(function(key) {
+    getApiKeyThen(function(key) {
 
         apiKey = key;
         useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
