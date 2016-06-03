@@ -4,7 +4,7 @@
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
 // @exclude		*.wanikani.com
 // @include     *.wanikani.com/dashboard*
-// @version     2.0.1.2
+// @version     2.0.1.3
 // @author      Jonny Dark
 // @grant       none
 
@@ -106,16 +106,17 @@ function getApiKeyThen(callback) {
         // We don't have the API key.  Fetch it from the /account page.
         console.log('Fetching api_key');
         $.get('/account')
-        .done(function(page) {
-            if (typeof page !== 'string') return callback(null);
+            .done(function(page) {
+                if (typeof page !== 'string') return callback(null);
 
-            // Extract the API key.
-            api_key = $(page).find('#api-button').parent().find('input').attr('value');
-            if (typeof api_key == 'string' && api_key.length == 32) {
-                // Store the updated user info.
-                localStorage.setItem('apiKey', api_key);
-            }
-    });
+                // Extract the API key.
+                api_key = $(page).find('#api-button').parent().find('input').attr('value');
+                if (typeof api_key == 'string' && api_key.length == 32) {
+                    // Store the updated user info.
+                    localStorage.setItem('apiKey', api_key);
+                }
+            });
+    }
     return callback(api_key);
 }
 
