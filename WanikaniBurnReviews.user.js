@@ -903,7 +903,11 @@ function main() {
     });
 }
 
-window.addEventListener("load", main, false);
+if (document.readyState === 'complete')
+    main();
+else
+    window.addEventListener("load", main, false);
+
 
 
 // ==/UserScript==
