@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Wanikani Burn Reviews
+// @name        Wanikani Burn Reviews - bugfix
 // @namespace   wkburnreviewnew
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
 // @exclude		*.wanikani.com
@@ -17,23 +17,33 @@ apiKey = "API KEY HERE";
 
 // CONSTANTS
 var RADICAL = 0;
-var KANJI = 1;
-var VOCAB = 2;
+var KANJI   = 1;
+var VOCAB   = 2;
 
 var MEANING = 0;
 var READING = 1;
 
+var DEBUG   = 7;
+var WARNING = 8;
+var ERROR   = 9;
+
 // Globals....ewww
-BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
+var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
-function BRLog(logadata) {
+function BRLog(logadata, level) {
     if (localStorage.getItem("BRLoggingEnabled") != "true") return;
-
     if (!console) return;
 
-    console.log("WKBurnReview: " + logdata);
+    var logmethod = console.log;
+    if (typeof level !== "undefined" && level !== DEBUG) {
+        logmethod = (level == WARNING ? console.warn :
+                     level == ERROR ? console.error :
+                     logmethod);
+    }
+
+    logmethod("WKBurnReview: " + logdata);
     if (typeof logdata != "string") {
-        console.log(logdata);
+        logmethod(logdata);
     }
 }
 
@@ -175,6 +185,8 @@ function filterBRVocabData(data) {
 
 function getBurnReview(firstReview) {
 
+    BRLog("Getting " + (firstReview ? "first" : "") + " burn review");
+
     curBRAnswered = false;
 
     $("#user-response").attr("disabled", false).val("").focus();
@@ -308,6 +320,7 @@ function newBRItem() {
 
 function updateBRItem(updateText) {
 
+    BRLog("Updating Burn review item");
     if (updateText) $(".bri").html(((curBRItemType == 0) ? BRRadicalData[curBRItem]["character"] : (curBRItemType == 1) ? BRKanjiData[curBRItem]["character"] : BRVocabData[curBRItem]["character"]));
     if ($(".bri").html().length > 3) {
         switch($(".bri").html().length) {
@@ -421,6 +434,7 @@ function getBRVocabData(lv) {
 }
 
 function getBRWKData() {
+    BRLog("Getting WaniKana data");
 
     if (localStorage.getItem("burnedRadicals") == null) getBRRadicalData();
     else if (localStorage.getItem("burnedKanji") == null) getBRKanjiData();
@@ -458,8 +472,10 @@ function confirmRes() {
 }
 
 function appendReviewsStyleSheets() {
+    BRLog("Getting the review page stylesheet...")
     $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
         function(data) {
+            BRLog("Got the review page document. Extracting styles");
             var parser = new DOMParser();
             reviewsdoc = parser.parseFromString(data, "text/html");
             links = reviewsdoc.head.getElementsByTagName("link");
@@ -468,6 +484,7 @@ function appendReviewsStyleSheets() {
                 var link = links[i];
                 if (link.type == "text/css")
                 {
+                    BRLog("Adding " + " to document head");
                     $("head").append(link);
                 }
             }
@@ -477,6 +494,8 @@ function appendReviewsStyleSheets() {
 
 function initBurnReviews() {
 
+    BRLog("Initialising the Burn Review widget");
+
     useCache = false;
     $("#loadingBR").remove();
 
@@ -484,11 +503,20 @@ function initBurnReviews() {
     appendReviewsStyleSheets();
 
     //Undo conflicting CSS from above import
+    BRLog("Undoing conflicting CSS");
     $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 }</style>');
     $(getFadeCSS()).appendTo($("head"));
     $(getButtonCSS()).appendTo($("head"));
     $("ul").css("padding-left", "0px");
-    $(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
+
+    BRLog("Adding burn review section");
+    if ($(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3")).length) { //TODO: remove this logging condition
+        BRLog("Successfully added question section");
+    }
+    else {
+        BRLog("Did not add question section!", ERROR);
+    }
+
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
     if (curBRType == 0) {
@@ -628,6 +656,19 @@ function initBurnReviews() {
     });
 
     $(".answer-exception-form span").css({"background-color": "rgba(162, 162, 162, 0.75)", "box-shadow": "3px 3px 0 rgba(225, 225, 225, 0.75)"});
+
+    if ($("#question").length === 1) {
+        BRLog("Question display : " + $("#question").css("display"));
+        BRLog("Question visible : " + $("#question").css("visible"));
+        BRLog("Question height  : " + $("#question").height());
+        BRLog("Question position: " + $("#question").css("position"));
+        BRLog("Question location: " + $("#question").position();
+        BRLog("Question parent  : " + $("#question").parent();
+    }
+    else {
+        BRLog("Question box not present in DOM!", ERROR);
+    }
+
 }
 
 function switchBRLang() {
@@ -892,9 +933,11 @@ if (!cancelExecution) {
     else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
     $("#loadingBR a").click( function() {
 
+        BRLog("Loading...");
         if (!useCache) clearBurnedItemData();
 
         var checkReady = setInterval(function() {
+            BRLog("Checking for wanikana...");
             if (wanakana !== undefined) {
                 clearInterval(checkReady);
                 getBRWKData();
