@@ -477,14 +477,14 @@ function appendReviewsStyleSheets() {
         function(data) {
             BRLog("Got the review page document. Extracting styles");
             var parser = new DOMParser();
-            reviewsdoc = parser.parseFromString(data, "text/html");
-            links = reviewsdoc.head.getElementsByTagName("link");
+            var reviewsdoc = parser.parseFromString(data, "text/html");
+            var links = reviewsdoc.head.getElementsByTagName("link");
             for (var i = 0; i < links.length; i++)
             {
                 var link = links[i];
                 if (link.type == "text/css")
                 {
-                    BRLog("Adding " + link + " to document head");
+                    BRLog("Adding " + link.outerHTML + " to document head");
                     $("head").append(link);
                 }
             }
@@ -663,7 +663,7 @@ function initBurnReviews() {
         BRLog("Question height  : " + $("#question").height());
         BRLog("Question position: " + $("#question").css("position"));
         BRLog("Question location: " + JSON.stringify($("#question").position()));
-        BRLog("Question parent  : " + JSON.stringify($("#question").parent()));
+        BRLog("Question parent  : " + $('#question').parent()[0].outerHTML.split($('#question').html())[0];
     }
     else {
         BRLog("Question box not present in DOM!", ERROR);
