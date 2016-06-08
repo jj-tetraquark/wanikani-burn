@@ -23,7 +23,29 @@ var VOCAB = 2;
 var MEANING = 0;
 var READING = 1;
 
+// Globals....ewww
+BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
+function BRLog(logadata) {
+    if (localStorage.getItem("BRLoggingEnabled") != "true") return;
+
+    if (!console) return;
+
+    console.log("WKBurnReview: " + logdata);
+    if (typeof logdata != "string") {
+        console.log(logdata);
+    }
+}
+
+function BREnableLogging() {
+    BRLoggingEnabled = true;
+    localStorage.setItem("BRLoggingEnabled", true);
+}
+
+function BRDisableLogging() {
+    BRLoggingEnabled = false;
+    localStorage.removeItem("BRLoggingEnabled");
+}
 
 $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
 
@@ -838,6 +860,9 @@ else {
 }
 
 if (!cancelExecution) {
+
+    BREnableLogging();
+    BRLog("Running!");
 
     useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
 	BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
