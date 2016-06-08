@@ -484,7 +484,7 @@ function appendReviewsStyleSheets() {
                 var link = links[i];
                 if (link.type == "text/css")
                 {
-                    BRLog("Adding " + " to document head");
+                    BRLog("Adding " + link + " to document head");
                     $("head").append(link);
                 }
             }
@@ -662,8 +662,8 @@ function initBurnReviews() {
         BRLog("Question visible : " + $("#question").css("visible"));
         BRLog("Question height  : " + $("#question").height());
         BRLog("Question position: " + $("#question").css("position"));
-        BRLog("Question location: " + $("#question").position());
-        BRLog("Question parent  : " + $("#question").parent());
+        BRLog("Question location: " + JSON.stringify($("#question").position()));
+        BRLog("Question parent  : " + JSON.stringify($("#question").parent()));
     }
     else {
         BRLog("Question box not present in DOM!", ERROR);
