@@ -30,7 +30,7 @@ var ERROR   = 9;
 // Globals....ewww
 var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
-function BRLog(logadata, level) {
+function BRLog(logdata, level) {
     if (localStorage.getItem("BRLoggingEnabled") != "true") return;
     if (!console) return;
 
