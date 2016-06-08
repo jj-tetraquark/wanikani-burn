@@ -662,8 +662,8 @@ function initBurnReviews() {
         BRLog("Question visible : " + $("#question").css("visible"));
         BRLog("Question height  : " + $("#question").height());
         BRLog("Question position: " + $("#question").css("position"));
-        BRLog("Question location: " + $("#question").position();
-        BRLog("Question parent  : " + $("#question").parent();
+        BRLog("Question location: " + $("#question").position());
+        BRLog("Question parent  : " + $("#question").parent());
     }
     else {
         BRLog("Question box not present in DOM!", ERROR);
