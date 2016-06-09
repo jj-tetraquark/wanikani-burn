@@ -34,10 +34,10 @@ function BRLog(logdata, level) {
     if (localStorage.getItem("BRLoggingEnabled") != "true") return;
     if (!console) return;
 
-    var logmethod = console.log;
+    var logmethod = console.log.bind(console);
     if (typeof level !== "undefined" && level !== DEBUG) {
-        logmethod = (level == WARNING ? console.warn :
-                     level == ERROR ? console.error :
+        logmethod = (level == WARNING ? console.warn.bind(console) :
+                     level == ERROR ? console.error.bind(console) :
                      logmethod);
     }
 
