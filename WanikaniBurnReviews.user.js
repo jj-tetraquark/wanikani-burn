@@ -265,7 +265,8 @@ function getBurnReview(firstReview) {
                             </fieldset></form></div>\
                     	</div>\
                     </div>';
-
+	
+	BRLog(strReview);
     	return strReview;
     }
 }
