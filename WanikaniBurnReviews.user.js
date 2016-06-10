@@ -451,10 +451,7 @@ function getBRWKData() {
         BRKanjiData = JSON.parse(localStorage.getItem("burnedKanji"));
         BRVocabData = JSON.parse(localStorage.getItem("burnedVocab"));
 
-        BRLog("Data items { RadicalData: " + Object.keys(BRRadicalData).length +
-                         "; KanjiData: " + Object.keys(BRKanjiData).length +
-                         "; VocabData: " + Object.keys(BRVocabData).length + "}");
-
+        
         initBurnReviews();
     }
 }
@@ -505,6 +502,11 @@ function appendReviewsStyleSheets() {
 
 
 function initBurnReviews() {
+
+     BRLog("Data items { RadicalData: " + Object.keys(BRRadicalData).length +
+                         "; KanjiData: " + Object.keys(BRKanjiData).length +
+                         "; VocabData: " + Object.keys(BRVocabData).length + "}");
+
 
     BRLog("Initialising the Burn Review widget");
 
