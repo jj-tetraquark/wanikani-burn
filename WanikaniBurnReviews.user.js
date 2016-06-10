@@ -229,8 +229,10 @@ function getBurnReview(firstReview) {
         document.getElementById("new-item").onclick = skipItem;
 
         $("body").prepend('<div id="dim-overlay" style="position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none"></div>');
+        BRLog("Overlay applied");
 
         newBRItem();
+        BRLog("Got new item");
 
         var characterText = (curBRItemType == 0) ? BRRadicalData[curBRItem]["character"] : ((curBRItemType == 1) ? BRKanjiData[curBRItem]["character"] : BRVocabData[curBRItem]["character"]);
         var reviewTypeText;
@@ -269,6 +271,7 @@ function getBurnReview(firstReview) {
 }
 
 function newBRItem() {
+    BRLog("Getting new burn item");
 
     if (BRRadicalsEnabled) {
         if (BRKanjiEnabled) {
@@ -315,6 +318,9 @@ function newBRItem() {
     }
 
     curBRProgress = 0;
+
+    BRLog("Burn item type: " + curBRItemType);
+    BRLog("Burn item: " + curBRItem);
 
 }
 
@@ -443,6 +449,11 @@ function getBRWKData() {
 		BRRadicalData = JSON.parse(localStorage.getItem("burnedRadicals"));
         BRKanjiData = JSON.parse(localStorage.getItem("burnedKanji"));
         BRVocabData = JSON.parse(localStorage.getItem("burnedVocab"));
+
+        BRLog("Data items { RadicalData: " + Object.keys(BRRadicalData).length +
+                         "; KanjiData: " + Object.keys(BRKanjiData).length +
+                         "; VocabData: " + Object.keys(BRVocabData).length + "}");
+
         initBurnReviews();
     }
 }
