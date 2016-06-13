@@ -132,56 +132,6 @@ function rand(low, high) {
     return Math.floor(Math.random()*(high+1)) + low;
 }
 
-function filterBRRadicalData(data) {
-    var dataArr = {};
-
-    for (var d = 1; d < data.length; d++) {
-        if (data[d].indexOf('"burned":true') > -1) {
-            dataArr[Object.keys(dataArr).length] = {"character": data[d].substring(0, 1), "meaning": data[d].substring(data[d].indexOf('"meaning":"') + 11, data[d].indexOf('","image"')).split(", "),
-            	"image": data[d].substring(data[d].indexOf('"image":"') + 10, data[d].indexOf('","level"')).split(", "),
-                                                    "usyn": data[d].substring(data[d].indexOf('"user_synonyms":') + 16, data[d].indexOf('}}')).replace(/["\[\]]/gi, "").split(",")};
-        }
-    }
-
-    return dataArr;
-}
-
-function filterBRKanjiData(data) {
-    var dataArr = {};
-
-    for (var d = 1; d < data.length; d++) {
-        var kanji_item = data[d];
-        if (kanji_item.indexOf('"burned":true') > -1) {
-            dataArr[Object.keys(dataArr).length] =
-            {
-                "character": kanji_item.substring(0, 1),
-                "meaning": kanji_item.substring(kanji_item.indexOf('"meaning":"') + 11, kanji_item.indexOf('","onyomi"')).split(", "),
-                "onyomi": kanji_item.substring(kanji_item.indexOf('"onyomi":"') + 10, kanji_item.indexOf('","kunyomi"')).split(", "),
-                "kunyomi": kanji_item.match(/kunyomi":([^,]+)/)[1].replace(/"/g, '').split(", "),
-                "important_reading": kanji_item.substring(kanji_item.indexOf('"important_reading":"') + 21, kanji_item.indexOf('","level"')),
-                "usyn": kanji_item.substring(kanji_item.indexOf('"user_synonyms":') + 16, kanji_item.indexOf(',"reading_note"')).replace(/["\[\]]/gi, "").split(",")
-            };
-        }
-    }
-
-    return dataArr;
-}
-
-function filterBRVocabData(data) {
-    var dataArr = {};
-
-    for (var l = 0; l < Object.keys(data).length; l++) {
-        for (var d = 1; d < Object.keys(data[l]).length; d++) {
-            if (data[l][d].indexOf('"burned":true') > -1) {
-                dataArr[Object.keys(dataArr).length] = {"character": data[l][d].substring(0, data[l][d].indexOf('"')), "kana": data[l][d].substring(data[l][d].indexOf('"kana":"') + 8, data[l][d].indexOf('","meaning"')).split(", "),
-                    "meaning": (data[l][d].substring(data[l][d].indexOf('"meaning":"') + 11, data[l][d].indexOf('","level"'))).split(", "),
-                                                    "usyn": data[l][d].substring(data[l][d].indexOf('"user_synonyms":') + 16, data[l][d].indexOf(',"reading_note"')).replace(/["\[\]]/gi, "").split(",")};
-            }
-        }
-    }
-
-    return dataArr;
-}
 
 function getBurnReview(firstReview) {
 
@@ -366,96 +316,173 @@ function skipItem() {
     return false;
 }
 
-function getBRRadicalData() {
-
-    if (!BRLangJP) $("#loadingBR").html('<h3 style="color: #00a0f1">Retrieving radical data...</h3>');
-    else $("#loadingBR").html('<h3 style="color: #00a0f1">部首データを検索中…</h3>');
-
-    var req = new XMLHttpRequest();
-
-    req.open('GET', 'https://www.wanikani.com/api/user/' + apiKey + '/radicals', true);
-    req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-                BRRadicalData = filterBRRadicalData(req.responseText.split('"character":"'));
-                localStorage.setItem("burnedRadicals", JSON.stringify(BRRadicalData));
-				getBRKanjiData();
-            } else {
-                alert("error");
-            }
-        }
-    };
-    req.send();
-
+function ItemIsBurned(item) {
+    return item.user_specific ? item.user_specific.burned : false;
 }
 
-function getBRKanjiData() {
+function displayRadicalLoadingMessage() {
 
-    if (!BRLangJP) $("#loadingBR").html('<h3 style="color: #f100a0">Retrieving kanji data...</h3>');
-    else $("#loadingBR").html('<h3 style="color: #00a0f1">漢字データを検索中…</h3>');
-
-    var req = new XMLHttpRequest();
-
-    req.open('GET', 'https://www.wanikani.com/api/user/' + apiKey + '/kanji', true);
-    req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-                BRKanjiData = filterBRKanjiData(req.responseText.split('"character":"'));
-                localStorage.setItem("burnedKanji", JSON.stringify(BRKanjiData));
-                getBRVocabData(1);
-            } else {
-                alert("error");
-            }
-        }
-    };
-    req.send();
-
+    if (!BRLangJP) {
+        $("#loadingBR").html('<h3 style="color: #00a0f1">Retrieving radical data...</h3>');
+    }
+    else {
+        $("#loadingBR").html('<h3 style="color: #00a0f1">部首データを検索中…</h3>');
+    }
 }
 
-function getBRVocabData(lv) {
+function displayKanjiLoadingMessage() {
+    if (!BRLangJP) {
+        $("#loadingBR").html('<h3 style="color: #f100a0">Retrieving kanji data...</h3>');
+    }
+    else {
+        $("#loadingBR").html('<h3 style="color: #00a0f1">漢字データを検索中…</h3>');
+    }
+}
 
-    if (!BRLangJP) $("#loadingBR").html('<h3 style="color: #a000f1">Retrieving vocabulary data...</h3>');
-    else $("#loadingBR").html('<h3 style="color: #00a0f1">単語データを検索中…</h3>');
+function displayVocabLoadingMessage() {
+    if (!BRLangJP) {
+        $("#loadingBR").html('<h3 style="color: #a000f1">Retrieving vocabulary data...</h3>');
+    }
+    else {
+        $("#loadingBR").html('<h3 style="color: #00a0f1">単語データを検索中…</h3>');
+    }
+}
 
-    var req = new XMLHttpRequest();
-    req.open('GET', 'https://www.wanikani.com/api/user/' + apiKey + '/vocabulary/' + lv, true);
-    req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-                BRVocabData[lv - 1] = req.responseText.split('"character":"');
-                if (lv == parseInt($(".dropdown-toggle span").html())) {
-                    BRVocabData = filterBRVocabData(BRVocabData);
-                    localStorage.setItem("burnedVocab", JSON.stringify(BRVocabData));
-                    initBurnReviews();
-                } else {
-                    getBRVocabData(lv + 1);
-                }
-            } else {
-                alert("error");
+//TODO - these functions are quite wet, should be able to dry them out
+function fetchAndCacheBurnedRadicalsThen(callback) {
+    $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/radicals", dataType:"json"})
+        .done(function(response) {
+            var burnedRadicalData = response.requested_information.filter(ItemIsBurned);
+            BRRadicalData = burnedRadicalData.map(function(radical) {
+                return { character : radical.character,
+                         meaning   : radical.meaning.split(", "),
+                         image     : radical.image,
+                         usyn      : radical.user_specific ? radical.user_specific.user_synonyms.split(", ") : null
+                };
+            });
+
+            localStorage.setItem("burnedRadicals", JSON.stringify(BRRadicalData));
+            callback();
+        })
+        .fail(function() {
+            BRLog("Request to WaniKani API failed. Catastrophic failure ermagerd D:", ERROR);
+        });
+}
+
+function fetchAndCacheBurnedRadicalsThen(callback) {
+    $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/kanji", dataType:"json"})
+        .done(function(response) {
+            var burnedKanjiData = response.requested_information.filter(ItemIsBurned);
+            BRKanjiData = burnedKanjiData.map(function(kanji) {
+                return { character         : kanji.character,
+                         meaning           : kanji.meaning.split(", "),
+                         onyomi            : kanji.onyomi ? kanji.onyomi.split(", ") : null,
+                         kunyomi           : kanji.kunyomi ? kanji.kunyomi.split(", ") : null,
+                         important_reading : kanji.important_reading,
+                         usyn              : kanji.user_specific ? kanji.user_specific.user_synonyms.split(", ") : null
+                };
+            });
+
+            localStorage.setItem("burnedKanji", JSON.stringify(BRKanjiData));
+            callback();
+        })
+        .fail(function() {
+            BRLog("Request to WaniKani API failed. Catastrophic failure ermagerd D:", ERROR);
+        });
+}
+
+function fetchAndCacheBurnedRadicalsThen(callback) {
+    $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/vocabulary", dataType:"json"})
+        .done(function(response) {
+            var burnedVocabData = response.requested_information.filter(ItemIsBurned);
+            BRVocabData = burnedVocabData.map(function(vocab) {
+                return { character : vocab.character,
+                         meaning   : vocab.meaning.split(", "),
+                         kana      : vocab.kana.split(", ") : null,
+                         usyn      : vocab.user_specific ? vocab.user_specific.user_synonyms.split(", ") : null
+                };
+            });
+
+            localStorage.setItem("burnedVocab", JSON.stringify(BRVocabData));
+            callback();
+        })
+        .fail(function() {
+            BRLog("Request to WaniKani API failed. Catastrophic failure ermagerd D:", ERROR);
+        });
+}
+
+function maybeGetBurnedRadicalsThen(callback) {
+    displayRadicalLoadingMessage();
+
+    var RawBRRadicalData = localStorage.getItem("burnedRadicals");
+    if (RawBRRadicalData !== null) {
+        try {
+            BRRadicalData = JSON.parse(RawBRRadicalData);
+            if (BRRadicalData.length > 0) {
+                return callback();
+            }
+            BRLog("No burned radicals in cache. Refetching", WARN);
+        }
+        catch(e) {
+            BRLog("Could not parse cached radical data. Refetching", WARN);
+        }
+    }
+    return fetchAndCacheBurnedRadicalsThen(callback);
+}
+
+function maybeGetBurnedKanjiThen(callback) {
+    displayKanjiLoadingMessage();
+
+    var RawBRKanjiData = localStorage.getItem("burnedKanji");
+    if (RawBRKanjiData !== null) {
+        try {
+            BRKanjiData = JSON.parse(RawBRKanjiData);
+            if (BRRadicalData.length > 0) {
+                return callback();
             }
         }
-    };
-    req.send();
+        catch(e) {
+            BRLog("Could not parse cached kanji data. Refetching", WARN);
+        }
+    }
+    return fetchAndCacheBurnedKanjiThen(callback);
+}
+
+function maybeGetBurnedVocabThen(callback) {
+    displayVocabLoadingMessage();
+
+    var RawBRKanjiData = localStorage.getItem("burnedKanji");
+    if (RawBRKanjiData !== null) {
+        try {
+            BRKanjiData = JSON.parse(RawBRKanjiData);
+            if (BRRadicalData.length > 0) {
+                return callback();
+            }
+        }
+        catch(e) {
+            BRLog("Could not parse cached vocab data. Refetching", WARN);
+        }
+    }
+    return fetchAndCacheBurnedKanjiThen(callback);
 
 }
 
 function getBRWKData() {
     BRLog("Getting WaniKana data");
 
-    if (localStorage.getItem("burnedRadicals") == null) getBRRadicalData();
-    else if (localStorage.getItem("burnedKanji") == null) getBRKanjiData();
-    else if (localStorage.getItem("burnedVocab") == null) getBRVocabData(1);
-    else {
-		BRRadicalData = JSON.parse(localStorage.getItem("burnedRadicals"));
-        BRKanjiData = JSON.parse(localStorage.getItem("burnedKanji"));
-        BRVocabData = JSON.parse(localStorage.getItem("burnedVocab"));
+    maybeGetBurnedRadicalsThen(function() {
+        maybeBurnedGetKanjiThen(function() {
+            maybeGetBurnedVocabThen(function() {
 
-        BRLog("Data items { RadicalData: " + Object.keys(BRRadicalData).length +
-                         "; KanjiData: " + Object.keys(BRKanjiData).length +
-                         "; VocabData: " + Object.keys(BRVocabData).length + "}");
+                BRLog("Data items { RadicalData: " + BRRadicalData.length +
+                                 "; KanjiData: " + BRKanjiData.length +
+                                 "; VocabData: " + BRVocabData.length + "}");
 
-        initBurnReviews();
-    }
+                initBurnReviews();
+            })
+        })
+    });
+
 }
 
 function clearBurnedItemData() {
