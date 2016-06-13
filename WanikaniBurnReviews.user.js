@@ -222,6 +222,7 @@ function getBurnReview(firstReview) {
                     	</div>\
                     </div>';
 
+	BRLog(strReview);
     	return strReview;
     }
 }
@@ -540,6 +541,11 @@ function appendReviewsStyleSheets() {
 
 
 function initBurnReviews() {
+
+     BRLog("Data items { RadicalData: " + Object.keys(BRRadicalData).length +
+                         "; KanjiData: " + Object.keys(BRKanjiData).length +
+                         "; VocabData: " + Object.keys(BRVocabData).length + "}");
+
 
     BRLog("Initialising the Burn Review widget");
 
