@@ -323,41 +323,29 @@ function skipItem() {
     return false;
 }
 
-function ItemIsBurned(item) {
-    return item.user_specific ? item.user_specific.burned : false;
+function displayLoadingMessage(color, english, japanese) {
+    $("#loadingBR").html('<h3 style="color:' + color + '">' + (BRLangJP ? japanese : english)  + '</h3>');
 }
 
 function displayRadicalLoadingMessage() {
-
-    if (!BRLangJP) {
-        $("#loadingBR").html('<h3 style="color: #00a0f1">Retrieving radical data...</h3>');
-    }
-    else {
-        $("#loadingBR").html('<h3 style="color: #00a0f1">部首データを検索中…</h3>');
-    }
+    displayLoadingMessage("#00a0f1", "Retrieving radical data...", "部首データを検索中…");
 }
 
 function displayKanjiLoadingMessage() {
-    if (!BRLangJP) {
-        $("#loadingBR").html('<h3 style="color: #f100a0">Retrieving kanji data...</h3>');
-    }
-    else {
-        $("#loadingBR").html('<h3 style="color: #00a0f1">漢字データを検索中…</h3>');
-    }
+    displayLoadingMessage("#f100a0","Retrieving kanji data...", "漢字データを検索中…");
 }
 
 function displayVocabLoadingMessage() {
-    if (!BRLangJP) {
-        $("#loadingBR").html('<h3 style="color: #a000f1">Retrieving vocabulary data...</h3>');
-    }
-    else {
-        $("#loadingBR").html('<h3 style="color: #00a0f1">単語データを検索中…</h3>');
-    }
+    displayLoadingMessage("#a000f1","Retrieving vocabulary data...", "単語データを検索中…");
 }
 
 function getRadicalCharacter(radical) {
     return radical.character ? radical.character :
             "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
+}
+
+function ItemIsBurned(item) {
+    return item.user_specific ? item.user_specific.burned : false;
 }
 
 //TODO - these functions are quite wet, should be able to dry them out
