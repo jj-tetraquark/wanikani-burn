@@ -797,9 +797,9 @@ function checkBurnReviewAnswer() {
     }
 
     if (curBRType == MEANING) {
-        if (curBRItemType == 0 && BRRadicalData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRRadicalData[curBRItem]["usyn"]);
-        else if (curBRItemType == 1 && BRKanjiData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRKanjiData[curBRItem]["usyn"]);
-        else if (BRVocabData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRVocabData[curBRItem]["usyn"]);
+        if (curBRItemType == 0 && BRRadicalData[curBRItem]["usyn"] !== "null") answers = answers.concat(BRRadicalData[curBRItem]["usyn"]);
+        else if (curBRItemType == 1 && BRKanjiData[curBRItem]["usyn"] !== "null") answers = answers.concat(BRKanjiData[curBRItem]["usyn"]);
+        else if (BRVocabData[curBRItem]["usyn"] !== "null") answers = answers.concat(BRVocabData[curBRItem]["usyn"]);
     }
 
     if (answers instanceof Array) {
