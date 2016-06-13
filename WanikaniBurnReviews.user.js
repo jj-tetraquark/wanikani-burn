@@ -226,31 +226,31 @@ function newBRItem() {
     if (BRRadicalsEnabled) {
         if (BRKanjiEnabled) {
             if (BRVocabularyEnabled) {
-                curBRItem = rand(1, Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length + Object.keys(BRVocabData).length - 1);
-                curBRItemType = (curBRItem < Object.keys(BRRadicalData).length) ? 0 : ((curBRItem < Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length) ? 1 : 2);
+                curBRItem = rand(1, BRRadicalData.length + BRKanjiData.length + BRVocabData.length - 1);
+                curBRItemType = (curBRItem < BRRadicalData.length) ? 0 : ((curBRItem < BRRadicalData.length + BRKanjiData.length) ? 1 : 2);
             } else {
-                curBRItem = rand(1, Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length - 1);
-                curBRItemType = (curBRItem < Object.keys(BRRadicalData).length) ? 0 : 1;
+                curBRItem = rand(1, BRRadicalData.length + BRKanjiData.length - 1);
+                curBRItemType = (curBRItem < BRRadicalData.length) ? 0 : 1;
             }
         } else {
             if (BRVocabularyEnabled) {
-                curBRItem = rand(1, Object.keys(BRRadicalData).length + Object.keys(BRVocabData).length - 1);
-                curBRItemType = (curBRItem < Object.keys(BRRadicalData).length) ? 0 : 2;
+                curBRItem = rand(1, BRRadicalData.length + BRVocabData.length - 1);
+                curBRItemType = (curBRItem < BRRadicalData.length) ? 0 : 2;
             } else {
-            	curBRItem = rand(1, Object.keys(BRRadicalData).length - 1);
+            	curBRItem = rand(1, BRRadicalData.length - 1);
                 curBRItemType = 0;
             }
         }
     } else if (BRKanjiEnabled) {
         if (BRVocabularyEnabled) {
-            curBRItem = rand(1, Object.keys(BRKanjiData).length + Object.keys(BRVocabData).length - 1);
-            curBRItemType = (curBRItem < Object.keys(BRKanjiData).length) ? 1 : 2;
+            curBRItem = rand(1, BRKanjiData.length + BRVocabData.length - 1);
+            curBRItemType = (curBRItem < BRKanjiData.length) ? 1 : 2;
         } else {
-            curBRItem = rand(1, Object.keys(BRKanjiData).length - 1);
+            curBRItem = rand(1, BRKanjiData.length - 1);
             curBRItemType = 1;
         }
     } else {
-        curBRItem = rand(1, Object.keys(BRVocabData).length - 1);
+        curBRItem = rand(1, BRVocabData.length - 1);
         curBRItemType = 2;
     }
     if (curBRItemType == 0) curBRType = 0;
@@ -258,12 +258,12 @@ function newBRItem() {
        	curBRType = rand(0, 1);
 
         if (curBRItemType == 1) {
-            if (BRRadicalsEnabled) curBRItem -= Object.keys(BRRadicalData).length;
+            if (BRRadicalsEnabled) curBRItem -= BRRadicalData.length;
         } else if (curBRItemType == 2) {
             if (BRRadicalsEnabled) {
-                if (BRKanjiEnabled) curBRItem -= (Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length);
-                else curBRItem -= (Object.keys(BRRadicalData).length);
-            } else if (BRKanjiEnabled) curBRItem -= Object.keys(BRKanjiData).length;
+                if (BRKanjiEnabled) curBRItem -= (BRRadicalData.length + BRKanjiData.length);
+                else curBRItem -= (BRRadicalData.length);
+            } else if (BRKanjiEnabled) curBRItem -= BRKanjiData.length;
         }
     }
 
@@ -357,7 +357,7 @@ function fetchAndCacheBurnedRadicalsThen(callback) {
                 return { character : radical.character,
                          meaning   : radical.meaning.split(", "),
                          image     : radical.image,
-                         usyn      : radical.user_specific ? radical.user_specific.user_synonyms.split(", ") : null
+                         usyn      : radical.user_specific ? radical.user_specific.user_synonyms : null
                 };
             });
 
@@ -369,7 +369,7 @@ function fetchAndCacheBurnedRadicalsThen(callback) {
         });
 }
 
-function fetchAndCacheBurnedRadicalsThen(callback) {
+function fetchAndCacheBurnedKanjiThen(callback) {
     $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/kanji", dataType:"json"})
         .done(function(response) {
             var burnedKanjiData = response.requested_information.filter(ItemIsBurned);
@@ -379,7 +379,7 @@ function fetchAndCacheBurnedRadicalsThen(callback) {
                          onyomi            : kanji.onyomi ? kanji.onyomi.split(", ") : null,
                          kunyomi           : kanji.kunyomi ? kanji.kunyomi.split(", ") : null,
                          important_reading : kanji.important_reading,
-                         usyn              : kanji.user_specific ? kanji.user_specific.user_synonyms.split(", ") : null
+                         usyn              : kanji.user_specific ? kanji.user_specific.user_synonyms : null
                 };
             });
 
@@ -391,15 +391,15 @@ function fetchAndCacheBurnedRadicalsThen(callback) {
         });
 }
 
-function fetchAndCacheBurnedRadicalsThen(callback) {
+function fetchAndCacheBurnedVocabThen(callback) {
     $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/vocabulary", dataType:"json"})
         .done(function(response) {
-            var burnedVocabData = response.requested_information.filter(ItemIsBurned);
+            var burnedVocabData = response.requested_information.general.filter(ItemIsBurned);
             BRVocabData = burnedVocabData.map(function(vocab) {
                 return { character : vocab.character,
                          meaning   : vocab.meaning.split(", "),
-                         kana      : vocab.kana.split(", ") : null,
-                         usyn      : vocab.user_specific ? vocab.user_specific.user_synonyms.split(", ") : null
+                         kana      : vocab.kana.split(", "),
+                         usyn      : vocab.user_specific ? vocab.user_specific.user_synonyms : null
                 };
             });
 
@@ -421,10 +421,10 @@ function maybeGetBurnedRadicalsThen(callback) {
             if (BRRadicalData.length > 0) {
                 return callback();
             }
-            BRLog("No burned radicals in cache. Refetching", WARN);
+            BRLog("No burned radicals in cache. Refetching", WARNING);
         }
         catch(e) {
-            BRLog("Could not parse cached radical data. Refetching", WARN);
+            BRLog("Could not parse cached radical data. Refetching", WARNING);
         }
     }
     return fetchAndCacheBurnedRadicalsThen(callback);
@@ -437,12 +437,12 @@ function maybeGetBurnedKanjiThen(callback) {
     if (RawBRKanjiData !== null) {
         try {
             BRKanjiData = JSON.parse(RawBRKanjiData);
-            if (BRRadicalData.length > 0) {
+            if (BRKanjiData.length > 0) {
                 return callback();
             }
         }
         catch(e) {
-            BRLog("Could not parse cached kanji data. Refetching", WARN);
+            BRLog("Could not parse cached kanji data. Refetching", WARNING);
         }
     }
     return fetchAndCacheBurnedKanjiThen(callback);
@@ -451,27 +451,26 @@ function maybeGetBurnedKanjiThen(callback) {
 function maybeGetBurnedVocabThen(callback) {
     displayVocabLoadingMessage();
 
-    var RawBRKanjiData = localStorage.getItem("burnedKanji");
-    if (RawBRKanjiData !== null) {
+    var RawBRVocabData = localStorage.getItem("burnedVocab");
+    if (RawBRVocabData !== null) {
         try {
-            BRKanjiData = JSON.parse(RawBRKanjiData);
-            if (BRRadicalData.length > 0) {
+            BRVocabData = JSON.parse(RawBRVocabData);
+            if (BRVocabData.length > 0) {
                 return callback();
             }
         }
         catch(e) {
-            BRLog("Could not parse cached vocab data. Refetching", WARN);
+            BRLog("Could not parse cached vocab data. Refetching", WARNING);
         }
     }
-    return fetchAndCacheBurnedKanjiThen(callback);
-
+    return fetchAndCacheBurnedVocabThen(callback);
 }
 
 function getBRWKData() {
     BRLog("Getting WaniKana data");
 
     maybeGetBurnedRadicalsThen(function() {
-        maybeBurnedGetKanjiThen(function() {
+        maybeGetBurnedKanjiThen(function() {
             maybeGetBurnedVocabThen(function() {
 
                 BRLog("Data items { RadicalData: " + BRRadicalData.length +
