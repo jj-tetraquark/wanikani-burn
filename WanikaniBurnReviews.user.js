@@ -128,6 +128,12 @@ function getButtonCSS() {
     return strButtons;
 }
 
+function appendAdditionalCSS() {
+    $(getFadeCSS()).appendTo($("head"));
+    $(getButtonCSS()).appendTo($("head"));
+    $('<style type="text/css"> .radical-question { height:100%; margin-top:-10px; }</style>').appendTo($("head"));
+}
+
 function rand(low, high) {
     return Math.floor(Math.random()*(high+1)) + low;
 }
@@ -348,15 +354,19 @@ function displayVocabLoadingMessage() {
     }
 }
 
+function getRadicalCharacter(radical) {
+    return radical.character ? radical.character :
+            "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
+}
+
 //TODO - these functions are quite wet, should be able to dry them out
 function fetchAndCacheBurnedRadicalsThen(callback) {
     $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/radicals", dataType:"json"})
         .done(function(response) {
             var burnedRadicalData = response.requested_information.filter(ItemIsBurned);
             BRRadicalData = burnedRadicalData.map(function(radical) {
-                return { character : radical.character,
+                return { character : getRadicalCharacter(radical),
                          meaning   : radical.meaning.split(", "),
-                         image     : radical.image,
                          usyn      : radical.user_specific ? radical.user_specific.user_synonyms : null
                 };
             });
@@ -542,8 +552,7 @@ function initBurnReviews() {
     //Undo conflicting CSS from above import
     BRLog("Undoing conflicting CSS");
     $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 }</style>');
-    $(getFadeCSS()).appendTo($("head"));
-    $(getButtonCSS()).appendTo($("head"));
+    appendAdditionalCSS();
     $("ul").css("padding-left", "0px");
 
     BRLog("Adding burn review section");
