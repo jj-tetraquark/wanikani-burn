@@ -224,7 +224,7 @@ function getBurnReview(firstReview) {
                     	</div>\
                     </div>';
 
-	BRLog(strReview);
+        BRLog(strReview);
     	return strReview;
     }
 }
@@ -520,12 +520,7 @@ function initBurnReviews() {
     $("ul").css("padding-left", "0px");
 
     BRLog("Adding burn review section");
-    if ($(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3")).length) { //TODO: remove this logging condition
-        BRLog("Successfully added question section");
-    }
-    else {
-        BRLog("Did not add question section!", ERROR);
-    }
+    getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
 
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
@@ -666,19 +661,6 @@ function initBurnReviews() {
     });
 
     $(".answer-exception-form span").css({"background-color": "rgba(162, 162, 162, 0.75)", "box-shadow": "3px 3px 0 rgba(225, 225, 225, 0.75)"});
-
-    if ($("#question").length === 1) {
-        BRLog("Question display : " + $("#question").css("display"));
-        BRLog("Question visible : " + $("#question").css("visible"));
-        BRLog("Question height  : " + $("#question").height());
-        BRLog("Question position: " + $("#question").css("position"));
-        BRLog("Question location: " + JSON.stringify($("#question").position()));
-        BRLog("Question parent  : " + $('#question').parent()[0].outerHTML.split($('#question').html())[0]);
-    }
-    else {
-        BRLog("Question box not present in DOM!", ERROR);
-    }
-
 }
 
 function switchBRLang() {
@@ -944,7 +926,7 @@ if (!cancelExecution) {
         if (!useCache) clearBurnedItemData();
 
         var checkReady = setInterval(function() {
-            BRLog("Checking for wanikana...");
+            BRLog("Checking for wanakana...");
             if (wanakana !== undefined) {
                 clearInterval(checkReady);
                 getBRWKData();
