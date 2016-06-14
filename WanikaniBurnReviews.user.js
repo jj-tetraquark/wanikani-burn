@@ -30,10 +30,11 @@ var ERROR   = 9;
 // Globals....ewww
 var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
-var BRData = { Radicals: [], Kanji: [], Vocab: [] };
+BRData = { Radicals: [], Kanji: [], Vocab: [] };
 
 function BRLog(logdata, level) {
-    if (localStorage.getItem("BRLoggingEnabled") != "true") return;
+    level = (typeof level == "undefined") ? DEBUG : level;
+    if (!BRLoggingEnabled && level < WARNING) return;
     if (!console) return;
 
     var logmethod = console.log.bind(console);
@@ -49,12 +50,12 @@ function BRLog(logdata, level) {
     }
 }
 
-function BREnableLogging() {
+window.BREnableLogging = function() {
     BRLoggingEnabled = true;
     localStorage.setItem("BRLoggingEnabled", true);
 }
 
-function BRDisableLogging() {
+window.BRDisableLogging = function() {
     BRLoggingEnabled = false;
     localStorage.removeItem("BRLoggingEnabled");
 }
@@ -500,11 +501,6 @@ function appendReviewsStyleSheets() {
 
 function initBurnReviews() {
 
-     BRLog("Data items { RadicalData: " + Object.keys(BRData.Radicals).length +
-                         "; KanjiData: " + Object.keys(BRData.Kanji).length +
-                         "; VocabData: " + Object.keys(BRData.Vocab).length + "}");
-
-
     BRLog("Initialising the Burn Review widget");
 
     useCache = false;
@@ -520,7 +516,7 @@ function initBurnReviews() {
     $("ul").css("padding-left", "0px");
 
     BRLog("Adding burn review section");
-    getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
+    $(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
 
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
@@ -894,7 +890,6 @@ else {
 
 if (!cancelExecution) {
 
-    BREnableLogging();
     BRLog("Running!");
 
     useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
