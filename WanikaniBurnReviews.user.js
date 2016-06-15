@@ -53,12 +53,12 @@ function BRLog(logdata, level) {
 window.BREnableLogging = function() {
     BRLoggingEnabled = true;
     localStorage.setItem("BRLoggingEnabled", true);
-}
+};
 
 window.BRDisableLogging = function() {
     BRLoggingEnabled = false;
     localStorage.removeItem("BRLoggingEnabled");
-}
+};
 
 $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
 
@@ -448,8 +448,8 @@ function getBRWKData() {
                                  "; VocabData: " + BRData.Vocab.length + "}");
 
                 initBurnReviews();
-            })
-        })
+            });
+        });
     });
 
 }
