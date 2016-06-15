@@ -4,7 +4,7 @@
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
 // @exclude		*.wanikani.com
 // @include     *.wanikani.com/dashboard*
-// @version     2.1.0
+// @version     2.1.1
 // @author      Jonny Dark
 // @grant       none
 
