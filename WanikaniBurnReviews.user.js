@@ -132,9 +132,13 @@ function getButtonCSS() {
 }
 
 function appendAdditionalCSS() {
+    BRLog("Undoing conflicting CSS");
+
+    $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 } p { margin: 0 0 10px }</style>');
     $(getFadeCSS()).appendTo($("head"));
     $(getButtonCSS()).appendTo($("head"));
     $('<style type="text/css"> .radical-question { height:100%; margin-top:-10px; }</style>').appendTo($("head"));
+    $("ul").css("padding-left", "0px");
 }
 
 function rand(low, high) {
@@ -478,7 +482,7 @@ function confirmRes() {
     return false;
 }
 
-function appendReviewsStyleSheets() {
+function addBurnReviewStylesThen(callback) {
     BRLog("Getting the review page stylesheet...")
     $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
         function(data) {
@@ -495,6 +499,9 @@ function appendReviewsStyleSheets() {
                     $("head").append(link);
                 }
             }
+            //Undo conflicting CSS from above import
+            appendAdditionalCSS();
+            callback();
         });
 }
 
@@ -507,13 +514,11 @@ function initBurnReviews() {
     $("#loadingBR").remove();
 
     // Get the stylesheet from the reviews page and append it to the head
-    appendReviewsStyleSheets();
+    addBurnReviewStylesThen(fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod);
 
-    //Undo conflicting CSS from above import
-    BRLog("Undoing conflicting CSS");
-    $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 }</style>');
-    appendAdditionalCSS();
-    $("ul").css("padding-left", "0px");
+}
+
+function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
 
     BRLog("Adding burn review section");
     $(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
@@ -657,6 +662,7 @@ function initBurnReviews() {
     });
 
     $(".answer-exception-form span").css({"background-color": "rgba(162, 162, 162, 0.75)", "box-shadow": "3px 3px 0 rgba(225, 225, 225, 0.75)"});
+
 }
 
 function switchBRLang() {
