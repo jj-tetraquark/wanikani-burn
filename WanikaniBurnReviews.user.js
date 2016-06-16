@@ -192,14 +192,14 @@ function getBurnReview(firstReview) {
         }
 
         if (curBRItemType > 0 && (curBRProgress < 1 || $("#answer-form fieldset").hasClass("correct"))) {
-            if (curBRType === 0) {
-                curBRType = 1;
+            if (curBRType === MEANING) {
+                curBRType = READING;
                 wanakana.bind(document.getElementById('user-response'));
                 $("#user-response").attr({lang:"ja",placeholder:"答え"});
                 $("#question-type").removeClass("meaning").addClass("reading");
             }
             else {
-                curBRType = 0;
+                curBRType = MEANING;
                 wanakana.unbind(document.getElementById('user-response'));
                 $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
                 $("#question-type").removeClass("reading").addClass("meaning");
@@ -211,11 +211,11 @@ function getBurnReview(firstReview) {
             $("#question-type").removeClass("reading").addClass("meaning");
         }
         if (!BRLangJP) {
-            document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "Meaning" :
+            document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "Meaning" :
                 ((curBRItemType === 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
         }
         else {
-            document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "意味" :
+            document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "意味" :
                 ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "音読み" : "訓読み") : "読み");
         }
 
@@ -297,49 +297,24 @@ function getBurnReview(firstReview) {
 function newBRItem() {
     BRLog("Getting new burn item");
 
+    // Need to get a weighted Random
+    var itemTypeArray = [];
     if (BRRadicalsEnabled) {
-        if (BRKanjiEnabled) {
-            if (BRVocabularyEnabled) {
-                curBRItem = rand(1, BRData.Radicals.length + BRData.Kanji.length + BRData.Vocab.length - 1);
-                curBRItemType = (curBRItem < BRData.Radicals.length) ? 0 : ((curBRItem < BRData.Radicals.length + BRData.Kanji.length) ? 1 : 2);
-            } else {
-                curBRItem = rand(1, BRData.Radicals.length + BRData.Kanji.length - 1);
-                curBRItemType = (curBRItem < BRData.Radicals.length) ? 0 : 1;
-            }
-        } else {
-            if (BRVocabularyEnabled) {
-                curBRItem = rand(1, BRData.Radicals.length + BRData.Vocab.length - 1);
-                curBRItemType = (curBRItem < BRData.Radicals.length) ? 0 : 2;
-            } else {
-            	curBRItem = rand(1, BRData.Radicals.length - 1);
-                curBRItemType = 0;
-            }
-        }
-    } else if (BRKanjiEnabled) {
-        if (BRVocabularyEnabled) {
-            curBRItem = rand(1, BRData.Kanji.length + BRData.Vocab.length - 1);
-            curBRItemType = (curBRItem < BRData.Kanji.length) ? 1 : 2;
-        } else {
-            curBRItem = rand(1, BRData.Kanji.length - 1);
-            curBRItemType = 1;
-        }
-    } else {
-        curBRItem = rand(1, BRData.Vocab.length - 1);
-        curBRItemType = 2;
+        itemTypeArray = itemTypeArray.concat(new Array(BRData.Radicals.length).fill(RADICAL));
     }
-    if (curBRItemType === 0) curBRType = 0;
-    else {
-       	curBRType = rand(0, 1);
+    if (BRKanjiEnabled) {
+        itemTypeArray = itemTypeArray.concat(new Array(BRData.Kanji.length).fill(KANJI));
+    }
+    if (BRVocabularyEnabled) {
+        itemTypeArray = itemTypeArray.concat(new Array(BRData.Vocab.length).fill(VOCAB));
+    }
 
-        if (curBRItemType == 1) {
-            if (BRRadicalsEnabled) curBRItem -= BRData.Radicals.length;
-        } else if (curBRItemType == 2) {
-            if (BRRadicalsEnabled) {
-                if (BRKanjiEnabled) curBRItem -= (BRData.Radicals.length + BRData.Kanji.length);
-                else curBRItem -= (BRData.Radicals.length);
-            } else if (BRKanjiEnabled) curBRItem -= BRData.Kanji.length;
-        }
-    }
+    curBRItemType = itemTypeArray[rand(0, itemTypeArray.length)];
+
+    var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][curBRItemType];
+    curBRItem = rand(0, dataBank.length);
+
+    curBRType = (curBRItemType === RADICAL) ? MEANING : rand(MEANING, READING);
 
     curBRProgress = 0;
 
@@ -585,7 +560,7 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
 
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
-    if (curBRType === 0) {
+    if (curBRType === MEANING) {
         wanakana.unbind(document.getElementById('user-response'));
         $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
         $("#question-type").addClass("meaning");
@@ -730,7 +705,7 @@ function switchBRLang() {
     BRLangJP = !BRLangJP;
 
     if (BRLangJP) {
-        document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "意味" : document.getElementById("question-type-text").innerHTML.replace("Reading", "読み").replace("Onyomi ", "音").replace("Kunyomi ", "訓");
+        document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "意味" : document.getElementById("question-type-text").innerHTML.replace("Reading", "読み").replace("Onyomi ", "音").replace("Kunyomi ", "訓");
         $(".burn-reviews.kotoba-table-list.dashboard-sub-section h3").html("焦げた復習");
         $("#new-item").html("新しい項目");
         $(".brbsl span").css("margin", "2px 0 0 0").html("ロード");
@@ -754,7 +729,7 @@ function switchBRLang() {
             }
         }
     } else {
-        document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "Meaning" : document.getElementById("question-type-text").innerHTML.replace("読み", "Reading").replace("音", "Onyomi ").replace("訓", "Kunyomi ");
+        document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "Meaning" : document.getElementById("question-type-text").innerHTML.replace("読み", "Reading").replace("音", "Onyomi ").replace("訓", "Kunyomi ");
         $(".burn-reviews.kotoba-table-list.dashboard-sub-section h3").html("BURN REVIEWS");
         $("#new-item").html("NEW ITEM");
         $(".brbsl span").css("margin", "5px 0 0 -1px").html("Load");
@@ -816,7 +791,7 @@ function checkBurnReviewAnswer() {
         }
     } else if (response == answers) match = true;
 
-    if (((curBRType === 0 && isAsciiPresent(response)) || (!isAsciiPresent(response) && curBRType == 1)) && response !== "") {
+    if (((curBRType === MEANING && isAsciiPresent(response)) || (!isAsciiPresent(response) && curBRType == 1)) && response !== "") {
 
         if (!match && curBRItemType == 1 && curBRType == 1 && ((BRData.Kanji[curBRItem].important_reading == "onyomi" &&
        		compareKunyomiReading(response, BRData.Kanji[curBRItem].kunyomi)) || (BRData.Kanji[curBRItem].important_reading == "kunyomi" && response == BRData.Kanji[curBRItem].onyomi))) {
@@ -872,7 +847,7 @@ function submitBRAnswer() {
 }
 
 function isAsciiPresent(e){
-    return (curBRType === 0) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
+    return (curBRType === MEANING) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
 }
 
 function main() {
@@ -882,7 +857,7 @@ function main() {
         apiKey = key;
         BRLog("Running!");
 
-        useCache            =  !(localStorage.getItem("burnedRadicals") ===  null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
+        useCache            =  !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
         BRIsChrome          =  (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
         curBRItem           =  UNDEFINED;
         curBRType           =  UNDEFINED;
