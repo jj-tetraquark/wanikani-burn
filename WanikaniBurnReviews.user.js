@@ -4,7 +4,7 @@
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
 // @exclude		*.wanikani.com
 // @include     *.wanikani.com/dashboard*
-// @version     2.0.1.4
+// @version     2.1.1
 // @author      Jonny Dark
 // @grant       none
 
@@ -14,13 +14,48 @@
 
 // CONSTANTS
 var RADICAL = 0;
-var KANJI = 1;
-var VOCAB = 2;
+var KANJI   = 1;
+var VOCAB   = 2;
 
 var MEANING = 0;
 var READING = 1;
 
+var DEBUG   = 7;
+var WARNING = 8;
+var ERROR   = 9;
 
+// Globals....ewww
+var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
+
+BRData = { Radicals: [], Kanji: [], Vocab: [] };
+
+function BRLog(logdata, level) {
+    level = (typeof level == "undefined") ? DEBUG : level;
+    if (!BRLoggingEnabled && level < WARNING) return;
+    if (!console) return;
+
+    var logmethod = console.log.bind(console);
+    if (typeof level !== "undefined" && level !== DEBUG) {
+        logmethod = (level == WARNING ? console.warn.bind(console) :
+                     level == ERROR ? console.error.bind(console) :
+                     logmethod);
+    }
+
+    logmethod("WKBurnReview: " + logdata);
+    if (typeof logdata != "string") {
+        logmethod(logdata);
+    }
+}
+
+window.BREnableLogging = function() {
+    BRLoggingEnabled = true;
+    localStorage.setItem("BRLoggingEnabled", true);
+};
+
+window.BRDisableLogging = function() {
+    BRLoggingEnabled = false;
+    localStorage.removeItem("BRLoggingEnabled");
+};
 
 $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
 
@@ -93,10 +128,6 @@ function getButtonCSS() {
     return strButtons;
 }
 
-function rand(low, high) {
-    return Math.floor(Math.random()*(high+1)) + low;
-}
-
 function getApiKeyThen(callback) {
 
     // First check if the API key is in local storage.
@@ -132,46 +163,23 @@ function filterBRRadicalData(data) {
         }
     }
 
-    return dataArr;
+function appendAdditionalCSS() {
+    BRLog("Undoing conflicting CSS");
+    $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 } p { margin: 0 0 10px }</style>');
+    $(getFadeCSS()).appendTo($("head"));
+    $(getButtonCSS()).appendTo($("head"));
+    $('<style type="text/css"> .radical-question { height:100%; margin-top:-10px; }</style>').appendTo($("head"));
+    $("ul").css("padding-left", "0px");
 }
 
-function filterBRKanjiData(data) {
-    var dataArr = {};
-
-    for (var d = 1; d < data.length; d++) {
-        var kanji_item = data[d];
-        if (kanji_item.indexOf('"burned":true') > -1) {
-            dataArr[Object.keys(dataArr).length] = {
-                "character": kanji_item.substring(0, 1),
-                "meaning": kanji_item.substring(kanji_item.indexOf('"meaning":"') + 11, kanji_item.indexOf('","onyomi"')).split(", "),
-                "onyomi": kanji_item.substring(kanji_item.indexOf('"onyomi":"') + 10, kanji_item.indexOf('","kunyomi"')).split(", "),
-                "kunyomi": kanji_item.match(/kunyomi":([^,]+)/)[1].replace(/"/g, '').split(", "),
-                "important_reading": kanji_item.substring(kanji_item.indexOf('"important_reading":"') + 21, kanji_item.indexOf('","level"')),
-                "usyn": kanji_item.substring(kanji_item.indexOf('"user_synonyms":') + 16, kanji_item.indexOf(',"reading_note"')).replace(/["\[\]]/gi, "").split(",")
-            };
-        }
-    }
-
-    return dataArr;
+function rand(low, high) {
+    return Math.floor(Math.random()*(high+1)) + low;
 }
 
-function filterBRVocabData(data) {
-    var dataArr = {};
-
-    for (var l = 0; l < Object.keys(data).length; l++) {
-        for (var d = 1; d < Object.keys(data[l]).length; d++) {
-            if (data[l][d].indexOf('"burned":true') > -1) {
-                dataArr[Object.keys(dataArr).length] = {"character": data[l][d].substring(0, data[l][d].indexOf('"')), "kana": data[l][d].substring(data[l][d].indexOf('"kana":"') + 8, data[l][d].indexOf('","meaning"')).split(", "),
-                    "meaning": (data[l][d].substring(data[l][d].indexOf('"meaning":"') + 11, data[l][d].indexOf('","level"'))).split(", "),
-                                                    "usyn": data[l][d].substring(data[l][d].indexOf('"user_synonyms":') + 16, data[l][d].indexOf(',"reading_note"')).replace(/["\[\]]/gi, "").split(",")};
-            }
-        }
-    }
-
-    return dataArr;
-}
 
 function getBurnReview(firstReview) {
+
+    BRLog("Getting " + (firstReview ? "first" : "") + " burn review");
 
     curBRAnswered = false;
 
@@ -203,8 +211,8 @@ function getBurnReview(firstReview) {
             $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
             $("#question-type").removeClass("reading").addClass("meaning");
         }
-        if (!BRLangJP) document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "Meaning" : ((curBRItemType == 1) ? ((BRKanjiData[curBRItem]["important_reading"] == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
-        else document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "意味" : ((curBRItemType == 1) ? ((BRKanjiData[curBRItem]["important_reading"] == "onyomi") ? "音読み" : "訓読み") : "読み");
+        if (!BRLangJP) document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "Meaning" : ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
+        else document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "意味" : ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? "音読み" : "訓読み") : "読み");
 
 
         document.getElementById('user-response').value = "";
@@ -215,15 +223,17 @@ function getBurnReview(firstReview) {
         document.getElementById("new-item").onclick = skipItem;
 
         $("body").prepend('<div id="dim-overlay" style="position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none"></div>');
+        BRLog("Overlay applied");
 
         newBRItem();
+        BRLog("Got new item");
 
-        var characterText = (curBRItemType == 0) ? BRRadicalData[curBRItem]["character"] : ((curBRItemType == 1) ? BRKanjiData[curBRItem]["character"] : BRVocabData[curBRItem]["character"]);
+        var characterText = (curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? BRData.Kanji[curBRItem]["character"] : BRData.Vocab[curBRItem]["character"]);
         var reviewTypeText;
-        if (!BRLangJP) reviewTypeText = ((curBRType < 1) ? "Meaning" : (curBRItemType == 0) ? BRRadicalData[curBRItem]["character"] :
-                       ((curBRItemType == 1) ? BRKanjiData[curBRItem]["important_reading"].substring(0, 1).toUpperCase() + BRKanjiData[curBRItem]["important_reading"].substring(1) + " Reading" : "Reading"));
-        else reviewTypeText = (curBRType < 1) ? "意味" : (curBRItemType == 0) ? BRRadicalData[curBRItem]["character"] :
-                              ((curBRItemType == 1) ? ((BRKanjiData[curBRItem]["important_reading"] == "onyomi") ? "音" : "訓") : "") + "読み";
+        if (!BRLangJP) reviewTypeText = ((curBRType < 1) ? "Meaning" : (curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] :
+                       ((curBRItemType == 1) ? BRData.Kanji[curBRItem]["important_reading"].substring(0, 1).toUpperCase() + BRData.Kanji[curBRItem]["important_reading"].substring(1) + " Reading" : "Reading"));
+        else reviewTypeText = (curBRType < 1) ? "意味" : (curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] :
+                              ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? "音" : "訓") : "") + "読み";
 
         strReview = '<div class="answer-exception-form" id="answer-exception" align="center" style="position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none"><span>Answer goes here</span></div>\
 							<div id="question" style="position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px">\
@@ -250,40 +260,42 @@ function getBurnReview(firstReview) {
                     	</div>\
                     </div>';
 
+        BRLog(strReview);
     	return strReview;
     }
 }
 
 function newBRItem() {
+    BRLog("Getting new burn item");
 
     if (BRRadicalsEnabled) {
         if (BRKanjiEnabled) {
             if (BRVocabularyEnabled) {
-                curBRItem = rand(1, Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length + Object.keys(BRVocabData).length - 1);
-                curBRItemType = (curBRItem < Object.keys(BRRadicalData).length) ? 0 : ((curBRItem < Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length) ? 1 : 2);
+                curBRItem = rand(1, BRData.Radicals.length + BRData.Kanji.length + BRData.Vocab.length - 1);
+                curBRItemType = (curBRItem < BRData.Radicals.length) ? 0 : ((curBRItem < BRData.Radicals.length + BRData.Kanji.length) ? 1 : 2);
             } else {
-                curBRItem = rand(1, Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length - 1);
-                curBRItemType = (curBRItem < Object.keys(BRRadicalData).length) ? 0 : 1;
+                curBRItem = rand(1, BRData.Radicals.length + BRData.Kanji.length - 1);
+                curBRItemType = (curBRItem < BRData.Radicals.length) ? 0 : 1;
             }
         } else {
             if (BRVocabularyEnabled) {
-                curBRItem = rand(1, Object.keys(BRRadicalData).length + Object.keys(BRVocabData).length - 1);
-                curBRItemType = (curBRItem < Object.keys(BRRadicalData).length) ? 0 : 2;
+                curBRItem = rand(1, BRData.Radicals.length + BRData.Vocab.length - 1);
+                curBRItemType = (curBRItem < BRData.Radicals.length) ? 0 : 2;
             } else {
-            	curBRItem = rand(1, Object.keys(BRRadicalData).length - 1);
+            	curBRItem = rand(1, BRData.Radicals.length - 1);
                 curBRItemType = 0;
             }
         }
     } else if (BRKanjiEnabled) {
         if (BRVocabularyEnabled) {
-            curBRItem = rand(1, Object.keys(BRKanjiData).length + Object.keys(BRVocabData).length - 1);
-            curBRItemType = (curBRItem < Object.keys(BRKanjiData).length) ? 1 : 2;
+            curBRItem = rand(1, BRData.Kanji.length + BRData.Vocab.length - 1);
+            curBRItemType = (curBRItem < BRData.Kanji.length) ? 1 : 2;
         } else {
-            curBRItem = rand(1, Object.keys(BRKanjiData).length - 1);
+            curBRItem = rand(1, BRData.Kanji.length - 1);
             curBRItemType = 1;
         }
     } else {
-        curBRItem = rand(1, Object.keys(BRVocabData).length - 1);
+        curBRItem = rand(1, BRData.Vocab.length - 1);
         curBRItemType = 2;
     }
     if (curBRItemType == 0) curBRType = 0;
@@ -291,22 +303,26 @@ function newBRItem() {
        	curBRType = rand(0, 1);
 
         if (curBRItemType == 1) {
-            if (BRRadicalsEnabled) curBRItem -= Object.keys(BRRadicalData).length;
+            if (BRRadicalsEnabled) curBRItem -= BRData.Radicals.length;
         } else if (curBRItemType == 2) {
             if (BRRadicalsEnabled) {
-                if (BRKanjiEnabled) curBRItem -= (Object.keys(BRRadicalData).length + Object.keys(BRKanjiData).length);
-                else curBRItem -= (Object.keys(BRRadicalData).length);
-            } else if (BRKanjiEnabled) curBRItem -= Object.keys(BRKanjiData).length;
+                if (BRKanjiEnabled) curBRItem -= (BRData.Radicals.length + BRData.Kanji.length);
+                else curBRItem -= (BRData.Radicals.length);
+            } else if (BRKanjiEnabled) curBRItem -= BRData.Kanji.length;
         }
     }
 
     curBRProgress = 0;
 
+    BRLog("Burn item type: " + curBRItemType);
+    BRLog("Burn item: " + curBRItem);
+
 }
 
 function updateBRItem(updateText) {
 
-    if (updateText) $(".bri").html(((curBRItemType == 0) ? BRRadicalData[curBRItem]["character"] : (curBRItemType == 1) ? BRKanjiData[curBRItem]["character"] : BRVocabData[curBRItem]["character"]));
+    BRLog("Updating Burn review item");
+    if (updateText) $(".bri").html(((curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] : (curBRItemType == 1) ? BRData.Kanji[curBRItem]["character"] : BRData.Vocab[curBRItem]["character"]));
     if ($(".bri").html().length > 3) {
         switch($(".bri").html().length) {
             case 4:
@@ -345,90 +361,132 @@ function skipItem() {
     return false;
 }
 
-function getBRRadicalData() {
-
-    if (!BRLangJP) $("#loadingBR").html('<h3 style="color: #00a0f1">Retrieving radical data...</h3>');
-    else $("#loadingBR").html('<h3 style="color: #00a0f1">部首データを検索中…</h3>');
-
-    var req = new XMLHttpRequest();
-
-    req.open('GET', 'https://www.wanikani.com/api/user/' + apiKey + '/radicals', true);
-    req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-                BRRadicalData = filterBRRadicalData(req.responseText.split('"character":"'));
-                localStorage.setItem("burnedRadicals", JSON.stringify(BRRadicalData));
-				getBRKanjiData();
-            } else {
-                alert("error");
-            }
-        }
-    };
-    req.send();
-
+function displayLoadingMessage(color, english, japanese) {
+    $("#loadingBR").html('<h3 style="color:' + color + '">' + (BRLangJP ? japanese : english)  + '</h3>');
 }
 
-function getBRKanjiData() {
-
-    if (!BRLangJP) $("#loadingBR").html('<h3 style="color: #f100a0">Retrieving kanji data...</h3>');
-    else $("#loadingBR").html('<h3 style="color: #00a0f1">漢字データを検索中…</h3>');
-
-    var req = new XMLHttpRequest();
-
-    req.open('GET', 'https://www.wanikani.com/api/user/' + apiKey + '/kanji', true);
-    req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-                BRKanjiData = filterBRKanjiData(req.responseText.split('"character":"'));
-                localStorage.setItem("burnedKanji", JSON.stringify(BRKanjiData));
-                getBRVocabData(1);
-            } else {
-                alert("error");
-            }
-        }
-    };
-    req.send();
-
+function displayRadicalLoadingMessage() {
+    displayLoadingMessage("#00a0f1", "Retrieving radical data...", "部首データを検索中…");
 }
 
-function getBRVocabData(lv) {
+function displayKanjiLoadingMessage() {
+    displayLoadingMessage("#f100a0","Retrieving kanji data...", "漢字データを検索中…");
+}
 
-    if (!BRLangJP) $("#loadingBR").html('<h3 style="color: #a000f1">Retrieving vocabulary data...</h3>');
-    else $("#loadingBR").html('<h3 style="color: #00a0f1">単語データを検索中…</h3>');
+function displayVocabLoadingMessage() {
+    displayLoadingMessage("#a000f1","Retrieving vocabulary data...", "単語データを検索中…");
+}
 
-    var req = new XMLHttpRequest();
-    req.open('GET', 'https://www.wanikani.com/api/user/' + apiKey + '/vocabulary/' + lv, true);
-    req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-                BRVocabData[lv - 1] = req.responseText.split('"character":"');
-                if (lv == parseInt($(".dropdown-toggle span").html())) {
-                    BRVocabData = filterBRVocabData(BRVocabData);
-                    localStorage.setItem("burnedVocab", JSON.stringify(BRVocabData));
-                    initBurnReviews();
-                } else {
-                    getBRVocabData(lv + 1);
-                }
-            } else {
-                alert("error");
+
+function getRadicalCharacter(radical) {
+    return radical.character ? radical.character :
+            "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
+}
+
+function ItemIsBurned(item) {
+    return item.user_specific ? item.user_specific.burned : false;
+}
+
+function fetchAndCacheBurnedRadicalsThen(callback) {
+    fetchAndCacheBurnedItemsThen(callback, "radicals", "Radicals", "burnedRadicals",
+        function(radical) {
+            return { character : getRadicalCharacter(radical),
+                     meaning   : radical.meaning.split(", "),
+                     usyn      : radical.user_specific ? radical.user_specific.user_synonyms : null
+            };
+        });
+}
+
+function fetchAndCacheBurnedKanjiThen(callback) {
+    fetchAndCacheBurnedItemsThen(callback, "kanji", "Kanji", "burnedKanji",
+        function(kanji) {
+            return { character         : kanji.character,
+                     meaning           : kanji.meaning.split(", "),
+                     onyomi            : kanji.onyomi ? kanji.onyomi.split(", ") : null,
+                     kunyomi           : kanji.kunyomi ? kanji.kunyomi.split(", ") : null,
+                     important_reading : kanji.important_reading,
+                     usyn              : kanji.user_specific ? kanji.user_specific.user_synonyms : null
+            };
+        });
+}
+
+function fetchAndCacheBurnedVocabThen(callback) {
+    fetchAndCacheBurnedItemsThen(callback, "vocabulary", "Vocab", "burnedVocab",
+        function(vocab) {
+            return { character : vocab.character,
+                     meaning   : vocab.meaning.split(", "),
+                     kana      : vocab.kana.split(", "),
+                     usyn      : vocab.user_specific ? vocab.user_specific.user_synonyms : null
+            };
+        });
+}
+
+function fetchAndCacheBurnedItemsThen(callback, requestedResource, type, storageKey, mapFunction) {
+    $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/" + requestedResource, dataType:"json"})
+        .done(function(response) {
+            // vocabulary for some reason has everything in a child called general, kanji and radicals do not
+            var requestData = response.requested_information.general ?
+                                response.requested_information.general : response.requested_information;
+            var burnedItems = requestData.filter(ItemIsBurned);
+            BRData[type] = burnedItems.map(mapFunction);
+
+            localStorage.setItem(storageKey, JSON.stringify(BRData[type]));
+            callback();
+        })
+        .fail(function() {
+            BRLog("Request to WaniKani API failed. Catastrophic failure ermagerd D:", ERROR);
+        });
+}
+
+function maybeGetBurnedItemsThen(callback, storageKey, type, fetchFunction) {
+    var RawBRData = localStorage.getItem(storageKey);
+    if (RawBRData !== null) {
+        try {
+            BRData[type] = JSON.parse(RawBRData);
+            if (BRData[type].length > 0) {
+                return callback();
             }
+            BRLog("No burned " + type + " in cache. Refectching...", WARNING);
         }
-    };
-    req.send();
+        catch(e) {
+            BRLog("Could not parse cached radical data. Refetching...", WARNING);
+        }
+    }
+    return fetchFunction(callback);
+}
 
+
+function maybeGetBurnedRadicalsThen(callback) {
+    displayRadicalLoadingMessage();
+    maybeGetBurnedItemsThen(callback, "burnedRadicals", "Radicals", fetchAndCacheBurnedRadicalsThen);
+}
+
+function maybeGetBurnedKanjiThen(callback) {
+    displayKanjiLoadingMessage();
+    maybeGetBurnedItemsThen(callback, "burnedKanji", "Kanji", fetchAndCacheBurnedKanjiThen);
+}
+
+function maybeGetBurnedVocabThen(callback) {
+    displayVocabLoadingMessage();
+    maybeGetBurnedItemsThen(callback, "burnedVocab", "Vocab", fetchAndCacheBurnedVocabThen);
 }
 
 function getBRWKData() {
+    BRLog("Getting WaniKana data");
 
-    if (localStorage.getItem("burnedRadicals") == null) getBRRadicalData();
-    else if (localStorage.getItem("burnedKanji") == null) getBRKanjiData();
-    else if (localStorage.getItem("burnedVocab") == null) getBRVocabData(1);
-    else {
-		BRRadicalData = JSON.parse(localStorage.getItem("burnedRadicals"));
-        BRKanjiData = JSON.parse(localStorage.getItem("burnedKanji"));
-        BRVocabData = JSON.parse(localStorage.getItem("burnedVocab"));
-        initBurnReviews();
-    }
+    maybeGetBurnedRadicalsThen(function() {
+        maybeGetBurnedKanjiThen(function() {
+            maybeGetBurnedVocabThen(function() {
+
+                BRLog("Data items { RadicalData: " + BRData.Radicals.length +
+                                 "; KanjiData: " + BRData.Kanji.length +
+                                 "; VocabData: " + BRData.Vocab.length + "}");
+
+                initBurnReviews();
+            });
+        });
+    });
+
 }
 
 function clearBurnedItemData() {
@@ -443,50 +501,59 @@ function confirmRes() {
     $(".answer-exception-form").addClass("animated fadeInUp");
     if (!BRLangJP)
     	$(".answer-exception-form span").html('Are you sure you want to <a href="https://www.wanikani.com/retired/' +
-            ((curBRItemType == 0) ? 'radicals/' + BRRadicalData[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRKanjiData[curBRItem]["character"] :
-            'vocabulary/' +  BRVocabData[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
-    		((curBRItemType == 1) ? 'kanji item "' + BRKanjiData[curBRItem]["character"] : 'vocabulary item "' + BRVocabData[curBRItem]["character"]) + '"?');
+            ((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
+            'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
+    		((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem]["character"] : 'vocabulary item "' + BRData.Vocab[curBRItem]["character"]) + '"?');
    	else
-        $(".answer-exception-form span").html(((curBRItemType == 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRKanjiData[curBRItem]["character"] : '単語「' + BRVocabData[curBRItem]["character"]))  + '」を' +
-            '<a href="https://www.wanikani.com/retired/' +　((curBRItemType == 0) ? 'radicals/' + BRRadicalData[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRKanjiData[curBRItem]["character"] :
-        	'vocabulary/' +  BRVocabData[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
+        $(".answer-exception-form span").html(((curBRItemType == 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem]["character"] : '単語「' + BRData.Vocab[curBRItem]["character"]))  + '」を' +
+            '<a href="https://www.wanikani.com/retired/' +　((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
+        	'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
 
     document.getElementById("answer-exception").onclick = "return false";
     return false;
 }
 
-function appendReviewsStyleSheets() {
+function addBurnReviewStylesThen(callback) {
+    BRLog("Getting the review page stylesheet...")
     $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
         function(data) {
+            BRLog("Got the review page document. Extracting styles");
             var parser = new DOMParser();
-            reviewsdoc = parser.parseFromString(data, "text/html");
-            links = reviewsdoc.head.getElementsByTagName("link");
+            var reviewsdoc = parser.parseFromString(data, "text/html");
+            var links = reviewsdoc.head.getElementsByTagName("link");
             for (var i = 0; i < links.length; i++)
             {
                 var link = links[i];
                 if (link.type == "text/css")
                 {
+                    BRLog("Adding " + link.outerHTML + " to document head");
                     $("head").append(link);
                 }
             }
+            //Undo conflicting CSS from above import
+            appendAdditionalCSS();
+            callback();
         });
 }
 
 
 function initBurnReviews() {
 
+    BRLog("Initialising the Burn Review widget");
+
     useCache = false;
     $("#loadingBR").remove();
 
     // Get the stylesheet from the reviews page and append it to the head
-    appendReviewsStyleSheets();
+    addBurnReviewStylesThen(fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod);
 
-    //Undo conflicting CSS from above import
-    $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 }</style>');
-    $(getFadeCSS()).appendTo($("head"));
-    $(getButtonCSS()).appendTo($("head"));
-    $("ul").css("padding-left", "0px");
+}
+
+function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
+
+    BRLog("Adding burn review section");
     $(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
+
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
     if (curBRType == 0) {
@@ -547,9 +614,9 @@ function initBurnReviews() {
         curBRAnswered = false;
         queueBRAnim = false;
         allowQueueBRAnim = true;
-        BRRadicalData = "";
-        BRKanjiData = "";
-        BRVocabData = {};
+        BRData.Radicals = [];
+        BRData.Kanji = [];
+        BRData.Vocab = [];
         $(getSection()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
         if (!BRLangJP) $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
    		else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
@@ -626,6 +693,7 @@ function initBurnReviews() {
     });
 
     $(".answer-exception-form span").css({"background-color": "rgba(162, 162, 162, 0.75)", "box-shadow": "3px 3px 0 rgba(225, 225, 225, 0.75)"});
+
 }
 
 function switchBRLang() {
@@ -645,9 +713,9 @@ function switchBRLang() {
             if (!$("#answer-exception").hasClass("fadeOut") && !curBRAnswered) $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
             else {
                  if ($(".answer-exception-form span").html().toString().substring(0, 1) == "A")
-                    $(".answer-exception-form span").html(((curBRItemType == 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRKanjiData[curBRItem]["character"] : '単語「' + BRVocabData[curBRItem]["character"]))  + '」を' +
-                    '<a href="https://www.wanikani.com/retired/' +　((curBRItemType == 0) ? 'radicals/' + BRRadicalData[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRKanjiData[curBRItem]["character"] :
-                    'vocabulary/' +  BRVocabData[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
+                    $(".answer-exception-form span").html(((curBRItemType == 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem]["character"] : '単語「' + BRData.Vocab[curBRItem]["character"]))  + '」を' +
+                    '<a href="https://www.wanikani.com/retired/' +　((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
+                    'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
                     $(".answer-exception-form span").html('解答は<br />「' + txtPrev.substring(txtPrev.indexOf('"') + 1, txtPrev.indexOf('"', txtPrev.indexOf('"') + 1)) + '」であった。<br />この項目を<a href="#"' +
@@ -668,9 +736,9 @@ function switchBRLang() {
             else {
                if ($(".answer-exception-form span").html().toString().indexOf("る本") > 1)
                     $(".answer-exception-form span").html('Are you sure you want to <a href="https://www.wanikani.com/retired/' +
-                    ((curBRItemType == 0) ? 'radicals/' + BRRadicalData[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRKanjiData[curBRItem]["character"] :
-                    'vocabulary/' +  BRVocabData[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
-                    ((curBRItemType == 1) ? 'kanji item "' + BRKanjiData[curBRItem]["character"] : 'vocabulary item "' + BRVocabData[curBRItem]["character"]) + '"?');
+                    ((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
+                    'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
+                    ((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem]["character"] : 'vocabulary item "' + BRData.Vocab[curBRItem]["character"]) + '"?');
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
                     $(".answer-exception-form span").html('The answer was:<br />"' + txtPrev.substring(txtPrev.indexOf('「') + 1, txtPrev.indexOf('」')) + '"<br /><a href="#"' +
@@ -691,26 +759,26 @@ function checkBurnReviewAnswer() {
 
     if (curBRType == MEANING)
     {
-        var dataBank = [BRRadicalData, BRKanjiData, BRVocabData][curBRItemType];
+        var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][curBRItemType];
         answers = dataBank[curBRItem]["meaning"];
     }
     else
     {
         if (curBRItemType == KANJI)
         {
-            var importantReading = BRKanjiData[curBRItem]["important_reading"];
-            answers = BRKanjiData[curBRItem][importantReading];
+            var importantReading = BRData.Kanji[curBRItem]["important_reading"];
+            answers = BRData.Kanji[curBRItem][importantReading];
         }
         else
         {
-            answers = BRVocabData[curBRItem]["kana"];
+            answers = BRData.Vocab[curBRItem]["kana"];
         }
     }
 
     if (curBRType == MEANING) {
-        if (curBRItemType == 0 && BRRadicalData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRRadicalData[curBRItem]["usyn"]);
-        else if (curBRItemType == 1 && BRKanjiData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRKanjiData[curBRItem]["usyn"]);
-        else if (BRVocabData[curBRItem]["usyn"][0] !== "null") answers = answers.concat(BRVocabData[curBRItem]["usyn"]);
+        if (curBRItemType == 0 && BRData.Radicals[curBRItem]["usyn"] !== "null") answers = answers.concat(BRData.Radicals[curBRItem]["usyn"]);
+        else if (curBRItemType == 1 && BRData.Kanji[curBRItem]["usyn"] !== "null") answers = answers.concat(BRData.Kanji[curBRItem]["usyn"]);
+        else if (BRData.Vocab[curBRItem]["usyn"] !== "null") answers = answers.concat(BRData.Vocab[curBRItem]["usyn"]);
     }
 
     if (answers instanceof Array) {
@@ -721,10 +789,10 @@ function checkBurnReviewAnswer() {
 
     if (((curBRType == 0 && isAsciiPresent(response)) || (!isAsciiPresent(response) && curBRType == 1)) && response !== "") {
 
-        //alert(((BRKanjiData[curBRItem]["important_reading"] == "onyomi") ? BRKanjiData[curBRItem]["kunyomi"] : BRKanjiData[curBRItem]["onyomi"]));
+        //alert(((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? BRData.Kanji[curBRItem]["kunyomi"] : BRData.Kanji[curBRItem]["onyomi"]));
 
-        if (!match && curBRItemType == 1 && curBRType == 1 && ((BRKanjiData[curBRItem]["important_reading"] == "onyomi" &&
-       		compareKunyomiReading(response, BRKanjiData[curBRItem]["kunyomi"]) == true) || (BRKanjiData[curBRItem]["important_reading"] == "kunyomi" && response == BRKanjiData[curBRItem]["onyomi"]))) {
+        if (!match && curBRItemType == 1 && curBRType == 1 && ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi" &&
+       		compareKunyomiReading(response, BRData.Kanji[curBRItem]["kunyomi"]) == true) || (BRData.Kanji[curBRItem]["important_reading"] == "kunyomi" && response == BRData.Kanji[curBRItem]["onyomi"]))) {
 
        		if (!BRLangJP) $(".answer-exception-form span").html("Oops! You entered the wrong reading.");
             else $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
@@ -784,7 +852,7 @@ function evaluate(e,t){
      var n,r,i,s,o,u,a,f,l,c,h;
      i=[];
      u=[];
-     s=((curBRItemType == 1) ? BRKanjiData[curBRItem]["character"] : BRVocabData[curBRItem]["character"]);
+     s=((curBRItemType == 1) ? BRData.Kanji[curBRItem]["character"] : BRData.Vocab[curBRItem]["character"]);
      n=!1;
      l=!1;
      f=!1;
@@ -849,22 +917,22 @@ function main() {
     getApiKeyThen(function(key) {
 
         apiKey = key;
-        useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
-        BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
-        curBRItem = -1;
-        curBRType = -1;
-        curBRItemType = -1;
-        curBRProgress = 0;
-        curBRAnswered = false;
-        queueBRAnim = false;
-        allowQueueBRAnim = true;
-        BRLangJP = (localStorage.getItem("BRLangJP") == null) ? false : true;
-        BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
-        BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
-        BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
-        BRRadicalData = "";
-        BRKanjiData = "";
-        BRVocabData = {};
+        BRLog("Running!");
+
+    useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
+	BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
+    curBRItem = -1;
+    curBRType = -1;
+    curBRItemType = -1;
+    curBRProgress = 0;
+    curBRAnswered = false;
+    queueBRAnim = false;
+    allowQueueBRAnim = true;
+    BRLangJP = (localStorage.getItem("BRLangJP") == null) ? false : true;
+    BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
+    BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
+    BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
+
 
         String.prototype.trim = function() {
             return(this.replace(/^ +/,'').replace(/ +$/,''));
@@ -879,8 +947,10 @@ function main() {
         $("#loadingBR a").click( function() {
 
             if (!useCache) clearBurnedItemData();
+            BRLog("Loading...");
 
             var checkReady = setInterval(function() {
+                BRLog("Checking for wanakana...");
                 if (wanakana !== undefined) {
                     clearInterval(checkReady);
                     getBRWKData();
