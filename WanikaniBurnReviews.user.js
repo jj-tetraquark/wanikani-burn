@@ -60,71 +60,76 @@ window.BRDisableLogging = function() {
 $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
 
 function getSection() {
-    var strSection = '<div class="span4">\
-		<section class="burn-reviews kotoba-table-list dashboard-sub-section" style="z-index: 2; position: relative">\
-			<h3 class="small-caps">' + ((!BRLangJP) ? "BURN REVIEWS" : "焦げた復習") + '</h3>\
-			<div id="loadingBR" align="center" style="position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px"></div>\
-			<div class="see-more" style="margin-top: -1px">\
-				<a href="javascript:void(0)" id="new-item" class="small-caps">' + ((!BRLangJP) ? "NEW ITEM" : "新しい項目") + '</a>\
-    		</div>\
-    	</section>\
-	</div>';
+    var strSection =
+        "<div class=\"span4\">"                                                                                                                                           +
+            "<section class=\"burn-reviews kotoba-table-list dashboard-sub-section\" style=\"z-index: 2; position: relative\">"                                           +
+                "<h3 class=\"small-caps\">"                                                                                                                               +
+                    ((!BRLangJP) ? "BURN REVIEWS" : "焦げた復習")                                                                                                         +
+                "</h3>"                                                                                                                                                   +
+                "<div id=\"loadingBR\" align=\"center\" style=\"position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px\"></div>" +
+                "<div class=\"see-more\" style=\"margin-top: -1px\">"                                                                                                     +
+                    "<a href=\"javascript:void(0)\" id=\"new-item\" class=\"small-caps\"> ${((!BRLangJP) ? \"NEW ITEM\" : \"新しい項目\")} </a>"                          +
+                "</div>"                                                                                                                                                  +
+            "</section>"                                                                                                                                                  +
+        "</div>";
     return strSection;
 }
 
 function getFadeCSS() {
-    var strFadeIn = '<style type="text/css">\
-	.fadeIn {\
-        -webkit-animation: fadein 1s;\
-                animation: fadein 1s;\
-    }\
-    @keyframes fadein {\
-        from { opacity: 0; }\
-        to   { opacity: 0.9; }\
-    }\
-    @-webkit-keyframes fadein {\
-        from { opacity: 0; }\
-        to   { opacity: 0.9; }\
-    }\
-	.fadeOut {\
-        -webkit-animation: fadeout 1s;\
-                animation: fadeout 1s;\
-    }\
-    @keyframes fadeout {\
-        from { opacity: 0.9; }\
-        to   { opacity: 0; }\
-    }\
-    @-webkit-keyframes fadeout {\
-        from { opacity: 0.9; }\
-        to   { opacity: 0; }\
-    }\
-    </style>';
+    var strFadeIn =
+    "<style type=\"text/css\">"          +
+	".fadeIn {"                          +
+        "-webkit-animation: fadein 1s;"  +
+                "animation: fadein 1s;"  +
+    "}"                                  +
+    "@keyframes fadein {"                +
+        "from { opacity: 0; }"           +
+        "to   { opacity: 0.9; }"         +
+    "}"                                  +
+    "@-webkit-keyframes fadein {"        +
+        "from { opacity: 0; }"           +
+        "to   { opacity: 0.9; }"         +
+    "}"                                  +
+	".fadeOut {"                         +
+        "-webkit-animation: fadeout 1s;" +
+                "animation: fadeout 1s;" +
+    "}"                                  +
+    "@keyframes fadeout {"               +
+        "from { opacity: 0.9; }"         +
+        "to   { opacity: 0; }"           +
+    "}"                                  +
+    "@-webkit-keyframes fadeout {"       +
+        "from { opacity: 0.9; }"         +
+        "to   { opacity: 0; }"           +
+    "}"                                  +
+    "</style>";
     return strFadeIn;
 }
 
 function getButtonCSS() {
-    var strButtons = '<style type="text/css">\
-    				.brbi div, .brbt div, .brbs div {\
-    					background-color: rgb(67, 67, 67);\
-						background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));\
-    					color: rgb(98, 98, 98);\
-					}\
-					.brbi span, .brbtj span {\
-						margin-top: 5px\
-					}\
-                    .brbir.on {\
-                    	background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);\
-					}\
-    				.brbik.on {\
-                    	background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);\
-					}\
-					.brbiv.on {\
-                    	background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);\
-					}\
-					.brbt .on, .brbss.on, .brbsl:hover {\
-						background-color: #80c100; background-image: linear-gradient(to bottom, #8c0, #73ad00);\
-`					}\
-					</style>';
+    var strButtons =
+        "<style type=\"text/css\">"                                                                       +
+            ".brbi div, .brbt div, .brbs div {"                                                           +
+                "background-color: rgb(67, 67, 67);"                                                      +
+                "background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));"         +
+                "color: rgb(98, 98, 98);"                                                                 +
+            "}"                                                                                           +
+            ".brbi span, .brbtj span {"                                                                   +
+                "margin-top: 5px"                                                                         +
+            "}"                                                                                           +
+            ".brbir.on {"                                                                                 +
+                "background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);" +
+            "}"                                                                                           +
+            ".brbik.on {"                                                                                 +
+                "background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);" +
+            "}"                                                                                           +
+            ".brbiv.on {"                                                                                 +
+                "background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);" +
+            "}"                                                                                           +
+            ".brbt .on, .brbss.on, .brbsl:hover {"                                                        +
+                "background-color: #80c100; background-image: linear-gradient(to bottom, #8c0, #73ad00);" +
+            "}"                                                                                           +
+        "</style>";
     return strButtons;
 }
 
@@ -152,17 +157,6 @@ function getApiKeyThen(callback) {
 }
 
 
-function filterBRRadicalData(data) {
-    var dataArr = {};
-
-    for (var d = 1; d < data.length; d++) {
-        if (data[d].indexOf('"burned":true') > -1) {
-            dataArr[Object.keys(dataArr).length] = {"character": data[d].substring(0, 1), "meaning": data[d].substring(data[d].indexOf('"meaning":"') + 11, data[d].indexOf('","image"')).split(", "),
-            	"image": data[d].substring(data[d].indexOf('"image":"') + 10, data[d].indexOf('","level"')).split(", "),
-                                                    "usyn": data[d].substring(data[d].indexOf('"user_synonyms":') + 16, data[d].indexOf('}}')).replace(/["\[\]]/gi, "").split(",")};
-        }
-    }
-
 function appendAdditionalCSS() {
     BRLog("Undoing conflicting CSS");
     $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 } p { margin: 0 0 10px }</style>');
@@ -189,36 +183,45 @@ function getBurnReview(firstReview) {
 
         $(".answer-exception-form").css("display", "none");
 
-        if ((curBRItemType == 0 && curBRProgress > 0) || curBRProgress == 2) {
+        if ((curBRItemType === 0 && curBRProgress > 0) || curBRProgress == 2) {
             newBRItem();
             updateBRItem(true);
         }
 
         if (curBRItemType > 0 && (curBRProgress < 1 || $("#answer-form fieldset").hasClass("correct"))) {
-            if (curBRType == 0) {
+            if (curBRType === 0) {
                 curBRType = 1;
                 wanakana.bind(document.getElementById('user-response'));
                 $("#user-response").attr({lang:"ja",placeholder:"答え"});
                 $("#question-type").removeClass("meaning").addClass("reading");
-            } else {
+            }
+            else {
                 curBRType = 0;
                 wanakana.unbind(document.getElementById('user-response'));
                 $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
                 $("#question-type").removeClass("reading").addClass("meaning");
             }
-        }  else if (curBRItemType == 0) {
+        }
+        else if (curBRItemType === 0) {
             wanakana.unbind(document.getElementById('user-response'));
             $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
             $("#question-type").removeClass("reading").addClass("meaning");
         }
-        if (!BRLangJP) document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "Meaning" : ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
-        else document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "意味" : ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? "音読み" : "訓読み") : "読み");
+        if (!BRLangJP) {
+            document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "Meaning" :
+                ((curBRItemType === 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
+        }
+        else {
+            document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "意味" :
+                ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "音読み" : "訓読み") : "読み");
+        }
 
 
         document.getElementById('user-response').value = "";
         $("#answer-form fieldset").removeClass("correct").removeClass("incorrect");
 
-    } else {
+    }
+    else {
 
         document.getElementById("new-item").onclick = skipItem;
 
@@ -228,37 +231,60 @@ function getBurnReview(firstReview) {
         newBRItem();
         BRLog("Got new item");
 
-        var characterText = (curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? BRData.Kanji[curBRItem]["character"] : BRData.Vocab[curBRItem]["character"]);
+        var characterText = (curBRItemType === 0) ? BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? BRData.Kanji[curBRItem].character : BRData.Vocab[curBRItem].character);
         var reviewTypeText;
-        if (!BRLangJP) reviewTypeText = ((curBRType < 1) ? "Meaning" : (curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] :
-                       ((curBRItemType == 1) ? BRData.Kanji[curBRItem]["important_reading"].substring(0, 1).toUpperCase() + BRData.Kanji[curBRItem]["important_reading"].substring(1) + " Reading" : "Reading"));
-        else reviewTypeText = (curBRType < 1) ? "意味" : (curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] :
-                              ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? "音" : "訓") : "") + "読み";
+        if (!BRLangJP) {
+            reviewTypeText = ((curBRType < 1) ? "Meaning" : (curBRItemType === 0) ? BRData.Radicals[curBRItem].character :
+                       ((curBRItemType == 1) ? BRData.Kanji[curBRItem].important_reading.substring(0, 1).toUpperCase() + BRData.Kanji[curBRItem].important_reading.substring(1) + " Reading" : "Reading"));
+        }
+        else reviewTypeText = (curBRType < 1) ? "意味" : (curBRItemType === 0) ? BRData.Radicals[curBRItem].character :
+                              ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "音" : "訓") : "") + "読み";
 
-        strReview = '<div class="answer-exception-form" id="answer-exception" align="center" style="position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none"><span>Answer goes here</span></div>\
-							<div id="question" style="position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px">\
-							<div class="brbi" style="width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11">\
-                                <div class="brbir' + ((BRRadicalsEnabled) ? ' on' : '') + '"><span lang="ja">部</span></div>\
-								<div class="brbik' + ((BRKanjiEnabled) ? ' on' : '') + '" style="padding-top: 1px !important"><span lang="ja">漢</span></div>\
-                                <div class="brbiv' + ((BRVocabularyEnabled) ? ' on' : '') + '"><span lang="ja">語</span></div>\
-                            </div>\
-							<div class="brbs" style="width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11">\
-								<div class="brbsl" style="height: 35px"><span lang="ja" style="font-size: 10px; ' + ((!BRLangJP) ? 'margin: 5px 0 0 0">Load' : 'margin: 2px 0 0 0">ロード') + '</span></div>\
-								<div class="brbss' + ((localStorage.getItem("BRStartButton") !== null) ? ' on' : '') + '" style="height: 35px !important"><span lang="ja" style="margin-top: 2px' + ((!BRLangJP) ? '; font-size: 10px; line-height: 0.9">Start Button' :
-                                	'margin-top: 2px; font-size: 11px !important; line-height: 1.1; margin-left: -1px">開始\rボタン') + '</span></div>\
-							</div>\
-							<div class="brbt" style="width: 30px; position: absolute; margin-left: 310px; z-index: 11">\
-								<div class="brbtj' + ((BRLangJP) ? ' on' : '') + '"><span lang="ja" style="margin-top: 4px">日本語</span></div>\
-								<div class="brbtr"><span lang="ja" style="' + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit">Resize' : 'margin-top: 4px; font-size: 10px">拡大する') + '</span></div>\
-                            </div>\
-                            <div class="brk"><span class="bri" lang="ja">' + characterText + '</span></div>\
-							<div id="question-type" style="margin: 0px 0px 0px 0px; height: 33px"><h1 id="question-type-text" align="center" style="margin: -5px 0px 0px 0px; text-shadow: none">' + reviewTypeText + '</h1></div>\
-                            <div id="answer-form"><form onSubmit="return false"><fieldset style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px">\
-                                <input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text" style="height: 35px; margin-bottom: 0px"></input>\
-                                <button id="answer-button" style="width: 0px; height: 34px; padding: 0px 20px 0px 5px; top: 0px; right: 0px" ><i class="icon-chevron-right"></i></button>\
-                            </fieldset></form></div>\
-                    	</div>\
-                    </div>';
+        var strReview =
+            "<div class=\"answer-exception-form\" id=\"answer-exception\" align=\"center\" style=\"position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none\">" +
+                "<span>Answer goes here</span></div>" +
+                    "<div id=\"question\" style=\"position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px\">" +
+                        "<div class=\"brbi\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">" +
+                            "<div class=\"brbir" + ((BRRadicalsEnabled) ? ' on' : '') + "\">" +
+                               "<span lang=\"ja\">部</span>" +
+                            "</div>" +
+                            "<div class=\"brbik'" + ((BRKanjiEnabled) ? ' on' : '') + "\" style=\"padding-top: 1px !important\">" +
+                                "<span lang=\"ja\">漢</span>" +
+                            "</div>" +
+                        "<div class=\"brbiv" + ((BRVocabularyEnabled) ? ' on' : '') + "\">" +
+                            "<span lang=\"ja\">語</span>" +
+                        "</div>" +
+                    "</div>" +
+                    "<div class=\"brbs\" style=\"width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11\">" +
+                        "<div class=\"brbsl\" style=\"height: 35px\">" +
+                            "<span lang=\"ja\" style=\"font-size: 10px; " + ((!BRLangJP) ? 'margin: 5px 0 0 0\">Load' : 'margin: 2px 0 0 0\">ロード') + "</span>" +
+                        "</div>" +
+                        "<div class=\"brbss" + ((localStorage.getItem("BRStartButton") !== null) ? ' on' : '') + "\" style=\"height: 35px !important\">" +
+                            "<span lang=\"ja\" style=\"margin-top: 2px" +
+                                ((!BRLangJP) ? '; font-size: 10px; line-height: 0.9\">Start Button' : 'font-size: 11px !important; line-height: 1.1; margin-left: -1px\">開始\rボタン') +
+                            "</span>" +
+                        "</div>" +
+                    "</div>" +
+                    "<div class=\"brbt\" style=\"width: 30px; position: absolute; margin-left: 310px; z-index: 11\">" +
+                        "<div class=\"brbtj" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>" +
+                        "<div class=\"brbtr\">" +
+                            "<span lang=\"ja\" style=\"" + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit\">Resize' : 'margin-top: 4px; font-size: 10px\">拡大する') + "</span>" +
+                        "</div>" +
+                    "</div>" +
+                    "<div class=\"brk\">" +
+                        "<span class=\"bri\" lang=\"ja\">" + characterText + "</span>" +
+                        "</div>" +
+                    "<div id=\"question-type\" style=\"margin: 0px 0px 0px 0px; height: 33px\"><h1 id=\"question-type-text\" align=\"center\" style=\"margin: -5px 0px 0px 0px; text-shadow: none\">" + reviewTypeText + "</h1></div>" +
+                    "<div id=\"answer-form\">" +
+                        "<form onSubmit=\"return false\">" +
+                            "<fieldset style=\"padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px\">" +
+                                "<input autocapitalize=\"off\" autocomplete=\"off\" autocorrect=\"off\" id=\"user-response\" name=\"user-response\" placeholder=\"Your Response\" type=\"text\" style=\"height: 35px; margin-bottom: 0px\"></input>" +
+                                "<button id=\"answer-button\" style=\"width: 0px; height: 34px; padding: 0px 20px 0px 5px; top: 0px; right: 0px\" ><i class=\"icon-chevron-right\"></i></button>" +
+                            "</fieldset>" +
+                        "</form>" +
+                    "</div>" +
+                "</div>" +
+            "</div>";
 
         BRLog(strReview);
     	return strReview;
@@ -298,7 +324,7 @@ function newBRItem() {
         curBRItem = rand(1, BRData.Vocab.length - 1);
         curBRItemType = 2;
     }
-    if (curBRItemType == 0) curBRType = 0;
+    if (curBRItemType === 0) curBRType = 0;
     else {
        	curBRType = rand(0, 1);
 
@@ -322,7 +348,7 @@ function newBRItem() {
 function updateBRItem(updateText) {
 
     BRLog("Updating Burn review item");
-    if (updateText) $(".bri").html(((curBRItemType == 0) ? BRData.Radicals[curBRItem]["character"] : (curBRItemType == 1) ? BRData.Kanji[curBRItem]["character"] : BRData.Vocab[curBRItem]["character"]));
+    if (updateText) $(".bri").html(((curBRItemType === 0) ? BRData.Radicals[curBRItem].character : (curBRItemType == 1) ? BRData.Kanji[curBRItem].character : BRData.Vocab[curBRItem].character));
     if ($(".bri").html().length > 3) {
         switch($(".bri").html().length) {
             case 4:
@@ -339,10 +365,10 @@ function updateBRItem(updateText) {
         }
     } else $(".bri").css("font-size", "48px");
 
-    var bg = (curBRItemType == 0) ? "#00a0f1" : ((curBRItemType == 1) ? "#f100a0" : "#a000f1");
+    var bg = (curBRItemType === 0) ? "#00a0f1" : ((curBRItemType == 1) ? "#f100a0" : "#a000f1");
     var bgi = "linear-gradient(to bottom, ";
 
-    bgi += (curBRItemType == 0) ? "#0af, #0093dd" : ((curBRItemType == 1) ? "#f0a, #dd0093" : "#a0f, #9300dd");
+    bgi += (curBRItemType === 0) ? "#0af, #0093dd" : ((curBRItemType == 1) ? "#f0a, #dd0093" : "#a0f, #9300dd");
     $(".brk").css({"background-color": bg,
                    "background-image": bgi,
                    "background-repeat": "repeat-x",
@@ -501,20 +527,20 @@ function confirmRes() {
     $(".answer-exception-form").addClass("animated fadeInUp");
     if (!BRLangJP)
     	$(".answer-exception-form span").html('Are you sure you want to <a href="https://www.wanikani.com/retired/' +
-            ((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
-            'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
-    		((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem]["character"] : 'vocabulary item "' + BRData.Vocab[curBRItem]["character"]) + '"?');
+            ((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
+            'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
+    		((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem].character : 'vocabulary item "' + BRData.Vocab[curBRItem].character) + '"?');
    	else
-        $(".answer-exception-form span").html(((curBRItemType == 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem]["character"] : '単語「' + BRData.Vocab[curBRItem]["character"]))  + '」を' +
-            '<a href="https://www.wanikani.com/retired/' +　((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
-        	'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
+        $(".answer-exception-form span").html(((curBRItemType === 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem].character : '単語「' + BRData.Vocab[curBRItem].character))  + '」を' +
+            '<a href="https://www.wanikani.com/retired/' +　((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
+        	'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
 
     document.getElementById("answer-exception").onclick = "return false";
     return false;
 }
 
 function addBurnReviewStylesThen(callback) {
-    BRLog("Getting the review page stylesheet...")
+    BRLog("Getting the review page stylesheet...");
     $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
         function(data) {
             BRLog("Got the review page document. Extracting styles");
@@ -556,7 +582,7 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
 
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
-    if (curBRType == 0) {
+    if (curBRType === 0) {
         wanakana.unbind(document.getElementById('user-response'));
         $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
         $("#question-type").addClass("meaning");
@@ -578,7 +604,7 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
                 if ($(this).attr("class") == "brbir on") {
                     localStorage.setItem("BRRadicalsEnabled", false);
                     BRRadicalsEnabled = false;
-                    if (curBRItemType == 0) skipItem();
+                    if (curBRItemType === 0) skipItem();
                 } else if ($(this).attr("class") == "brbik on") {
                     localStorage.setItem("BRKanjiEnabled", false);
                     BRKanjiEnabled = false;
@@ -670,7 +696,7 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
         }
     });
     $(".brbtr").css({"height": "49px"});
-    $(".brbi div span, .brbs div span, .brbt div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "-ms-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
+    $(".brbi div span, .brbs div span, .brbt div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
                            "-webkit-touch-callout": "none", "-webkit-user-select": "none", "-khtml-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none", "cursor":"default"});
     $(".bri").css({"color": "#ffffff",
                    "font-size": "48px",
@@ -701,7 +727,7 @@ function switchBRLang() {
     BRLangJP = !BRLangJP;
 
     if (BRLangJP) {
-        document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "意味" : document.getElementById("question-type-text").innerHTML.replace("Reading", "読み").replace("Onyomi ", "音").replace("Kunyomi ", "訓");
+        document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "意味" : document.getElementById("question-type-text").innerHTML.replace("Reading", "読み").replace("Onyomi ", "音").replace("Kunyomi ", "訓");
         $(".burn-reviews.kotoba-table-list.dashboard-sub-section h3").html("焦げた復習");
         $("#new-item").html("新しい項目");
         $(".brbsl span").css("margin", "2px 0 0 0").html("ロード");
@@ -713,9 +739,9 @@ function switchBRLang() {
             if (!$("#answer-exception").hasClass("fadeOut") && !curBRAnswered) $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
             else {
                  if ($(".answer-exception-form span").html().toString().substring(0, 1) == "A")
-                    $(".answer-exception-form span").html(((curBRItemType == 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem]["character"] : '単語「' + BRData.Vocab[curBRItem]["character"]))  + '」を' +
-                    '<a href="https://www.wanikani.com/retired/' +　((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
-                    'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
+                    $(".answer-exception-form span").html(((curBRItemType === 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem].character : '単語「' + BRData.Vocab[curBRItem].character))  + '」を' +
+                    '<a href="https://www.wanikani.com/retired/' +　((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
+                    'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
                     $(".answer-exception-form span").html('解答は<br />「' + txtPrev.substring(txtPrev.indexOf('"') + 1, txtPrev.indexOf('"', txtPrev.indexOf('"') + 1)) + '」であった。<br />この項目を<a href="#"' +
@@ -725,7 +751,7 @@ function switchBRLang() {
             }
         }
     } else {
-        document.getElementById("question-type-text").innerHTML = (curBRType == 0) ? "Meaning" : document.getElementById("question-type-text").innerHTML.replace("読み", "Reading").replace("音", "Onyomi ").replace("訓", "Kunyomi ");
+        document.getElementById("question-type-text").innerHTML = (curBRType === 0) ? "Meaning" : document.getElementById("question-type-text").innerHTML.replace("読み", "Reading").replace("音", "Onyomi ").replace("訓", "Kunyomi ");
         $(".burn-reviews.kotoba-table-list.dashboard-sub-section h3").html("BURN REVIEWS");
         $("#new-item").html("NEW ITEM");
         $(".brbsl span").css("margin", "5px 0 0 -1px").html("Load");
@@ -736,9 +762,9 @@ function switchBRLang() {
             else {
                if ($(".answer-exception-form span").html().toString().indexOf("る本") > 1)
                     $(".answer-exception-form span").html('Are you sure you want to <a href="https://www.wanikani.com/retired/' +
-                    ((curBRItemType == 0) ? 'radicals/' + BRData.Radicals[curBRItem]["character"] : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem]["character"] :
-                    'vocabulary/' +  BRData.Vocab[curBRItem]["character"])) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
-                    ((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem]["character"] : 'vocabulary item "' + BRData.Vocab[curBRItem]["character"]) + '"?');
+                    ((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
+                    'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
+                    ((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem].character : 'vocabulary item "' + BRData.Vocab[curBRItem].character) + '"?');
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
                     $(".answer-exception-form span").html('The answer was:<br />"' + txtPrev.substring(txtPrev.indexOf('「') + 1, txtPrev.indexOf('」')) + '"<br /><a href="#"' +
@@ -760,25 +786,25 @@ function checkBurnReviewAnswer() {
     if (curBRType == MEANING)
     {
         var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][curBRItemType];
-        answers = dataBank[curBRItem]["meaning"];
+        answers = dataBank[curBRItem].meaning;
     }
     else
     {
         if (curBRItemType == KANJI)
         {
-            var importantReading = BRData.Kanji[curBRItem]["important_reading"];
+            var importantReading = BRData.Kanji[curBRItem].important_reading;
             answers = BRData.Kanji[curBRItem][importantReading];
         }
         else
         {
-            answers = BRData.Vocab[curBRItem]["kana"];
+            answers = BRData.Vocab[curBRItem].kana;
         }
     }
 
     if (curBRType == MEANING) {
-        if (curBRItemType == 0 && BRData.Radicals[curBRItem]["usyn"] !== "null") answers = answers.concat(BRData.Radicals[curBRItem]["usyn"]);
-        else if (curBRItemType == 1 && BRData.Kanji[curBRItem]["usyn"] !== "null") answers = answers.concat(BRData.Kanji[curBRItem]["usyn"]);
-        else if (BRData.Vocab[curBRItem]["usyn"] !== "null") answers = answers.concat(BRData.Vocab[curBRItem]["usyn"]);
+        if (curBRItemType === 0 && BRData.Radicals[curBRItem].usyn !== "null") answers = answers.concat(BRData.Radicals[curBRItem].usyn);
+        else if (curBRItemType == 1 && BRData.Kanji[curBRItem].usyn !== "null") answers = answers.concat(BRData.Kanji[curBRItem].usyn);
+        else if (BRData.Vocab[curBRItem].usyn !== "null") answers = answers.concat(BRData.Vocab[curBRItem].usyn);
     }
 
     if (answers instanceof Array) {
@@ -787,12 +813,10 @@ function checkBurnReviewAnswer() {
         }
     } else if (response == answers) match = true;
 
-    if (((curBRType == 0 && isAsciiPresent(response)) || (!isAsciiPresent(response) && curBRType == 1)) && response !== "") {
+    if (((curBRType === 0 && isAsciiPresent(response)) || (!isAsciiPresent(response) && curBRType == 1)) && response !== "") {
 
-        //alert(((BRData.Kanji[curBRItem]["important_reading"] == "onyomi") ? BRData.Kanji[curBRItem]["kunyomi"] : BRData.Kanji[curBRItem]["onyomi"]));
-
-        if (!match && curBRItemType == 1 && curBRType == 1 && ((BRData.Kanji[curBRItem]["important_reading"] == "onyomi" &&
-       		compareKunyomiReading(response, BRData.Kanji[curBRItem]["kunyomi"]) == true) || (BRData.Kanji[curBRItem]["important_reading"] == "kunyomi" && response == BRData.Kanji[curBRItem]["onyomi"]))) {
+        if (!match && curBRItemType == 1 && curBRType == 1 && ((BRData.Kanji[curBRItem].important_reading == "onyomi" &&
+       		compareKunyomiReading(response, BRData.Kanji[curBRItem].kunyomi)) || (BRData.Kanji[curBRItem].important_reading == "kunyomi" && response == BRData.Kanji[curBRItem].onyomi))) {
 
        		if (!BRLangJP) $(".answer-exception-form span").html("Oops! You entered the wrong reading.");
             else $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
@@ -803,9 +827,8 @@ function checkBurnReviewAnswer() {
 			});
             $("#user-response").attr("disabled", false);
 
-        } else {
-
-            //alert(evaluate(((curBRType == 0) ? "meaning" : "reading"),$("#user-response").val()).join(","));
+        }
+        else {
 
             if (match) {
                 $("#answer-form fieldset").removeClass("incorrect");
@@ -852,7 +875,7 @@ function evaluate(e,t){
      var n,r,i,s,o,u,a,f,l,c,h;
      i=[];
      u=[];
-     s=((curBRItemType == 1) ? BRData.Kanji[curBRItem]["character"] : BRData.Vocab[curBRItem]["character"]);
+     s=((curBRItemType == 1) ? BRData.Kanji[curBRItem].character : BRData.Vocab[curBRItem].character);
      n=!1;
      l=!1;
      f=!1;
@@ -892,7 +915,7 @@ function checkIfOtherKanjiReading(e,t,n){
 }
 
 function isAsciiPresent(e){
-    return (curBRType == 0) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
+    return (curBRType === 0) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
     //e=e[e.length-1]==="n"?e.slice(0,-1):e;
 }
 
@@ -919,7 +942,7 @@ function main() {
         apiKey = key;
         BRLog("Running!");
 
-    useCache = (localStorage.getItem("burnedRadicals") == null || localStorage.getItem("burnedKanji") == null || localStorage.getItem("burnedVocab") == null) ? false : true;
+    useCache = !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
 	BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
     curBRItem = -1;
     curBRType = -1;
@@ -928,7 +951,7 @@ function main() {
     curBRAnswered = false;
     queueBRAnim = false;
     allowQueueBRAnim = true;
-    BRLangJP = (localStorage.getItem("BRLangJP") == null) ? false : true;
+    BRLangJP = (localStorage.getItem("BRLangJP") === null) ? false : true;
     BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
     BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
     BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
@@ -936,7 +959,7 @@ function main() {
 
         String.prototype.trim = function() {
             return(this.replace(/^ +/,'').replace(/ +$/,''));
-        }
+        };
 
         $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
         $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
@@ -957,9 +980,10 @@ function main() {
                 }
             }, 250);
 
+            //TODO - why is this needed twice?
             String.prototype.trim = function() {
                 return(this.replace(/^ +/,'').replace(/ +$/,''));
-            }
+            };
 
         });
 
@@ -969,7 +993,7 @@ function main() {
             }
          });
 
-        if (localStorage.getItem("BRStartButton") == null) $("#loadingBR a").click();
+        if (localStorage.getItem("BRStartButton") === null) $("#loadingBR a").click();
     });
 }
 
