@@ -853,7 +853,6 @@ function checkBurnReviewAnswer() {
 
     	}
     } else {
-        //$("#answer-form").effect( "shake", {}, 100 );
         $("#user-response").attr("disabled", false);
     }
 }
@@ -861,9 +860,7 @@ function checkBurnReviewAnswer() {
 function compareKunyomiReading(input, reading) {
     var match = false;
 
-    //alert(input + " " + reading + " " + reading.toString().substring(0, reading.indexOf(".")));
-
-          if (input == reading || input == reading.toString().substring(0, reading.indexOf(".")) || input == reading.toString().replace("*", input.substring(reading.indexOf(".") + 1)).replace(".", "")) match = true;
+    if (input == reading || input == reading.toString().substring(0, reading.indexOf(".")) || input == reading.toString().replace("*", input.substring(reading.indexOf(".") + 1)).replace(".", "")) match = true;
 
     return match;
 }
@@ -873,69 +870,9 @@ function submitBRAnswer() {
     else getBurnReview(false);
 }
 
-function evaluate(e,t){
-     var n,r,i,s,o,u,a,f,l,c,h;
-     i=[];
-     u=[];
-     s=((curBRItemType == 1) ? BRData.Kanji[curBRItem].character : BRData.Vocab[curBRItem].character);
-     n=!1;
-     l=!1;
-     f=!1;
-     o=!1;
-     t=$.trim(t);
-     e==="reading"&&(t=t.replace("n","ん"));
-     $("#user-response").val(t);
-     if(e==="reading"){
-         s.kan?(s.emph==="onyomi"?(i=s.on,u=s.kun):(i=s.kun,u=s.on), o=checkIfOtherKanjiReading(t,u,i)):s.voc&&(i=s.kana);
-         i.length>1&&(f=!0);
-         for(a in i)
-             r=i[a];
-         t===r&&(l=!0,n=!0);
-     } else {
-         i=$.merge(s.en,s.syn);
-         i.length>1&&(f=!0);
-         t=stringFormat(t);
-         for(a in i)
-             r=i[a];
-         r=stringFormat(r);
-         h=levenshteinDistance(r,t);
-         c=distanceTolerance(r);
-         h<=c&&(l=!0);
-         h===0&&(n=!0);
-     } return {passed:l,accurate:n,multipleAnswers:f,exception:o};
-}
-
-function checkIfOtherKanjiReading(e,t,n){
-    var r,i,s;
-    s=!1;
-    for(i in t)r=t[i];
-    e===r.replace(/\..*/,"")&&(s=!0);
-    for(i in n)
-        r=n[i];
-    e===r&&(s=!1);
-    return s;
-}
-
 function isAsciiPresent(e){
     return (curBRType === 0) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
-    //e=e[e.length-1]==="n"?e.slice(0,-1):e;
 }
-
-function stringFormat(e){
-    return e=e.toLowerCase().replace("-"," ").replace(".","").replace("'","");
-    e.substr(-1)==="s"&&(e=e.slice(0,-1)),e;
-}
-
-function distanceTolerance(e){
-    switch(e.length){
-        case 1:case 2:case 3:return 0;
-        case 4:case 5:return 1;
-        case 6:case 7:return 2;
-        default:return 2+Math.floor(e.length/7)*1;
-    }
-}
-
-
 
 function main() {
 
@@ -944,19 +881,19 @@ function main() {
         apiKey = key;
         BRLog("Running!");
 
-    useCache = !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
-	BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
-    curBRItem = -1;
-    curBRType = -1;
-    curBRItemType = -1;
-    curBRProgress = 0;
-    curBRAnswered = false;
-    queueBRAnim = false;
-    allowQueueBRAnim = true;
-    BRLangJP = (localStorage.getItem("BRLangJP") === null) ? false : true;
-    BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
-    BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
-    BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
+        useCache = !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
+        BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
+        curBRItem = -1;
+        curBRType = -1;
+        curBRItemType = -1;
+        curBRProgress = 0;
+        curBRAnswered = false;
+        queueBRAnim = false;
+        allowQueueBRAnim = true;
+        BRLangJP = (localStorage.getItem("BRLangJP") === null) ? false : true;
+        BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
+        BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
+        BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
 
 
         String.prototype.trim = function() {
