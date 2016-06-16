@@ -13,12 +13,13 @@
 
 
 // CONSTANTS
-var RADICAL = 0;
-var KANJI   = 1;
-var VOCAB   = 2;
+var RADICAL   = 0;
+var KANJI     = 1;
+var VOCAB     = 2;
 
-var MEANING = 0;
-var READING = 1;
+var UNDEFINED = -1;
+var MEANING   = 0;
+var READING   = 1;
 
 var DEBUG   = 7;
 var WARNING = 8;
@@ -881,19 +882,19 @@ function main() {
         apiKey = key;
         BRLog("Running!");
 
-        useCache = !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
-        BRIsChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
-        curBRItem = -1;
-        curBRType = -1;
-        curBRItemType = -1;
-        curBRProgress = 0;
-        curBRAnswered = false;
-        queueBRAnim = false;
-        allowQueueBRAnim = true;
-        BRLangJP = (localStorage.getItem("BRLangJP") === null) ? false : true;
-        BRRadicalsEnabled = (localStorage.getItem("BRRadicalsEnabled") !== null) ? false : true;
-        BRKanjiEnabled = (localStorage.getItem("BRKanjiEnabled") !== null) ? false : true;
-        BRVocabularyEnabled = (localStorage.getItem("BRVocabularyEnabled") !== null) ? false : true;
+        useCache            =  !(localStorage.getItem("burnedRadicals") ===  null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
+        BRIsChrome          =  (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
+        curBRItem           =  UNDEFINED;
+        curBRType           =  UNDEFINED;
+        curBRItemType       =  UNDEFINED;
+        curBRProgress       =  0;
+        curBRAnswered       =  false;
+        queueBRAnim         =  false;
+        allowQueueBRAnim    =  true;
+        BRLangJP            =  (localStorage.getItem("BRLangJP") == "true");
+        BRRadicalsEnabled   =  (localStorage.getItem("BRRadicalsEnabled") != "false");
+        BRKanjiEnabled      =  (localStorage.getItem("BRKanjiEnabled") != "false");
+        BRVocabularyEnabled =  (localStorage.getItem("BRVocabularyEnabled") != "false");
 
 
         String.prototype.trim = function() {
