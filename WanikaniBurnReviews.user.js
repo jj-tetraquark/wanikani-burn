@@ -32,22 +32,35 @@ BRData = { Radicals: [], Kanji: [], Vocab: [] };
 
 // TODO - Should be able to make this non global and constructed via a function
 BRQuestion = {
-    Type     : UNDEFINED, // TODO - rename to AskingFor
-    ItemType : UNDEFINED,
-    Item     : {},
+    Item      : {},
+    askingFor : UNDEFINED,
+    itemType  : UNDEFINED,
+    progress  : 0,
+    answered  : false,
 
-    IsRadical : function() { return this.ItemType === RADICAL; },
-    IsKanji   : function() { return this.ItemType === KANJI; },
-    IsVocab   : function() { return this.ItemType === VOCAB; },
+    IsRadical : function() { return this.itemType === RADICAL; },
+    IsKanji   : function() { return this.itemType === KANJI; },
+    IsVocab   : function() { return this.itemType === VOCAB; },
 
-    IsAskingForMeaning: function() { return this.Type === MEANING; },
-    IsAskingForReading: function() { return this.Type === READING; },
+    IsAskingForMeaning: function() { return this.askingFor === MEANING; },
+    IsAskingForReading: function() { return this.askingFor === READING; },
+
+    IsAnswered : function() { return this.answered; },
+    SetAnswered: function(answered) { this.answered = answered; },
+
+    Started    : function() { return this.progress > 0; },
+    IsComplete : function() { return (this.IsRadical() && this.Started()) || progress === 2; },
+    Restart    : function() { this.progress = 0; },
+    NextPart   : function() { this.progress++; },
+    Skip       : function() { this.progress = 2; },
 
     //TODO - This method can probably be removed if I can stop this from being global
     Reset : function() {
-                this.Type     = UNDEFINED;
-                this.ItemType = UNDEFINED;
-                this.Item     = {};
+                this.askingFor = UNDEFINED;
+                this.itemType  = UNDEFINED;
+                this.Item      = {};
+                this.progress  = 0;
+                this.answered  = false;
     }
 };
 
@@ -206,7 +219,7 @@ function getBurnReview(firstReview) {
 
     BRLog("Getting " + (firstReview ? "first" : "") + " burn review");
 
-    curBRAnswered = false;
+    BRQuestion.SetAnswered(false);
 
     $("#user-response").attr("disabled", false).val("").focus();
 
@@ -214,20 +227,20 @@ function getBurnReview(firstReview) {
 
         $(".answer-exception-form").css("display", "none");
 
-        if ((BRQuestion.IsRadical() && curBRProgress > 0) || curBRProgress == 2) {
+        if (BRQuestion.IsComplete()) {
             newBRItem();
             updateBRItem(true);
         }
 
-        if (!BRQuestion.IsRadical() && (curBRProgress < 1 || $("#answer-form fieldset").hasClass("correct"))) {
+        if (!BRQuestion.IsRadical() && (!BRQuestion.Started() || $("#answer-form fieldset").hasClass("correct"))) {
             if (BRQuestion.IsAskingForMeaning()) {
-                BRQuestion.Type = READING;
-                enableKanaInput()
+                BRQuestion.askingFor = READING;
+                enableKanaInput();
                 $("#user-response").attr({lang:"ja",placeholder:"答え"});
                 $("#question-type").removeClass("meaning").addClass("reading");
             }
             else {
-                BRQuestion.Type = MEANING;
+                BRQuestion.askingFor = MEANING;
                 disableKanaInput();
                 $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
                 $("#question-type").removeClass("reading").addClass("meaning");
@@ -339,18 +352,18 @@ function newBRItem() {
         itemTypeArray = itemTypeArray.concat(new Array(BRData.Vocab.length).fill(VOCAB));
     }
 
-    BRQuestion.ItemType = itemTypeArray[rand(0, itemTypeArray.length)];
+    BRQuestion.itemType = itemTypeArray[rand(0, itemTypeArray.length)];
 
-    var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][BRQuestion.ItemType];
+    var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][BRQuestion.itemType];
     BRQuestion.ItemIndex = rand(0, dataBank.length - 1);
 
     BRQuestion.Item = dataBank[BRQuestion.ItemIndex];
 
-    BRQuestion.Type = BRQuestion.IsRadical() ? MEANING : rand(MEANING, READING);
+    BRQuestion.askingFor = BRQuestion.IsRadical() ? MEANING : rand(MEANING, READING);
 
-    curBRProgress = 0;
+    BRQuestion.Restart();
 
-    BRLog("Burn item type: " + BRQuestion.ItemType);
+    BRLog("Burn item type: " + BRQuestion.itemType);
     BRLog("Burn item: " + BRQuestion.Item);
 
 }
@@ -392,7 +405,7 @@ function updateBRItem(updateText) {
 }
 
 function skipItem() {
-   	curBRProgress = 2;
+   	BRQuestion.Skip();
     getBurnReview(false);
     return false;
 }
@@ -645,8 +658,6 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
         $("#dim-overlay").remove();
         $(".burn-reviews").parent().remove();
         BRQuestion.Reset();
-        curBRProgress = 0;
-        curBRAnswered = false;
         queueBRAnim = false;
         allowQueueBRAnim = true;
         BRData.Radicals = [];
@@ -748,7 +759,7 @@ function switchBRLang() {
         if (!$(".brbtr").hasClass("on")) $(".brbtr span").css("font-size", "10px").html("拡大する");
         else $(".brbtr span").css("font-size", "10px").html("縮小する");
         if ($("#answer-exception").css("display") !== "none") {
-            if (!$("#answer-exception").hasClass("fadeOut") && !curBRAnswered) $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
+            if (!$("#answer-exception").hasClass("fadeOut") && !BRQuestion.IsAnswered()) $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
             else {
                  if ($(".answer-exception-form span").html().toString().substring(0, 1) == "A")
 
@@ -770,7 +781,7 @@ function switchBRLang() {
         $(".brbss span").css({"line-height": "0.9", "margin-left": "1px"}).html("Start Button");
         $(".brbtr span").css({"font-size": "inherit", "margin-top": "3px"}).html("Resize");
         if ($("#answer-exception").css("display") !== "none") {
-            if (!$("#answer-exception").hasClass("fadeOut") && !curBRAnswered) $(".answer-exception-form span").html("Oops! You entered the wrong reading.");
+            if (!$("#answer-exception").hasClass("fadeOut") && !BRQuestion.IsAnswered()) $(".answer-exception-form span").html("Oops! You entered the wrong reading.");
             else {
                if ($(".answer-exception-form span").html().toString().indexOf("る本") > 1) {
 
@@ -841,7 +852,7 @@ function checkBurnReviewAnswer() {
             if (match) {
                 $("#answer-form fieldset").removeClass("incorrect");
                 $("#answer-form fieldset").addClass("correct");
-                curBRProgress++;
+                BRQuestion.NextPart();
             } else {
                 $("#answer-form fieldset").removeClass("correct");
                 $("#answer-form fieldset").addClass("incorrect");
@@ -855,7 +866,7 @@ function checkBurnReviewAnswer() {
                 document.getElementById("answer-exception").getElementsByTagName("span")[0].getElementsByTagName("a")[0].onclick = confirmRes;
             }
 
-            curBRAnswered = true;
+            BRQuestion.SetAnswered(true);
 
     	}
     } else {
@@ -872,7 +883,7 @@ function compareKunyomiReading(input, reading) {
 }
 
 function submitBRAnswer() {
-    if (!curBRAnswered) checkBurnReviewAnswer();
+    if (!BRQuestion.IsAnswered()) checkBurnReviewAnswer();
     else getBurnReview(false);
 }
 
@@ -890,8 +901,6 @@ function main() {
         useCache            =  !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
         BRIsChrome          =  (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
         BRQuestion.Reset();
-        curBRProgress       =  0;
-        curBRAnswered       =  false;
         queueBRAnim         =  false;
         allowQueueBRAnim    =  true;
         BRLangJP            =  (localStorage.getItem("BRLangJP") == "true");
@@ -927,7 +936,7 @@ function main() {
 
         document.addEventListener('keydown', function(event) {
             if(event.keyCode == 13) { //Enter
-                if (curBRAnswered) getBurnReview(false);
+                if (BRQuestion.IsAnswered()) getBurnReview(false);
             }
          });
 
