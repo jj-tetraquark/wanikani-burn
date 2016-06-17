@@ -30,6 +30,27 @@ var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
 BRData = { Radicals: [], Kanji: [], Vocab: [] };
 
+// TODO - Should be able to make this non global and constructed via a function
+BRQuestion = {
+    Type     : UNDEFINED, // TODO - rename to AskingFor
+    ItemType : UNDEFINED,
+    Item     : {},
+
+    IsRadical : function() { return this.ItemType === RADICAL; },
+    IsKanji   : function() { return this.ItemType === KANJI; },
+    IsVocab   : function() { return this.ItemType === VOCAB; },
+
+    IsAskingForMeaning: function() { return this.Type === MEANING; },
+    IsAskingForReading: function() { return this.Type === READING; },
+
+    //TODO - This method can probably be removed if I can stop this from being global
+    Reset : function() {
+                this.Type     = UNDEFINED;
+                this.ItemType = UNDEFINED;
+                this.Item     = {};
+    }
+};
+
 function BRLog(logdata, level) {
     level = (typeof level == "undefined") ? DEBUG : level;
     if (!BRLoggingEnabled && level < WARNING) return;
@@ -186,37 +207,37 @@ function getBurnReview(firstReview) {
 
         $(".answer-exception-form").css("display", "none");
 
-        if ((curBRItemType === 0 && curBRProgress > 0) || curBRProgress == 2) {
+        if ((BRQuestion.IsRadical() && curBRProgress > 0) || curBRProgress == 2) {
             newBRItem();
             updateBRItem(true);
         }
 
-        if (curBRItemType > 0 && (curBRProgress < 1 || $("#answer-form fieldset").hasClass("correct"))) {
-            if (curBRType === MEANING) {
-                curBRType = READING;
+        if (!BRQuestion.IsRadical() && (curBRProgress < 1 || $("#answer-form fieldset").hasClass("correct"))) {
+            if (BRQuestion.IsAskingForMeaning()) {
+                BRQuestion.Type = READING;
                 wanakana.bind(document.getElementById('user-response'));
                 $("#user-response").attr({lang:"ja",placeholder:"答え"});
                 $("#question-type").removeClass("meaning").addClass("reading");
             }
             else {
-                curBRType = MEANING;
+                BRQuestion.Type = MEANING;
                 wanakana.unbind(document.getElementById('user-response'));
                 $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
                 $("#question-type").removeClass("reading").addClass("meaning");
             }
         }
-        else if (curBRItemType === 0) {
+        else if (BRQuestion.IsRadical()) {
             wanakana.unbind(document.getElementById('user-response'));
             $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
             $("#question-type").removeClass("reading").addClass("meaning");
         }
         if (!BRLangJP) {
-            document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "Meaning" :
-                ((curBRItemType === 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
+            document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "Meaning" :
+                ((BRQuestion.IsKanji()) ? ((BRQuestion.Item.important_reading == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
         }
         else {
-            document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "意味" :
-                ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "音読み" : "訓読み") : "読み");
+            document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "意味" :
+                ((BRQuestion.IsKanji()) ? ((BRQuestion.Item.important_reading == "onyomi") ? "音読み" : "訓読み") : "読み");
         }
 
 
@@ -234,14 +255,16 @@ function getBurnReview(firstReview) {
         newBRItem();
         BRLog("Got new item");
 
-        var characterText = (curBRItemType === 0) ? BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? BRData.Kanji[curBRItem].character : BRData.Vocab[curBRItem].character);
+        var characterText = BRQuestion.Item.character;
         var reviewTypeText;
         if (!BRLangJP) {
-            reviewTypeText = ((curBRType < 1) ? "Meaning" : (curBRItemType === 0) ? BRData.Radicals[curBRItem].character :
-                       ((curBRItemType == 1) ? BRData.Kanji[curBRItem].important_reading.substring(0, 1).toUpperCase() + BRData.Kanji[curBRItem].important_reading.substring(1) + " Reading" : "Reading"));
+            reviewTypeText = (BRQuestion.IsAskingForMeaning() ? "Meaning" : BRQuestion.IsRadical() ? BRQuestion.Item.character : // TODO - I don't think this needs to check if it's a radical
+                       (BRQuestion.IsKanji() ? BRQuestion.Item.important_reading.substring(0, 1).toUpperCase() + BRQuestion.Item.important_reading.substring(1) + " Reading" : "Reading")); //TODO - use css text-transform: capitalize
         }
-        else reviewTypeText = (curBRType < 1) ? "意味" : (curBRItemType === 0) ? BRData.Radicals[curBRItem].character :
-                              ((curBRItemType == 1) ? ((BRData.Kanji[curBRItem].important_reading == "onyomi") ? "音" : "訓") : "") + "読み";
+        else { // TODO - Remove the fact this is a repeated conditional
+            reviewTypeText = BRQuestion.IsAskingForMeaning() ? "意味" : BRQuestion.IsRadical() ? BRQuestion.Item.character :
+                              (BRQuestion.IsKanji() ? (BRQuestion.Item.important_reading == "onyomi" ? "音" : "訓") : "") + "読み";
+        }
 
         var strReview =
             "<div class=\"answer-exception-form\" id=\"answer-exception\" align=\"center\" style=\"position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none\">"            +
@@ -309,24 +332,26 @@ function newBRItem() {
         itemTypeArray = itemTypeArray.concat(new Array(BRData.Vocab.length).fill(VOCAB));
     }
 
-    curBRItemType = itemTypeArray[rand(0, itemTypeArray.length)];
+    BRQuestion.ItemType = itemTypeArray[rand(0, itemTypeArray.length)];
 
-    var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][curBRItemType];
-    curBRItem = rand(0, dataBank.length);
+    var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][BRQuestion.ItemType];
+    BRQuestion.ItemIndex = rand(0, dataBank.length);
 
-    curBRType = (curBRItemType === RADICAL) ? MEANING : rand(MEANING, READING);
+    BRQuestion.Item = dataBank[BRQuestion.ItemIndex];
+
+    BRQuestion.Type = BRQuestion.IsRadical() ? MEANING : rand(MEANING, READING);
 
     curBRProgress = 0;
 
-    BRLog("Burn item type: " + curBRItemType);
-    BRLog("Burn item: " + curBRItem);
+    BRLog("Burn item type: " + BRQuestion.ItemType);
+    BRLog("Burn item: " + BRQuestion.Item);
 
 }
 
 function updateBRItem(updateText) {
 
     BRLog("Updating Burn review item");
-    if (updateText) $(".bri").html(((curBRItemType === 0) ? BRData.Radicals[curBRItem].character : (curBRItemType == 1) ? BRData.Kanji[curBRItem].character : BRData.Vocab[curBRItem].character));
+    if (updateText) $(".bri").html(BRQuestion.Item.character);
     if ($(".bri").html().length > 3) {
         switch($(".bri").html().length) {
             case 4:
@@ -343,10 +368,10 @@ function updateBRItem(updateText) {
         }
     } else $(".bri").css("font-size", "48px");
 
-    var bg = (curBRItemType === 0) ? "#00a0f1" : ((curBRItemType == 1) ? "#f100a0" : "#a000f1");
+    var bg = BRQuestion.IsRadical() ? "#00a0f1" : (BRQuestion.IsKanji() ? "#f100a0" : "#a000f1"); // TODO - these colours are standard. Should be written to consts, or better, done with CSS
     var bgi = "linear-gradient(to bottom, ";
 
-    bgi += (curBRItemType === 0) ? "#0af, #0093dd" : ((curBRItemType == 1) ? "#f0a, #dd0093" : "#a0f, #9300dd");
+    bgi += (BRQuestion.IsRadical() ? "#0af, #0093dd" : BRQuestion.IsKanji() ? "#f0a, #dd0093" : "#a0f, #9300dd");
     $(".brk").css({"background-color": bg,
                    "background-image": bgi,
                    "background-repeat": "repeat-x",
@@ -503,16 +528,17 @@ function confirmRes() {
     $(".answer-exception-form").css({"display": "block", "opacity": "0", "-webkit-transform": "translateY(20px)", "-moz-transform": "translateY(20px)"}).removeClass("animated fadeInUp");
     $(".answer-exception-form span").html("");
     $(".answer-exception-form").addClass("animated fadeInUp");
-    if (!BRLangJP)
-    	$(".answer-exception-form span").html('Are you sure you want to <a href="https://www.wanikani.com/retired/' +
-            ((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
-            'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
-    		((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem].character : 'vocabulary item "' + BRData.Vocab[curBRItem].character) + '"?');
-   	else
-        $(".answer-exception-form span").html(((curBRItemType === 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem].character : '単語「' + BRData.Vocab[curBRItem].character))  + '」を' +
-            '<a href="https://www.wanikani.com/retired/' +　((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
-        	'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
 
+    var itemTypeForUrl = BRQuestion.IsRadical() ? "radicals/" : BRQuestion.IsKanji() ? "kanji/" : "vocabulary/"; // TODO - this is a common pattern. Make it a function
+    var resurrectionUrl = "https://www.wanikani.com/retired/" + itemTypeForUrl + BRQuestion.Item.character + "?resurrect=true";
+    if (!BRLangJP) {
+    	$(".answer-exception-form span").html("Are you sure you want to <a href=\"" + resurrectionUrl + "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">Resurrect</a> the " +
+            (BRQuestion.IsRadical() ? "radical " : BRQuestion.IsKanji() ? "kanji item " : "vocabulary item \"") + BRQuestion.Item.character + "\"?");
+    }
+   	else {
+        $(".answer-exception-form span").html((BRQuestion.IsRadical() ? "部首「" : BRQuestion.IsKanji() ? "漢字「" : "単語「" ) + BRQuestion.Item.character  + "」を" +
+            "<a href=\""+ resurrectionUrl + "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">復活</a>する<br />本当によろしいですか？");
+    }
     document.getElementById("answer-exception").onclick = "return false";
     return false;
 }
@@ -560,7 +586,7 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
 
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
-    if (curBRType === MEANING) {
+    if (BRQuestion.IsAskingForMeaning()) {
         wanakana.unbind(document.getElementById('user-response'));
         $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
         $("#question-type").addClass("meaning");
@@ -582,15 +608,15 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
                 if ($(this).attr("class") == "brbir on") {
                     localStorage.setItem("BRRadicalsEnabled", false);
                     BRRadicalsEnabled = false;
-                    if (curBRItemType === 0) skipItem();
+                    if (BRQuestion.IsRadical()) skipItem();
                 } else if ($(this).attr("class") == "brbik on") {
                     localStorage.setItem("BRKanjiEnabled", false);
                     BRKanjiEnabled = false;
-                    if (curBRItemType == 1) skipItem();
+                    if (BRQuestion.IsKanji()) skipItem();
                 } else if ($(this).attr("class") == "brbiv on") {
                     localStorage.setItem("BRVocabularyEnabled", false);
                     BRVocabularyEnabled = false;
-                    if (curBRItemType == 2) skipItem();
+                    if (BRQuestion.IsVocab()) skipItem();
                 }
             } else cancel = true;
         } else {
@@ -611,9 +637,7 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
     $(".brbsl").click(function() {
         $("#dim-overlay").remove();
         $(".burn-reviews").parent().remove();
-        curBRItem = -1;
-        curBRType = -1;
-        curBRItemType = -1;
+        BRQuestion.Reset();
         curBRProgress = 0;
         curBRAnswered = false;
         queueBRAnim = false;
@@ -704,8 +728,11 @@ function switchBRLang() {
 
     BRLangJP = !BRLangJP;
 
+    var itemTypeForUrl = BRQuestion.IsRadical() ? "radicals/" : BRQuestion.IsKanji() ? "kanji/" : "vocabulary/"; // TODO - this is a common pattern. Make it a function
+    var resurrectionUrl = "https://www.wanikani.com/retired/" + itemTypeForUrl + BRQuestion.Item.character + "?resurrect=true";
+
     if (BRLangJP) {
-        document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "意味" : document.getElementById("question-type-text").innerHTML.replace("Reading", "読み").replace("Onyomi ", "音").replace("Kunyomi ", "訓");
+        document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "意味" : document.getElementById("question-type-text").innerHTML.replace("Reading", "読み").replace("Onyomi ", "音").replace("Kunyomi ", "訓");
         $(".burn-reviews.kotoba-table-list.dashboard-sub-section h3").html("焦げた復習");
         $("#new-item").html("新しい項目");
         $(".brbsl span").css("margin", "2px 0 0 0").html("ロード");
@@ -717,9 +744,9 @@ function switchBRLang() {
             if (!$("#answer-exception").hasClass("fadeOut") && !curBRAnswered) $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
             else {
                  if ($(".answer-exception-form span").html().toString().substring(0, 1) == "A")
-                    $(".answer-exception-form span").html(((curBRItemType === 0) ? '部首「' : ((curBRItemType == 1) ? '漢字「' + BRData.Kanji[curBRItem].character : '単語「' + BRData.Vocab[curBRItem].character))  + '」を' +
-                    '<a href="https://www.wanikani.com/retired/' +　((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
-                    'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">復活</a>する<br />本当によろしいですか？');
+
+                    $(".answer-exception-form span").html((BRQuestion.IsRadical() ? "部首「" : BRQuestion.IsKanji() ? "漢字「" : "単語「" ) + BRQuestion.Item.character  + "」を" +
+                        "<a href=\""+ resurrectionUrl + "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">復活</a>する<br />本当によろしいですか？");
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
                     $(".answer-exception-form span").html('解答は<br />「' + txtPrev.substring(txtPrev.indexOf('"') + 1, txtPrev.indexOf('"', txtPrev.indexOf('"') + 1)) + '」であった。<br />この項目を<a href="#"' +
@@ -729,7 +756,7 @@ function switchBRLang() {
             }
         }
     } else {
-        document.getElementById("question-type-text").innerHTML = (curBRType === MEANING) ? "Meaning" : document.getElementById("question-type-text").innerHTML.replace("読み", "Reading").replace("音", "Onyomi ").replace("訓", "Kunyomi ");
+        document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "Meaning" : document.getElementById("question-type-text").innerHTML.replace("読み", "Reading").replace("音", "Onyomi ").replace("訓", "Kunyomi ");
         $(".burn-reviews.kotoba-table-list.dashboard-sub-section h3").html("BURN REVIEWS");
         $("#new-item").html("NEW ITEM");
         $(".brbsl span").css("margin", "5px 0 0 -1px").html("Load");
@@ -738,11 +765,12 @@ function switchBRLang() {
         if ($("#answer-exception").css("display") !== "none") {
             if (!$("#answer-exception").hasClass("fadeOut") && !curBRAnswered) $(".answer-exception-form span").html("Oops! You entered the wrong reading.");
             else {
-               if ($(".answer-exception-form span").html().toString().indexOf("る本") > 1)
-                    $(".answer-exception-form span").html('Are you sure you want to <a href="https://www.wanikani.com/retired/' +
-                    ((curBRItemType === 0) ? 'radicals/' + BRData.Radicals[curBRItem].character : ((curBRItemType == 1) ? 'kanji/' + BRData.Kanji[curBRItem].character :
-                    'vocabulary/' +  BRData.Vocab[curBRItem].character)) + '?resurrect=true" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">Resurrect</a> the ' +
-                    ((curBRItemType == 1) ? 'kanji item "' + BRData.Kanji[curBRItem].character : 'vocabulary item "' + BRData.Vocab[curBRItem].character) + '"?');
+               if ($(".answer-exception-form span").html().toString().indexOf("る本") > 1) {
+
+                    $(".answer-exception-form span").html("Are you sure you want to <a href=\"" + resurrectionUrl +
+                        "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">Resurrect</a> the " +
+                        (BRQuestion.IsRadical() ? "radical " : BRQuestion.IsKanji() ? "kanji item " : "vocabulary item \"") + BRQuestion.Item.character + "\"?");
+               }
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
                     $(".answer-exception-form span").html('The answer was:<br />"' + txtPrev.substring(txtPrev.indexOf('「') + 1, txtPrev.indexOf('」')) + '"<br /><a href="#"' +
@@ -761,40 +789,35 @@ function checkBurnReviewAnswer() {
 
     $("#user-response").attr("disabled", true);
 
-    if (curBRType == MEANING)
+    if (BRQuestion.IsAskingForMeaning())
     {
-        var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][curBRItemType];
-        answers = dataBank[curBRItem].meaning;
+        answers = BRQuestion.Item.meaning;
     }
     else
     {
-        if (curBRItemType == KANJI)
+        if (BRQuestion.IsKanji())
         {
-            var importantReading = BRData.Kanji[curBRItem].important_reading;
-            answers = BRData.Kanji[curBRItem][importantReading];
+            var importantReading = BRQuestion.Item.important_reading;
+            answers = BRQuestion.Item[importantReading];
         }
         else
         {
-            answers = BRData.Vocab[curBRItem].kana;
+            answers = BRQuestion.Item.kana;
         }
     }
 
-    if (curBRType == MEANING) {
-        if (curBRItemType === 0 && BRData.Radicals[curBRItem].usyn !== "null") answers = answers.concat(BRData.Radicals[curBRItem].usyn);
-        else if (curBRItemType == 1 && BRData.Kanji[curBRItem].usyn !== "null") answers = answers.concat(BRData.Kanji[curBRItem].usyn);
-        else if (BRData.Vocab[curBRItem].usyn !== "null") answers = answers.concat(BRData.Vocab[curBRItem].usyn);
+    if (BRQuestion.IsAskingForMeaning() && BRQuestion.Item.usyn !== null) {
+            answers = answers.concat(BRQuestion.Item.usyn);
     }
 
-    if (answers instanceof Array) {
-        for (var a = 0; a < Object.keys(answers).length; a++) {
-            if (response == answers[a]) match = true;
-        }
-    } else if (response == answers) match = true;
+    for (var a = 0; a < answers.length; a++) {
+        if (response == answers[a]) match = true;
+    }
 
-    if (((curBRType === MEANING && isAsciiPresent(response)) || (!isAsciiPresent(response) && curBRType == 1)) && response !== "") {
+    if (((BRQuestion.IsAskingForMeaning() && isAsciiPresent(response)) || (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "") {
 
-        if (!match && curBRItemType == 1 && curBRType == 1 && ((BRData.Kanji[curBRItem].important_reading == "onyomi" &&
-       		compareKunyomiReading(response, BRData.Kanji[curBRItem].kunyomi)) || (BRData.Kanji[curBRItem].important_reading == "kunyomi" && response == BRData.Kanji[curBRItem].onyomi))) {
+        if (!match && BRQuestion.IsKanji() && BRQuestion.IsAskingForReading() && ((BRQuestion.Item.important_reading == "onyomi" &&
+       		compareKunyomiReading(response, BRQuestion.Item.kunyomi)) || (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi))) {
 
        		if (!BRLangJP) $(".answer-exception-form span").html("Oops! You entered the wrong reading.");
             else $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
@@ -847,7 +870,7 @@ function submitBRAnswer() {
 }
 
 function isAsciiPresent(e){
-    return (curBRType === MEANING) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
+    return (BRQuestion.IsAskingForMeaning()) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
 }
 
 function main() {
@@ -859,9 +882,7 @@ function main() {
 
         useCache            =  !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
         BRIsChrome          =  (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
-        curBRItem           =  UNDEFINED;
-        curBRType           =  UNDEFINED;
-        curBRItemType       =  UNDEFINED;
+        BRQuestion.Reset();
         curBRProgress       =  0;
         curBRAnswered       =  false;
         queueBRAnim         =  false;
