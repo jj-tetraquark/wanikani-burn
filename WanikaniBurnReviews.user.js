@@ -335,7 +335,7 @@ function newBRItem() {
     BRQuestion.ItemType = itemTypeArray[rand(0, itemTypeArray.length)];
 
     var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][BRQuestion.ItemType];
-    BRQuestion.ItemIndex = rand(0, dataBank.length);
+    BRQuestion.ItemIndex = rand(0, dataBank.length - 1);
 
     BRQuestion.Item = dataBank[BRQuestion.ItemIndex];
 
