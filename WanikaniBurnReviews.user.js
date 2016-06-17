@@ -194,6 +194,13 @@ function rand(low, high) {
     return Math.floor(Math.random()*(high+1)) + low;
 }
 
+function enableKanaInput() {
+    wanakana.bind(document.getElementById('user-response'));
+}
+
+function disableKanaInput() {
+    wanakana.unbind(document.getElementById('user-response'));
+}
 
 function getBurnReview(firstReview) {
 
@@ -215,19 +222,19 @@ function getBurnReview(firstReview) {
         if (!BRQuestion.IsRadical() && (curBRProgress < 1 || $("#answer-form fieldset").hasClass("correct"))) {
             if (BRQuestion.IsAskingForMeaning()) {
                 BRQuestion.Type = READING;
-                wanakana.bind(document.getElementById('user-response'));
+                enableKanaInput()
                 $("#user-response").attr({lang:"ja",placeholder:"答え"});
                 $("#question-type").removeClass("meaning").addClass("reading");
             }
             else {
                 BRQuestion.Type = MEANING;
-                wanakana.unbind(document.getElementById('user-response'));
+                disableKanaInput();
                 $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
                 $("#question-type").removeClass("reading").addClass("meaning");
             }
         }
         else if (BRQuestion.IsRadical()) {
-            wanakana.unbind(document.getElementById('user-response'));
+            disableKanaInput();
             $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
             $("#question-type").removeClass("reading").addClass("meaning");
         }
@@ -587,11 +594,11 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
     if (BRQuestion.IsAskingForMeaning()) {
-        wanakana.unbind(document.getElementById('user-response'));
+        disableKanaInput();
         $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
         $("#question-type").addClass("meaning");
     } else {
-        wanakana.bind(document.getElementById('user-response'));
+        enableKanaInput();
         $("#user-response").attr({lang:"ja",placeholder:"答え"});
         $("#question-type").addClass("reading");
     }
@@ -915,11 +922,6 @@ function main() {
                     getBRWKData();
                 }
             }, 250);
-
-            //TODO - why is this needed twice?
-            String.prototype.trim = function() {
-                return(this.replace(/^ +/,'').replace(/ +$/,''));
-            };
 
         });
 
