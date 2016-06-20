@@ -49,7 +49,7 @@ BRQuestion = {
     SetAnswered: function(answered) { this.answered = answered; },
 
     Started    : function() { return this.progress > 0; },
-    IsComplete : function() { return (this.IsRadical() && this.Started()) || progress === 2; },
+    IsComplete : function() { return (this.IsRadical() && this.Started()) || this.progress === 2; },
     Restart    : function() { this.progress = 0; },
     NextPart   : function() { this.progress++; },
     Skip       : function() { this.progress = 2; },
@@ -288,7 +288,7 @@ function getBurnReview(firstReview) {
 
         var strReview =
             "<div class=\"answer-exception-form\" id=\"answer-exception\" align=\"center\" style=\"position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none\">"            +
-                "<span>Answer goes here</span></div>"                                                                                                                                                                                                +
+                "<span style=\"background-color: rgba(162, 162, 162, 0.75), box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75)\">Answer goes here</span></div>"                                                                                                                                                                                                +
                     "<div id=\"question\" style=\"position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px\">"                                                                        +
                         "<div class=\"brbi\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">"                                                                                             +
                             "<div class=\"brbir" + ((BRRadicalsEnabled) ? ' on' : '') + "\">"                                                                                                                                                        +
@@ -318,7 +318,7 @@ function getBurnReview(firstReview) {
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
                     "<div class=\"brk\">"                                                                                                                                                                                                            +
-                        "<span class=\"bri\" lang=\"ja\">" + characterText + "</span>"                                                                                                                                                               +
+                        "<span class=\"bri\" lang=\"ja\" style=\"color: #ffffff; font-size: 48px; text-shadow:0 1px 0 rgba(0,0,0,0.2)\">" + characterText + "</span>"                                                                                                                                                               +
                         "</div>"                                                                                                                                                                                                                     +
                     "<div id=\"question-type\" style=\"margin: 0px 0px 0px 0px; height: 33px\"><h1 id=\"question-type-text\" align=\"center\" style=\"margin: -5px 0px 0px 0px; text-shadow: none\">" + reviewTypeText + "</h1></div>"               +
                     "<div id=\"answer-form\">"                                                                                                                                                                                                       +
@@ -371,22 +371,10 @@ function newBRItem() {
 function updateBRItem(updateText) {
 
     BRLog("Updating Burn review item");
-    if (updateText) $(".bri").html(BRQuestion.Item.character);
-    if ($(".bri").html().length > 3) {
-        switch($(".bri").html().length) {
-            case 4:
-                $(".bri").css("font-size", "38px");
-                break;
-            case 5:
-                $(".bri").css("font-size", "28px");
-                break;
-            case 6:
-            	$(".bri").css("font-size", "24px");
-                break;
-            default:
-                $(".bri").css("font-size", "inherit");
-        }
-    } else $(".bri").css("font-size", "48px");
+    if (updateText) {
+        $(".bri").html(BRQuestion.Item.character);
+        setItemFontSize();
+    }
 
     var bg = BRQuestion.IsRadical() ? "#00a0f1" : (BRQuestion.IsKanji() ? "#f100a0" : "#a000f1"); // TODO - these colours are standard. Should be written to consts, or better, done with CSS
     var bgi = "linear-gradient(to bottom, ";
@@ -402,6 +390,26 @@ function updateBRItem(updateText) {
                    "margin-left": "0px",
                    "text-align": "center"});
 
+}
+
+function setItemFontSize() {
+    var itemLength = BRQuestion.Item.character.length;
+    var fontSize = 48;
+    switch(itemLength) {
+        case 4:
+            fontSize = 38;
+            break;
+        case 5:
+            fontSize = 28;
+            break;
+        case 6:
+            fontSize = 24;
+            break;
+        default:
+            fontSize = 48;
+            break;
+    }
+    $(".bri").css("font-size", fontSize + "px");
 }
 
 function skipItem() {
@@ -606,6 +614,25 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
 
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
+    configureInputForEnglishOrJapanese();
+
+
+    $(".brbi div, .brbs div, .brbt div").css({"background-repeat": "repeat-x", "color": "#fff", "padding": "0px 5px 0px 5px", "width": "20px", "vertical-align": "middle",
+                       "font-size": "14px"}).mouseover(function() {
+        $(this).css("text-shadow", "0 0 0.2em #fff");
+    }).mouseout(function() {
+        $(this).css("text-shadow", "");
+    });
+
+    bindMouseClickEvents();
+
+    $(".brbs div").css("padding: 2.5px 5px !important");
+    $(".brbtr").css({"height": "49px"});
+    $(".brbi div span, .brbs div span, .brbt div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
+                           "-webkit-touch-callout": "none", "-webkit-user-select": "none", "-khtml-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none", "cursor":"default"});
+}
+
+function configureInputForEnglishOrJapanese() {
     if (BRQuestion.IsAskingForMeaning()) {
         disableKanaInput();
         $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
@@ -615,65 +642,22 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
         $("#user-response").attr({lang:"ja",placeholder:"答え"});
         $("#question-type").addClass("reading");
     }
-    $(".brbi div, .brbs div, .brbt div").css({"background-repeat": "repeat-x", "color": "#fff", "padding": "0px 5px 0px 5px", "width": "20px", "vertical-align": "middle",
-                       "font-size": "14px"}).mouseover(function() {
-        $(this).css("text-shadow", "0 0 0.2em #fff");
-    }).mouseout(function() {
-        $(this).css("text-shadow", "");
-    });
-    $('.brbi div').css({"height": "23px"}).click(function() {
-        var cancel = false;
-        if ($(this).hasClass("on")) {
-            if ((BRRadicalsEnabled && BRKanjiEnabled) || (BRRadicalsEnabled && BRVocabularyEnabled) || (BRKanjiEnabled && BRVocabularyEnabled)) {
-                if ($(this).attr("class") == "brbir on") {
-                    localStorage.setItem("BRRadicalsEnabled", false);
-                    BRRadicalsEnabled = false;
-                    if (BRQuestion.IsRadical()) skipItem();
-                } else if ($(this).attr("class") == "brbik on") {
-                    localStorage.setItem("BRKanjiEnabled", false);
-                    BRKanjiEnabled = false;
-                    if (BRQuestion.IsKanji()) skipItem();
-                } else if ($(this).attr("class") == "brbiv on") {
-                    localStorage.setItem("BRVocabularyEnabled", false);
-                    BRVocabularyEnabled = false;
-                    if (BRQuestion.IsVocab()) skipItem();
-                }
-            } else cancel = true;
-        } else {
-            if ($(this).attr("class") == "brbir") {
-                localStorage.removeItem("BRRadicalsEnabled");
-                BRRadicalsEnabled = true;
-            } else if ($(this).attr("class") == "brbik") {
-                localStorage.removeItem("BRKanjiEnabled");
-                BRKanjiEnabled = true;
-            } else if ($(this).attr("class") == "brbiv") {
-                localStorage.removeItem("BRVocabularyEnabled");
-                BRVocabularyEnabled = true;
-            }
-        }
-        if (!cancel) $(this).toggleClass("on");
-    });
-    $(".brbs div").css("padding: 2.5px 5px !important");
-    $(".brbsl").click(function() {
-        $("#dim-overlay").remove();
-        $(".burn-reviews").parent().remove();
-        BRQuestion.Reset();
-        queueBRAnim = false;
-        allowQueueBRAnim = true;
-        BRData.Radicals = [];
-        BRData.Kanji = [];
-        BRData.Vocab = [];
-        $(getSection()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
-        if (!BRLangJP) $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
-   		else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
-        clearBurnedItemData();
-        getBRWKData();
-    });
-    $(".brbss").click(function() {
-        $(this).toggleClass("on");
-        if ($(this).hasClass("on")) localStorage.setItem("BRStartButton", true);
-        else localStorage.removeItem("BRStartButton");
-    });
+}
+
+function bindMouseClickEvents() {
+
+    bindQuestionTypeToggleButtonClickEvents();
+
+    bindLoadButtonClickEvent();
+
+    bindStartButtonClickEvent();
+
+    bindLanguageToggleAndResizeButtonClickEvents();
+
+    bindDimOverlayClickEvent();
+}
+
+function bindLanguageToggleAndResizeButtonClickEvents() {
     $('.brbt div').css({"height": "50px", "padding": "2px 5px"}).click(function() {
         $(this).toggleClass("on");
         if ($(this).children(".brbt div span").html() == "日本語") {
@@ -715,12 +699,70 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
             }
         }
     });
-    $(".brbtr").css({"height": "49px"});
-    $(".brbi div span, .brbs div span, .brbt div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
-                           "-webkit-touch-callout": "none", "-webkit-user-select": "none", "-khtml-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none", "cursor":"default"});
-    $(".bri").css({"color": "#ffffff",
-                   "font-size": "48px",
-                   "text-shadow": "0 1px 0 rgba(0,0,0,0.2)"});
+}
+
+function bindLoadButtonClickEvent() {
+    $(".brbsl").click(function() {
+        $("#dim-overlay").remove();
+        $(".burn-reviews").parent().remove();
+        BRQuestion.Reset();
+        queueBRAnim = false;
+        allowQueueBRAnim = true;
+        BRData.Radicals = [];
+        BRData.Kanji = [];
+        BRData.Vocab = [];
+        $(getSection()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
+        if (!BRLangJP) $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
+   		else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
+        clearBurnedItemData();
+        getBRWKData();
+    });
+}
+
+function bindStartButtonClickEvent() {
+    $(".brbss").click(function() {
+        $(this).toggleClass("on");
+        if ($(this).hasClass("on")) localStorage.setItem("BRStartButton", true);
+        else localStorage.removeItem("BRStartButton");
+    });
+}
+
+function bindQuestionTypeToggleButtonClickEvents() {
+    $('.brbi div').css({"height": "23px"}).click(function() {
+        var cancel = false;
+        if ($(this).hasClass("on")) {
+            if ((BRRadicalsEnabled && BRKanjiEnabled) || (BRRadicalsEnabled && BRVocabularyEnabled) || (BRKanjiEnabled && BRVocabularyEnabled)) {
+                if ($(this).attr("class") == "brbir on") {
+                    localStorage.setItem("BRRadicalsEnabled", false);
+                    BRRadicalsEnabled = false;
+                    if (BRQuestion.IsRadical()) skipItem();
+                } else if ($(this).attr("class") == "brbik on") {
+                    localStorage.setItem("BRKanjiEnabled", false);
+                    BRKanjiEnabled = false;
+                    if (BRQuestion.IsKanji()) skipItem();
+                } else if ($(this).attr("class") == "brbiv on") {
+                    localStorage.setItem("BRVocabularyEnabled", false);
+                    BRVocabularyEnabled = false;
+                    if (BRQuestion.IsVocab()) skipItem();
+                }
+            } else cancel = true;
+        } else {
+            if ($(this).attr("class") == "brbir") {
+                localStorage.removeItem("BRRadicalsEnabled");
+                BRRadicalsEnabled = true;
+            } else if ($(this).attr("class") == "brbik") {
+                localStorage.removeItem("BRKanjiEnabled");
+                BRKanjiEnabled = true;
+            } else if ($(this).attr("class") == "brbiv") {
+                localStorage.removeItem("BRVocabularyEnabled");
+                BRVocabularyEnabled = true;
+            }
+        }
+        if (!cancel) $(this).toggleClass("on");
+    });
+}
+
+function bindDimOverlayClickEvent() {
     $("#dim-overlay").click(function () {
         $(".brbtr").removeClass("on");
         if (BRLangJP) $(".brbtr span").html("拡大する");
@@ -737,9 +779,6 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
             $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css("transform", "scaleX(1)scaleY(1)");
         } else if (!queueBRAnim && allowQueueBRAnim) queueBRAnim = true;
     });
-
-    $(".answer-exception-form span").css({"background-color": "rgba(162, 162, 162, 0.75)", "box-shadow": "3px 3px 0 rgba(225, 225, 225, 0.75)"});
-
 }
 
 function switchBRLang() {
@@ -883,8 +922,12 @@ function compareKunyomiReading(input, reading) {
 }
 
 function submitBRAnswer() {
-    if (!BRQuestion.IsAnswered()) checkBurnReviewAnswer();
-    else getBurnReview(false);
+    if (!BRQuestion.IsAnswered()) {
+        checkBurnReviewAnswer();
+    }
+    else {
+        getBurnReview(false);
+    }
 }
 
 function isAsciiPresent(e){
