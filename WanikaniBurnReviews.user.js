@@ -143,29 +143,38 @@ function getFadeCSS() {
     return strFadeIn;
 }
 
+//TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'
 function getButtonCSS() {
     var strButtons =
-        "<style type=\"text/css\">"                                                                       +
-            ".brbi div, .brbt div, .brbs div {"                                                           +
-                "background-color: rgb(67, 67, 67);"                                                      +
-                "background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));"         +
-                "color: rgb(98, 98, 98);"                                                                 +
-            "}"                                                                                           +
-            ".brbi span, .brbtj span {"                                                                   +
-                "margin-top: 5px"                                                                         +
-            "}"                                                                                           +
-            ".brbir.on {"                                                                                 +
-                "background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);" +
-            "}"                                                                                           +
-            ".brbik.on {"                                                                                 +
-                "background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);" +
-            "}"                                                                                           +
-            ".brbiv.on {"                                                                                 +
-                "background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);" +
-            "}"                                                                                           +
-            ".brbt .on, .brbss.on, .brbsl:hover {"                                                        +
-                "background-color: #80c100; background-image: linear-gradient(to bottom, #8c0, #73ad00);" +
-            "}"                                                                                           +
+        "<style type=\"text/css\">"                                                                                       +
+            ".item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{"                    +
+                "background-color: rgb(67, 67, 67);"                                                                      +
+                "background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));"                         +
+                "color: #ffffff;"                                                                                         +
+                "padding: 0px 5px 0px 5px;"                                                                               +
+                "width: 20px;"                                                                                            +
+                "vertical-align: middle;"                                                                                 +
+                "font-size: 14px;"                                                                                        +
+                "text-shadow: none;"                                                                                      +
+            "}"                                                                                                           +
+            ".item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover {" +
+                "text-shadow: 0 0 0.2em #ffffff;"                                                                         +
+            "}"                                                                                                           +
+            ".item-toggle-buttons span, .brbtj span {"                                                                    +
+                "margin-top: 5px"                                                                                         +
+            "}"                                                                                                           +
+            ".brbir.on {"                                                                                                 +
+                "background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);"                 +
+            "}"                                                                                                           +
+            ".brbik.on {"                                                                                                 +
+                "background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);"                 +
+            "}"                                                                                                           +
+            ".brbiv.on {"                                                                                                 +
+                "background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);"                 +
+            "}"                                                                                                           +
+            ".right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {"                                                   +
+                "background-color: #80c100; background-image: linear-gradient(to bottom, #8c0, #73ad00);"                 +
+            "}"                                                                                                           +
         "</style>";
     return strButtons;
 }
@@ -286,11 +295,12 @@ function getBurnReview(firstReview) {
                               (BRQuestion.IsKanji() ? (BRQuestion.Item.important_reading == "onyomi" ? "音" : "訓") : "") + "読み";
         }
 
+        //TODO - Strip out the inline css - should be able to put everything together in one generated stylesheet. Inline CSS is for styles that change.
         var strReview =
             "<div class=\"answer-exception-form\" id=\"answer-exception\" align=\"center\" style=\"position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none\">"            +
-                "<span style=\"background-color: rgba(162, 162, 162, 0.75), box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75)\">Answer goes here</span></div>"                                                                                                                                                                                                +
+                "<span style=\"background-color: rgba(162, 162, 162, 0.75), box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75)\">Answer goes here</span></div>"                                                                                         +
                     "<div id=\"question\" style=\"position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px\">"                                                                        +
-                        "<div class=\"brbi\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">"                                                                                             +
+                        "<div class=\"item-toggle-buttons\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">"                                                                                             +
                             "<div class=\"brbir" + ((BRRadicalsEnabled) ? ' on' : '') + "\">"                                                                                                                                                        +
                                "<span lang=\"ja\">部</span>"                                                                                                                                                                                         +
                             "</div>"                                                                                                                                                                                                                 +
@@ -301,7 +311,7 @@ function getBurnReview(firstReview) {
                             "<span lang=\"ja\">語</span>"                                                                                                                                                                                            +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"brbs\" style=\"width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11\">"                                                                                                +
+                    "<div class=\"left-side-action-buttons\" style=\"width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11\">"                                                                                                +
                         "<div class=\"brbsl\" style=\"height: 35px\">"                                                                                                                                                                               +
                             "<span lang=\"ja\" style=\"font-size: 10px; " + ((!BRLangJP) ? 'margin: 5px 0 0 0\">Load' : 'margin: 2px 0 0 0\">ロード') + "</span>"                                                                                    +
                         "</div>"                                                                                                                                                                                                                     +
@@ -311,14 +321,14 @@ function getBurnReview(firstReview) {
                             "</span>"                                                                                                                                                                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"brbt\" style=\"width: 30px; position: absolute; margin-left: 310px; z-index: 11\">"                                                                                                                                +
+                    "<div class=\"right-side-toggle-buttons\" style=\"width: 30px; position: absolute; margin-left: 310px; z-index: 11\">"                                                                                                                                +
                         "<div class=\"brbtj" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>"                                                                                                      +
                         "<div class=\"brbtr\">"                                                                                                                                                                                                      +
                             "<span lang=\"ja\" style=\"" + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit\">Resize' : 'margin-top: 4px; font-size: 10px\">拡大する') + "</span>"                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"brk\">"                                                                                                                                                                                                            +
-                        "<span class=\"bri\" lang=\"ja\" style=\"color: #ffffff; font-size: 48px; text-shadow:0 1px 0 rgba(0,0,0,0.2)\">" + characterText + "</span>"                                                                                                                                                               +
+                    "<div class=\"brk\" style=\"background-repeat: repeat-x; height: 39px; padding-top: 28px; padding-bottom: 3px; margin-top: 0px; margin-left: 0px; text-align: center\">"                                                                                                                                                                                                            +
+                        "<span class=\"bri\" lang=\"ja\" style=\"color: #ffffff; font-size: 48px; text-shadow:0 1px 0 rgba(0,0,0,0.2)\">" + characterText + "</span>"                                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "<div id=\"question-type\" style=\"margin: 0px 0px 0px 0px; height: 33px\"><h1 id=\"question-type-text\" align=\"center\" style=\"margin: -5px 0px 0px 0px; text-shadow: none\">" + reviewTypeText + "</h1></div>"               +
                     "<div id=\"answer-form\">"                                                                                                                                                                                                       +
@@ -380,16 +390,7 @@ function updateBRItem(updateText) {
     var bgi = "linear-gradient(to bottom, ";
 
     bgi += (BRQuestion.IsRadical() ? "#0af, #0093dd" : BRQuestion.IsKanji() ? "#f0a, #dd0093" : "#a0f, #9300dd");
-    $(".brk").css({"background-color": bg,
-                   "background-image": bgi,
-                   "background-repeat": "repeat-x",
-                   "height": "39px",
-                   "padding-top": "28px",
-                   "padding-bottom": "3px",
-                   "margin-top": "0px",
-                   "margin-left": "0px",
-                   "text-align": "center"});
-
+    $(".brk").css({"background-color": bg, "background-image": bgi });
 }
 
 function setItemFontSize() {
@@ -528,6 +529,7 @@ function maybeGetBurnedVocabThen(callback) {
     maybeGetBurnedItemsThen(callback, "burnedVocab", "Vocab", fetchAndCacheBurnedVocabThen);
 }
 
+//TODO - rename and convert to continual passing style
 function getBRWKData() {
     BRLog("Getting WaniKana data");
 
@@ -617,18 +619,12 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
     configureInputForEnglishOrJapanese();
 
 
-    $(".brbi div, .brbs div, .brbt div").css({"background-repeat": "repeat-x", "color": "#fff", "padding": "0px 5px 0px 5px", "width": "20px", "vertical-align": "middle",
-                       "font-size": "14px"}).mouseover(function() {
-        $(this).css("text-shadow", "0 0 0.2em #fff");
-    }).mouseout(function() {
-        $(this).css("text-shadow", "");
-    });
 
     bindMouseClickEvents();
 
-    $(".brbs div").css("padding: 2.5px 5px !important");
+    $(".left-side-action-buttons div").css("padding: 2.5px 5px !important");
     $(".brbtr").css({"height": "49px"});
-    $(".brbi div span, .brbs div span, .brbt div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
+    $(".item-toggle-buttons div span, .left-side-action-buttons div span, .right-side-toggle-buttons div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
                            "-webkit-touch-callout": "none", "-webkit-user-select": "none", "-khtml-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none", "cursor":"default"});
 }
 
@@ -658,9 +654,9 @@ function bindMouseClickEvents() {
 }
 
 function bindLanguageToggleAndResizeButtonClickEvents() {
-    $('.brbt div').css({"height": "50px", "padding": "2px 5px"}).click(function() {
+    $('.right-side-toggle-buttons div').css({"height": "50px", "padding": "2px 5px"}).click(function() {
         $(this).toggleClass("on");
-        if ($(this).children(".brbt div span").html() == "日本語") {
+        if ($(this).children(".right-side-toggle-buttons div span").html() == "日本語") {
             if (!BRLangJP) localStorage.setItem("BRLangJP", true);
             else localStorage.removeItem("BRLangJP");
             switchBRLang();
@@ -728,7 +724,7 @@ function bindStartButtonClickEvent() {
 }
 
 function bindQuestionTypeToggleButtonClickEvents() {
-    $('.brbi div').css({"height": "23px"}).click(function() {
+    $('.item-toggle-buttons div').css({"height": "23px"}).click(function() {
         var cancel = false;
         if ($(this).hasClass("on")) {
             if ((BRRadicalsEnabled && BRKanjiEnabled) || (BRRadicalsEnabled && BRVocabularyEnabled) || (BRKanjiEnabled && BRVocabularyEnabled)) {
