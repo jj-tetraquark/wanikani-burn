@@ -54,6 +54,10 @@ BRQuestion = {
     NextPart   : function() { this.progress++; },
     Skip       : function() { this.progress = 2; },
 
+    DependingOnTypeUse : function (ifRadical, ifKanji, ifVocab) {
+        return this.IsRadical() ? ifRadical : this.IsKanji() ? ifKanji : ifVocab;
+    },
+
     //TODO - This method can probably be removed if I can stop this from being global
     Reset : function() {
                 this.askingFor = UNDEFINED;
@@ -144,6 +148,7 @@ function getFadeCSS() {
 }
 
 //TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'
+//TODO - make a class for buttons so we're not targeting child divs
 function getButtonCSS() {
     var strButtons =
         "<style type=\"text/css\">"                                                                                       +
@@ -151,11 +156,13 @@ function getButtonCSS() {
                 "background-color: rgb(67, 67, 67);"                                                                      +
                 "background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));"                         +
                 "color: #ffffff;"                                                                                         +
-                "padding: 0px 5px 0px 5px;"                                                                               +
-                "width: 20px;"                                                                                            +
+                "width: 30px;"                                                                                            +
                 "vertical-align: middle;"                                                                                 +
                 "font-size: 14px;"                                                                                        +
                 "text-shadow: none;"                                                                                      +
+            "}"                                                                                                           +
+            ".item-toggle-buttons div {"                                                                                  +
+                "height: 23px;"                                                                                           +
             "}"                                                                                                           +
             ".item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover {" +
                 "text-shadow: 0 0 0.2em #ffffff;"                                                                         +
@@ -172,8 +179,13 @@ function getButtonCSS() {
             ".brbiv.on {"                                                                                                 +
                 "background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);"                 +
             "}"                                                                                                           +
+            ".right-side-toggle-buttons {"                                                                                +
+                "position: absolute;"                                                                                     +
+                "right: 0;"                                                                                               +
+            "}"                                                                                                           +
             ".right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {"                                                   +
-                "background-color: #80c100; background-image: linear-gradient(to bottom, #8c0, #73ad00);"                 +
+                "background-color: #80c100; "                                                                             +
+                "background-image: linear-gradient(to bottom, #8c0, #73ad00);"                                            +
             "}"                                                                                                           +
         "</style>";
     return strButtons;
@@ -321,7 +333,7 @@ function getBurnReview(firstReview) {
                             "</span>"                                                                                                                                                                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"right-side-toggle-buttons\" style=\"width: 30px; position: absolute; margin-left: 310px; z-index: 11\">"                                                                                                                                +
+                    "<div class=\"right-side-toggle-buttons\">"                                                                                                                                +
                         "<div class=\"brbtj" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>"                                                                                                      +
                         "<div class=\"brbtr\">"                                                                                                                                                                                                      +
                             "<span lang=\"ja\" style=\"" + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit\">Resize' : 'margin-top: 4px; font-size: 10px\">拡大する') + "</span>"                                                                +
@@ -618,12 +630,8 @@ function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
     updateBRItem(false);
     configureInputForEnglishOrJapanese();
 
-
-
     bindMouseClickEvents();
 
-    $(".left-side-action-buttons div").css("padding: 2.5px 5px !important");
-    $(".brbtr").css({"height": "49px"});
     $(".item-toggle-buttons div span, .left-side-action-buttons div span, .right-side-toggle-buttons div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
                            "-webkit-touch-callout": "none", "-webkit-user-select": "none", "-khtml-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none", "cursor":"default"});
 }
@@ -653,8 +661,9 @@ function bindMouseClickEvents() {
     bindDimOverlayClickEvent();
 }
 
+//TODO - break this out in to seperate functions for each of the buttons
 function bindLanguageToggleAndResizeButtonClickEvents() {
-    $('.right-side-toggle-buttons div').css({"height": "50px", "padding": "2px 5px"}).click(function() {
+    $('.right-side-toggle-buttons div').click(function() {
         $(this).toggleClass("on");
         if ($(this).children(".right-side-toggle-buttons div span").html() == "日本語") {
             if (!BRLangJP) localStorage.setItem("BRLangJP", true);
@@ -724,7 +733,7 @@ function bindStartButtonClickEvent() {
 }
 
 function bindQuestionTypeToggleButtonClickEvents() {
-    $('.item-toggle-buttons div').css({"height": "23px"}).click(function() {
+    $('.item-toggle-buttons div').click(function() {
         var cancel = false;
         if ($(this).hasClass("on")) {
             if ((BRRadicalsEnabled && BRKanjiEnabled) || (BRRadicalsEnabled && BRVocabularyEnabled) || (BRKanjiEnabled && BRVocabularyEnabled)) {
