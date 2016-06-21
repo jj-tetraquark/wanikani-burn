@@ -29,6 +29,7 @@ var ERROR   = 9;
 var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
 BRData = { Radicals: [], Kanji: [], Vocab: [] };
+BRConfig = { RadicalsEnabled: true, KanjiEnabled: true, VocabEnabled: true };
 
 // TODO - Should be able to make this non global and constructed via a function
 BRQuestion = {
@@ -312,18 +313,18 @@ function getBurnReview(firstReview) {
             "<div class=\"answer-exception-form\" id=\"answer-exception\" align=\"center\" style=\"position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none\">"            +
                 "<span style=\"background-color: rgba(162, 162, 162, 0.75), box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75)\">Answer goes here</span></div>"                                                                                         +
                     "<div id=\"question\" style=\"position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px\">"                                                                        +
-                        "<div class=\"item-toggle-buttons\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">"                                                                                             +
-                            "<div class=\"brbir" + ((BRRadicalsEnabled) ? ' on' : '') + "\">"                                                                                                                                                        +
+                        "<div class=\"item-toggle-buttons\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">"                                                                              +
+                            "<div class=\"brbir" + ((BRConfig.RadicalsEnabled) ? ' on' : '') + "\">"                                                                                                                                                 +
                                "<span lang=\"ja\">部</span>"                                                                                                                                                                                         +
                             "</div>"                                                                                                                                                                                                                 +
-                            "<div class=\"brbik" + ((BRKanjiEnabled) ? ' on' : '') + "\" style=\"padding-top: 1px !important\">"                                                                                                                     +
+                            "<div class=\"brbik" + ((BRConfig.KanjiEnabled) ? ' on' : '') + "\" style=\"padding-top: 1px !important\">"                                                                                                              +
                                 "<span lang=\"ja\">漢</span>"                                                                                                                                                                                        +
                             "</div>"                                                                                                                                                                                                                 +
-                        "<div class=\"brbiv" + ((BRVocabularyEnabled) ? ' on' : '') + "\">"                                                                                                                                                          +
+                        "<div class=\"brbiv" + ((BRConfig.VocabEnabled) ? ' on' : '') + "\">"                                                                                                                                                        +
                             "<span lang=\"ja\">語</span>"                                                                                                                                                                                            +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"left-side-action-buttons\" style=\"width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11\">"                                                                                                +
+                    "<div class=\"left-side-action-buttons\" style=\"width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11\">"                                                                            +
                         "<div class=\"brbsl\" style=\"height: 35px\">"                                                                                                                                                                               +
                             "<span lang=\"ja\" style=\"font-size: 10px; " + ((!BRLangJP) ? 'margin: 5px 0 0 0\">Load' : 'margin: 2px 0 0 0\">ロード') + "</span>"                                                                                    +
                         "</div>"                                                                                                                                                                                                                     +
@@ -333,13 +334,13 @@ function getBurnReview(firstReview) {
                             "</span>"                                                                                                                                                                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"right-side-toggle-buttons\">"                                                                                                                                +
+                    "<div class=\"right-side-toggle-buttons\">"                                                                                                                                                                                      +
                         "<div class=\"brbtj" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>"                                                                                                      +
                         "<div class=\"brbtr\">"                                                                                                                                                                                                      +
                             "<span lang=\"ja\" style=\"" + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit\">Resize' : 'margin-top: 4px; font-size: 10px\">拡大する') + "</span>"                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"brk\" style=\"background-repeat: repeat-x; height: 39px; padding-top: 28px; padding-bottom: 3px; margin-top: 0px; margin-left: 0px; text-align: center\">"                                                                                                                                                                                                            +
+                    "<div class=\"brk\" style=\"background-repeat: repeat-x; height: 39px; padding-top: 28px; padding-bottom: 3px; margin-top: 0px; margin-left: 0px; text-align: center\">"                                                         +
                         "<span class=\"bri\" lang=\"ja\" style=\"color: #ffffff; font-size: 48px; text-shadow:0 1px 0 rgba(0,0,0,0.2)\">" + characterText + "</span>"                                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "<div id=\"question-type\" style=\"margin: 0px 0px 0px 0px; height: 33px\"><h1 id=\"question-type-text\" align=\"center\" style=\"margin: -5px 0px 0px 0px; text-shadow: none\">" + reviewTypeText + "</h1></div>"               +
@@ -364,13 +365,13 @@ function newBRItem() {
 
     // Need to get a weighted Random
     var itemTypeArray = [];
-    if (BRRadicalsEnabled) {
+    if (BRConfig.RadicalsEnabled) {
         itemTypeArray = itemTypeArray.concat(new Array(BRData.Radicals.length).fill(RADICAL));
     }
-    if (BRKanjiEnabled) {
+    if (BRConfig.KanjiEnabled) {
         itemTypeArray = itemTypeArray.concat(new Array(BRData.Kanji.length).fill(KANJI));
     }
-    if (BRVocabularyEnabled) {
+    if (BRConfig.VocabEnabled) {
         itemTypeArray = itemTypeArray.concat(new Array(BRData.Vocab.length).fill(VOCAB));
     }
 
@@ -745,48 +746,40 @@ function bindStartButtonClickEvent() {
 }
 
 function bindQuestionTypeToggleButtonClickEvents() {
-    $('.item-toggle-buttons div').click(function() {
-        var cancel = false;
+    bindRadicalsToggleButtonClickEvent();
+    bindKanjiToggleButtonClickEvent();
+    bindVocabToggleButtonClickEvent();
+}
+
+function bindVocabToggleButtonClickEvent() {
+    bindItemToggleButtonClickEvent('.brbiv', "BRVocabEnabled", "VocabEnabled", BRQuestion.IsVocab.bind(BRQuestion));
+}
+
+function bindKanjiToggleButtonClickEvent() {
+    bindItemToggleButtonClickEvent('.brbik', "BRKanjiEnabled", "KanjiEnabled", BRQuestion.IsKanji.bind(BRQuestion));
+}
+
+function bindRadicalsToggleButtonClickEvent() {
+    bindItemToggleButtonClickEvent('.brbir', "BRRadicalsEnabled", "RadicalsEnabled", BRQuestion.IsRadical.bind(BRQuestion));
+}
+
+function bindItemToggleButtonClickEvent(cssClass, storageKey, configKey, currentQuestionIsType) {
+    $('.item-toggle-buttons ' + cssClass).click(function() {
         if ($(this).hasClass("on")) {
-            if ((BRRadicalsEnabled && BRKanjiEnabled) || (BRRadicalsEnabled && BRVocabularyEnabled) || (BRKanjiEnabled && BRVocabularyEnabled)) {
-                if ($(this).attr("class") == "brbir on") {
-                    localStorage.setItem("BRRadicalsEnabled", false);
-                    BRRadicalsEnabled = false;
-                    if (BRQuestion.IsRadical()) {
-                        skipItem();
-                    }
-                }
-                else if ($(this).attr("class") == "brbik on") {
-                    localStorage.setItem("BRKanjiEnabled", false);
-                    BRKanjiEnabled = false;
-                    if (BRQuestion.IsKanji()) {
-                        skipItem();
-                    }
-                }
-                else if ($(this).attr("class") == "brbiv on") {
-                    localStorage.setItem("BRVocabularyEnabled", false);
-                    BRVocabularyEnabled = false;
-                    if (BRQuestion.IsVocab()) {
-                        skipItem();
-                    }
-                }
-            } else cancel = true;
-        }
-        else {
-            if ($(this).attr("class") == "brbir") {
-                localStorage.removeItem("BRRadicalsEnabled");
-                BRRadicalsEnabled = true;
-            } else if ($(this).attr("class") == "brbik") {
-                localStorage.removeItem("BRKanjiEnabled");
-                BRKanjiEnabled = true;
-            } else if ($(this).attr("class") == "brbiv") {
-                localStorage.removeItem("BRVocabularyEnabled");
-                BRVocabularyEnabled = true;
+            // Don't let last button be disabled
+            if ($('.item-toggle-buttons .on').length == 1) return;
+
+            localStorage.setItem(storageKey, false);
+            BRConfig[configKey] = false;
+            if (currentQuestionIsType()) {
+                skipItem();
             }
         }
-        if (!cancel) {
-            $(this).toggleClass("on");
+        else {
+            localStorage.removeItem(storageKey);
+            BRConfig[configKey] = true;
         }
+        $(this).toggleClass("on");
     });
 }
 
@@ -972,12 +965,12 @@ function main() {
         useCache            =  !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
         BRIsChrome          =  (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
         BRQuestion.Reset();
-        queueBRAnim         =  false;
-        allowQueueBRAnim    =  true;
-        BRLangJP            =  (localStorage.getItem("BRLangJP") == "true");
-        BRRadicalsEnabled   =  (localStorage.getItem("BRRadicalsEnabled") != "false");
-        BRKanjiEnabled      =  (localStorage.getItem("BRKanjiEnabled") != "false");
-        BRVocabularyEnabled =  (localStorage.getItem("BRVocabularyEnabled") != "false");
+        queueBRAnim              =  false;
+        allowQueueBRAnim         =  true;
+        BRLangJP                 =  (localStorage.getItem("BRLangJP") == "true");
+        BRConfig.RadicalsEnabled =  (localStorage.getItem("BRRadicalsEnabled") != "false");
+        BRConfig.KanjiEnabled    =  (localStorage.getItem("BRKanjiEnabled") != "false");
+        BRConfig.VocabEnabled    =  (localStorage.getItem("BRVocabEnabled") != "false");
 
 
         String.prototype.trim = function() {
