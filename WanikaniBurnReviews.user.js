@@ -398,10 +398,10 @@ function updateBRItem(updateText) {
         setItemFontSize();
     }
 
-    var bg = BRQuestion.IsRadical() ? "#00a0f1" : (BRQuestion.IsKanji() ? "#f100a0" : "#a000f1"); // TODO - these colours are standard. Should be written to consts, or better, done with CSS
+    var bg = BRQuestion.DependingOnTypeUse("#00a0f1","#f100a0","#a000f1"); // TODO - these colours are standard. Should be written to consts, or better, done with CSS
     var bgi = "linear-gradient(to bottom, ";
 
-    bgi += (BRQuestion.IsRadical() ? "#0af, #0093dd" : BRQuestion.IsKanji() ? "#f0a, #dd0093" : "#a0f, #9300dd");
+    bgi += BRQuestion.DependingOnTypeUse("#0af, #0093dd", "#f0a, #dd0093", "#a0f, #9300dd");
     $(".brk").css({"background-color": bg, "background-image": bgi });
 }
 
@@ -429,6 +429,15 @@ function skipItem() {
    	BRQuestion.Skip();
     getBurnReview(false);
     return false;
+}
+
+function displayStartMessage() {
+    if (!BRLangJP) {
+        $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
+    }
+    else {
+        $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
+    }
 }
 
 function displayLoadingMessage(color, english, japanese) {
@@ -564,6 +573,9 @@ function clearBurnedItemData() {
     localStorage.removeItem("burnedRadicals");
     localStorage.removeItem("burnedKanji");
     localStorage.removeItem("burnedVocab");
+    BRData.Radicals = [];
+    BRData.Kanji    = [];
+    BRData.Vocab    = [];
 }
 
 function confirmRes() {
@@ -571,14 +583,14 @@ function confirmRes() {
     $(".answer-exception-form span").html("");
     $(".answer-exception-form").addClass("animated fadeInUp");
 
-    var itemTypeForUrl = BRQuestion.IsRadical() ? "radicals/" : BRQuestion.IsKanji() ? "kanji/" : "vocabulary/"; // TODO - this is a common pattern. Make it a function
+    var itemTypeForUrl = BRQuestion.DependingOnTypeUse("radicals/", "kanji/", "vocabulary/");
     var resurrectionUrl = "https://www.wanikani.com/retired/" + itemTypeForUrl + BRQuestion.Item.character + "?resurrect=true";
     if (!BRLangJP) {
     	$(".answer-exception-form span").html("Are you sure you want to <a href=\"" + resurrectionUrl + "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">Resurrect</a> the " +
-            (BRQuestion.IsRadical() ? "radical " : BRQuestion.IsKanji() ? "kanji item " : "vocabulary item \"") + BRQuestion.Item.character + "\"?");
+            BRQuestion.DependingOnTypeUse("radical ", "kanji item ", "vocabulary item ") + "\"" + BRQuestion.Item.character + "\"?");
     }
    	else {
-        $(".answer-exception-form span").html((BRQuestion.IsRadical() ? "部首「" : BRQuestion.IsKanji() ? "漢字「" : "単語「" ) + BRQuestion.Item.character  + "」を" +
+        $(".answer-exception-form span").html(BRQuestion.DependingOnTypeUse("部首", "漢字", "単語") + "「" + BRQuestion.Item.character  + "」を" +
             "<a href=\""+ resurrectionUrl + "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">復活</a>する<br />本当によろしいですか？");
     }
     document.getElementById("answer-exception").onclick = "return false";
@@ -713,12 +725,8 @@ function bindLoadButtonClickEvent() {
         BRQuestion.Reset();
         queueBRAnim = false;
         allowQueueBRAnim = true;
-        BRData.Radicals = [];
-        BRData.Kanji = [];
-        BRData.Vocab = [];
         $(getSection()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
-        if (!BRLangJP) $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
-   		else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
+        displayStartMessage();
         clearBurnedItemData();
         getBRWKData();
     });
@@ -727,8 +735,12 @@ function bindLoadButtonClickEvent() {
 function bindStartButtonClickEvent() {
     $(".brbss").click(function() {
         $(this).toggleClass("on");
-        if ($(this).hasClass("on")) localStorage.setItem("BRStartButton", true);
-        else localStorage.removeItem("BRStartButton");
+        if ($(this).hasClass("on")) {
+            localStorage.setItem("BRStartButton", true);
+        }
+        else {
+            localStorage.removeItem("BRStartButton");
+        }
     });
 }
 
@@ -740,18 +752,27 @@ function bindQuestionTypeToggleButtonClickEvents() {
                 if ($(this).attr("class") == "brbir on") {
                     localStorage.setItem("BRRadicalsEnabled", false);
                     BRRadicalsEnabled = false;
-                    if (BRQuestion.IsRadical()) skipItem();
-                } else if ($(this).attr("class") == "brbik on") {
+                    if (BRQuestion.IsRadical()) {
+                        skipItem();
+                    }
+                }
+                else if ($(this).attr("class") == "brbik on") {
                     localStorage.setItem("BRKanjiEnabled", false);
                     BRKanjiEnabled = false;
-                    if (BRQuestion.IsKanji()) skipItem();
-                } else if ($(this).attr("class") == "brbiv on") {
+                    if (BRQuestion.IsKanji()) {
+                        skipItem();
+                    }
+                }
+                else if ($(this).attr("class") == "brbiv on") {
                     localStorage.setItem("BRVocabularyEnabled", false);
                     BRVocabularyEnabled = false;
-                    if (BRQuestion.IsVocab()) skipItem();
+                    if (BRQuestion.IsVocab()) {
+                        skipItem();
+                    }
                 }
             } else cancel = true;
-        } else {
+        }
+        else {
             if ($(this).attr("class") == "brbir") {
                 localStorage.removeItem("BRRadicalsEnabled");
                 BRRadicalsEnabled = true;
@@ -763,7 +784,9 @@ function bindQuestionTypeToggleButtonClickEvents() {
                 BRVocabularyEnabled = true;
             }
         }
-        if (!cancel) $(this).toggleClass("on");
+        if (!cancel) {
+            $(this).toggleClass("on");
+        }
     });
 }
 
@@ -790,7 +813,7 @@ function switchBRLang() {
 
     BRLangJP = !BRLangJP;
 
-    var itemTypeForUrl = BRQuestion.IsRadical() ? "radicals/" : BRQuestion.IsKanji() ? "kanji/" : "vocabulary/"; // TODO - this is a common pattern. Make it a function
+    var itemTypeForUrl = BRQuestion.DependingOnTypeUse("radicals/", "kanji/", "vocabulary/");
     var resurrectionUrl = "https://www.wanikani.com/retired/" + itemTypeForUrl + BRQuestion.Item.character + "?resurrect=true";
 
     if (BRLangJP) {
@@ -807,7 +830,7 @@ function switchBRLang() {
             else {
                  if ($(".answer-exception-form span").html().toString().substring(0, 1) == "A")
 
-                    $(".answer-exception-form span").html((BRQuestion.IsRadical() ? "部首「" : BRQuestion.IsKanji() ? "漢字「" : "単語「" ) + BRQuestion.Item.character  + "」を" +
+                    $(".answer-exception-form span").html(BRQuestion.DependingOnTypeUse("部首", "漢字", "単語") + "「" + BRQuestion.Item.character  + "」を" +
                         "<a href=\""+ resurrectionUrl + "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">復活</a>する<br />本当によろしいですか？");
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
@@ -831,7 +854,7 @@ function switchBRLang() {
 
                     $(".answer-exception-form span").html("Are you sure you want to <a href=\"" + resurrectionUrl +
                         "\" target=\"_blank\" class=\"btn btn-mini resurrect-btn\" data-method=\"put\" rel=\"nofollow\">Resurrect</a> the " +
-                        (BRQuestion.IsRadical() ? "radical " : BRQuestion.IsKanji() ? "kanji item " : "vocabulary item \"") + BRQuestion.Item.character + "\"?");
+                        BRQuestion.DependingOnTypeUse("radical ", "kanji item ", "vocabulary item ") + "\"" + BRQuestion.Item.character + "\"?");
                }
                 else {
                     var txtPrev = $(".answer-exception-form span").html().toString();
@@ -964,8 +987,7 @@ function main() {
         $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
         $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
 
-        if (!BRLangJP) $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
-        else $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
+        displayStartMessage();
 
         $("#loadingBR a").click( function() {
 
