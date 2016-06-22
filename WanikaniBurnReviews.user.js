@@ -630,11 +630,11 @@ function initBurnReviews() {
     $("#loadingBR").remove();
 
     // Get the stylesheet from the reviews page and append it to the head
-    addBurnReviewStylesThen(fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod);
+    addBurnReviewStylesThen(constructBurnReviewWidget);
 
 }
 
-function fuckingMonstrosityThatNeedsToBeRefactoredOrSoHelpMeGod() {
+function constructBurnReviewWidget() {
 
     BRLog("Adding burn review section");
     $(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
