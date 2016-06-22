@@ -168,7 +168,7 @@ function getButtonCSS() {
             ".item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover {" +
                 "text-shadow: 0 0 0.2em #ffffff;"                                                                         +
             "}"                                                                                                           +
-            ".item-toggle-buttons span, .brbtj span {"                                                                    +
+            ".item-toggle-buttons span, .toggle-language-button span {"                                                                    +
                 "margin-top: 5px"                                                                                         +
             "}"                                                                                                           +
             ".brbir.on {"                                                                                                 +
@@ -335,8 +335,8 @@ function getBurnReview(firstReview) {
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
                     "<div class=\"right-side-toggle-buttons\">"                                                                                                                                                                                      +
-                        "<div class=\"brbtj" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>"                                                                                                      +
-                        "<div class=\"brbtr\">"                                                                                                                                                                                                      +
+                        "<div class=\"toggle-language-button" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>"                                                                                     +
+                        "<div class=\"resize-button\">"                                                                                                                                                                                              +
                             "<span lang=\"ja\" style=\"" + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit\">Resize' : 'margin-top: 4px; font-size: 10px\">拡大する') + "</span>"                                                                +
                         "</div>"                                                                                                                                                                                                                     +
                     "</div>"                                                                                                                                                                                                                         +
@@ -669,51 +669,68 @@ function bindMouseClickEvents() {
 
     bindStartButtonClickEvent();
 
-    bindLanguageToggleAndResizeButtonClickEvents();
+    bindLanguageToggleButtonClickEvent();
+
+    bindResizeButtonClickEvent();
 
     bindDimOverlayClickEvent();
 }
 
+function bindLanguageToggleButtonClickEvent() {
+    $('.toggle-language-button').click(function() {
+        $(this).toggleClass("on");
+        switchBRLang();
+    });
+}
+
 //TODO - break this out in to seperate functions for each of the buttons
-function bindLanguageToggleAndResizeButtonClickEvents() {
+function bindResizeButtonClickEvent() {
     $('.right-side-toggle-buttons div').click(function() {
         $(this).toggleClass("on");
-        if ($(this).children(".right-side-toggle-buttons div span").html() == "日本語") {
-            if (!BRLangJP) localStorage.setItem("BRLangJP", true);
-            else localStorage.removeItem("BRLangJP");
-            switchBRLang();
-        } else {
-            if ($(this).hasClass("on")) {
-                if ($("#dim-overlay").css("display") == "none") {
-                    if (BRLangJP) $(".brbtr span").html("縮小する");
-                    $("#dim-overlay").css("display", "block").addClass("fadeIn");
-                    $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css({"-webkit-transition": "1s ease-in-out",
-                                                                                     "-moz-transition": "1s ease-in-out",
-                                                                                     "-o-transition": "1s ease-in-out",
-                                                                                    "transition": "1s ease-in-out"}
-                                                                                  ).css("transform", "scaleX(2)scaleY(2)").one('transitionend webkitTransitionEnd',function() {
+        if ($(this).hasClass("on")) {
+            if ($("#dim-overlay").css("display") == "none") {
+                if (BRLangJP) {
+                    $(".resize-button span").html("縮小する");
+                }
+                $("#dim-overlay").css("display", "block").addClass("fadeIn");
+                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css({"-webkit-transition": "1s ease-in-out",
+                    "-moz-transition": "1s ease-in-out",
+                    "-o-transition": "1s ease-in-out",
+                    "transition": "1s ease-in-out"}
+                    ).css("transform", "scaleX(2)scaleY(2)").one('transitionend webkitTransitionEnd',function() {
                         $("#dim-overlay").removeClass("fadeIn");
                         if (queueBRAnim) {
                             queueBRAnim = false;
                             allowQueueBRAnim = false;
-                            $(".brbtr").trigger("click");
-                        } else allowQueueBRAnim = true;
+                            $(".resize-button").trigger("click");
+                        } else  {
+                            allowQueueBRAnim = true;
+                        }
                     });
-           		 } else if (!queueBRAnim && allowQueueBRAnim) queueBRAnim = true;
-            } else {
-        		if (!$("#dim-overlay").hasClass("fadeIn")) {
-                    if (BRLangJP) $(".brbtr span").html("拡大する");
-                    $("#dim-overlay").addClass("fadeOut");
-                    $(".burn-reviews.kotoba-table-list.dashboard-sub-section").one('transitionend webkitTransitionEnd', function() {
-                        $("#dim-overlay").removeClass("fadeOut").css("display", "none");
-                        if (queueBRAnim) {
-                            queueBRAnim = false;
-                            allowQueueBRAnim = false;
-                            $(".brbtr").trigger("click");
-                        } else allowQueueBRAnim = true;
-                    });
-                    $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css("transform", "scaleX(1)scaleY(1)");
-            	} else if (!queueBRAnim && allowQueueBRAnim) queueBRAnim = true;
+            } else if (!queueBRAnim && allowQueueBRAnim) {
+                queueBRAnim = true;
+            }
+        }
+        else {
+            if (!$("#dim-overlay").hasClass("fadeIn")) {
+                if (BRLangJP) {
+                    $(".resize-button span").html("拡大する");
+                }
+                $("#dim-overlay").addClass("fadeOut");
+                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").one('transitionend webkitTransitionEnd', function() {
+                    $("#dim-overlay").removeClass("fadeOut").css("display", "none");
+                    if (queueBRAnim) {
+                        queueBRAnim = false;
+                        allowQueueBRAnim = false;
+                        $(".resize-button").trigger("click");
+                    }
+                    else {
+                        allowQueueBRAnim = true;
+                    }
+                });
+                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css("transform", "scaleX(1)scaleY(1)");
+            } else if (!queueBRAnim && allowQueueBRAnim) {
+                queueBRAnim = true;
             }
         }
     });
@@ -785,8 +802,10 @@ function bindItemToggleButtonClickEvent(cssClass, storageKey, configKey, current
 
 function bindDimOverlayClickEvent() {
     $("#dim-overlay").click(function () {
-        $(".brbtr").removeClass("on");
-        if (BRLangJP) $(".brbtr span").html("拡大する");
+        $(".resize-button").removeClass("on");
+        if (BRLangJP) {
+            $(".resize-button span").html("拡大する");
+        }
         if (!$(this).hasClass("fadeIn")) {
             $(this).addClass("fadeOut");
             $(".burn-reviews.kotoba-table-list.dashboard-sub-section").one('transitionend webkitTransitionEnd', function() {
@@ -795,15 +814,26 @@ function bindDimOverlayClickEvent() {
                     queueBRAnim = false;
                     allowQueueBRAnim = false;
 					$(".brk").trigger("click");
-                } else allowQueueBRAnim = true;
+                }
+                else {
+                    allowQueueBRAnim = true;
+                }
             });
             $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css("transform", "scaleX(1)scaleY(1)");
-        } else if (!queueBRAnim && allowQueueBRAnim) queueBRAnim = true;
+        } else if (!queueBRAnim && allowQueueBRAnim) {
+            queueBRAnim = true;
+        }
     });
 }
 
 function switchBRLang() {
 
+    if (!BRLangJP) {
+        localStorage.setItem("BRLangJP", true);
+    }
+    else {
+        localStorage.removeItem("BRLangJP");
+    }
     BRLangJP = !BRLangJP;
 
     var itemTypeForUrl = BRQuestion.DependingOnTypeUse("radicals/", "kanji/", "vocabulary/");
@@ -815,9 +845,9 @@ function switchBRLang() {
         $("#new-item").html("新しい項目");
         $(".brbsl span").css("margin", "2px 0 0 0").html("ロード");
         $(".brbss span").css({"line-height": "1.1", "margin-left": "-1px"}).html("開始\rボタン");
-        $(".brbtr span").css("margin-top", "4px");
-        if (!$(".brbtr").hasClass("on")) $(".brbtr span").css("font-size", "10px").html("拡大する");
-        else $(".brbtr span").css("font-size", "10px").html("縮小する");
+        $(".resize-button span").css("margin-top", "4px");
+        if (!$(".resize-button").hasClass("on")) $(".resize-button span").css("font-size", "10px").html("拡大する");
+        else $(".resize-button span").css("font-size", "10px").html("縮小する");
         if ($("#answer-exception").css("display") !== "none") {
             if (!$("#answer-exception").hasClass("fadeOut") && !BRQuestion.IsAnswered()) $(".answer-exception-form span").html("おっと、異なる読みを入力してしまった。");
             else {
@@ -839,7 +869,7 @@ function switchBRLang() {
         $("#new-item").html("NEW ITEM");
         $(".brbsl span").css("margin", "5px 0 0 -1px").html("Load");
         $(".brbss span").css({"line-height": "0.9", "margin-left": "1px"}).html("Start Button");
-        $(".brbtr span").css({"font-size": "inherit", "margin-top": "3px"}).html("Resize");
+        $(".resize-button span").css({"font-size": "inherit", "margin-top": "3px"}).html("Resize");
         if ($("#answer-exception").css("display") !== "none") {
             if (!$("#answer-exception").hasClass("fadeOut") && !BRQuestion.IsAnswered()) $(".answer-exception-form span").html("Oops! You entered the wrong reading.");
             else {
@@ -867,19 +897,15 @@ function checkBurnReviewAnswer() {
 
     $("#user-response").attr("disabled", true);
 
-    if (BRQuestion.IsAskingForMeaning())
-    {
+    if (BRQuestion.IsAskingForMeaning()) {
         answers = BRQuestion.Item.meaning;
     }
-    else
-    {
-        if (BRQuestion.IsKanji())
-        {
+    else {
+        if (BRQuestion.IsKanji()) {
             var importantReading = BRQuestion.Item.important_reading;
             answers = BRQuestion.Item[importantReading];
         }
-        else
-        {
+        else {
             answers = BRQuestion.Item.kana;
         }
     }
