@@ -563,8 +563,7 @@ function maybeGetBurnedVocabThen(callback) {
     maybeGetBurnedItemsThen(callback, "burnedVocab", "Vocab", fetchAndCacheBurnedVocabThen);
 }
 
-//TODO - rename and convert to continual passing style
-function getBRWKData() {
+function getBurnReviewDataThen(callback) {
     BRLog("Getting WaniKana data");
 
     maybeGetBurnedRadicalsThen(function() {
@@ -575,7 +574,7 @@ function getBRWKData() {
                                  "; KanjiData: " + BRData.Kanji.length +
                                  "; VocabData: " + BRData.Vocab.length + "}");
 
-                initBurnReviews();
+                callback();
             });
         });
     });
@@ -638,11 +637,13 @@ function initBurnReviews() {
 
     BRLog("Initialising the Burn Review widget");
 
-    useCache = false;
-    $("#loadingBR").remove();
+    var loadStylesAndConstructWidget = function() {
+        useCache = false;
+        $("#loadingBR").remove();
+        addBurnReviewStylesThen(constructBurnReviewWidget);
+    };
 
-    // Get the stylesheet from the reviews page and append it to the head
-    addBurnReviewStylesThen(constructBurnReviewWidget);
+    getBurnReviewDataThen(loadStylesAndConstructWidget);
 
 }
 
@@ -756,7 +757,7 @@ function bindLoadButtonClickEvent() {
         $(getSection()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
         displayStartMessage();
         clearBurnedItemData();
-        getBRWKData();
+        initBurnReviews();
     });
 }
 
@@ -1027,7 +1028,7 @@ function main() {
                 BRLog("Checking for wanakana...");
                 if (wanakana !== undefined) {
                     clearInterval(checkReady);
-                    getBRWKData();
+                    initBurnReviews();
                 }
             }, 250);
 
