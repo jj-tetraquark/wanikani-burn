@@ -150,6 +150,7 @@ function getFadeCSS() {
 
 //TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'
 //TODO - make a class for buttons so we're not targeting child divs
+//TODO - make this handle all non-file based CSS
 function getButtonCSS() {
     var strButtons =
         "<style type=\"text/css\">"                                                                                       +
@@ -162,13 +163,25 @@ function getButtonCSS() {
                 "font-size: 14px;"                                                                                        +
                 "text-shadow: none;"                                                                                      +
             "}"                                                                                                           +
+            ".item-toggle-buttons span, .right-side-toggle-buttons span, .left-side-action-buttons span{"                 +
+                "-ms-writing-mode: tb-rl;"                                                                                +
+                "-webkit-writing-mode: vertical-rl;"                                                                      +
+                "writing-mode: vertical-rl;"                                                                              +
+                "-webkit-touch-callout: none;"                                                                            +
+                "-webkit-user-select: none;"                                                                              +
+                "-khtml-user-select: none;"                                                                               +
+                "-moz-user-select: none;"                                                                                 +
+                "-ms-user-select: none;"                                                                                  +
+                "user-select: none;"                                                                                      +
+                "cursor: default;"                                                                                        +
+            "}"                                                                                                           +
             ".item-toggle-buttons div {"                                                                                  +
                 "height: 23px;"                                                                                           +
             "}"                                                                                                           +
             ".item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover {" +
                 "text-shadow: 0 0 0.2em #ffffff;"                                                                         +
             "}"                                                                                                           +
-            ".item-toggle-buttons span, .toggle-language-button span {"                                                                    +
+            ".item-toggle-buttons span, .toggle-language-button span {"                                                   +
                 "margin-top: 5px"                                                                                         +
             "}"                                                                                                           +
             ".brbir.on {"                                                                                                 +
@@ -374,7 +387,6 @@ function newBRItem() {
     if (BRConfig.VocabEnabled) {
         itemTypeArray = itemTypeArray.concat(new Array(BRData.Vocab.length).fill(VOCAB));
     }
-
     BRQuestion.itemType = itemTypeArray[rand(0, itemTypeArray.length)];
 
     var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][BRQuestion.itemType];
@@ -645,8 +657,6 @@ function constructBurnReviewWidget() {
 
     bindMouseClickEvents();
 
-    $(".item-toggle-buttons div span, .left-side-action-buttons div span, .right-side-toggle-buttons div span").css({"-ms-writing-mode": "tb-rl", "-webkit-writing-mode": "vertical-rl", "-moz-writing-mode": "vertical-rl", "writing-mode": "vertical-rl",
-                           "-webkit-touch-callout": "none", "-webkit-user-select": "none", "-khtml-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none", "cursor":"default"});
 }
 
 function configureInputForEnglishOrJapanese() {
