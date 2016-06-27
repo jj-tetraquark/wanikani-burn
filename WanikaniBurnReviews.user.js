@@ -250,127 +250,129 @@ function disableKanaInput() {
     wanakana.unbind(document.getElementById('user-response'));
 }
 
-function getBurnReview(firstReview) {
+function getBurnReview() {
 
-    BRLog("Getting " + (firstReview ? "first" : "") + " burn review");
+    BRLog("Getting burn review");
 
     BRQuestion.SetAnswered(false);
 
     $("#user-response").attr("disabled", false).val("").focus();
 
-    if (!firstReview) {
 
-        $(".answer-exception-form").css("display", "none");
+    $(".answer-exception-form").css("display", "none");
 
-        if (BRQuestion.IsComplete()) {
-            newBRItem();
-            updateBRItem(true);
+    if (BRQuestion.IsComplete()) {
+        newBRItem();
+        updateBRItem(true);
+    }
+
+    if (!BRQuestion.IsRadical() && (!BRQuestion.Started() || $("#answer-form fieldset").hasClass("correct"))) {
+        if (BRQuestion.IsAskingForMeaning()) {
+            BRQuestion.askingFor = READING;
+            enableKanaInput();
+            $("#user-response").attr({lang:"ja",placeholder:"答え"});
+            $("#question-type").removeClass("meaning").addClass("reading");
         }
-
-        if (!BRQuestion.IsRadical() && (!BRQuestion.Started() || $("#answer-form fieldset").hasClass("correct"))) {
-            if (BRQuestion.IsAskingForMeaning()) {
-                BRQuestion.askingFor = READING;
-                enableKanaInput();
-                $("#user-response").attr({lang:"ja",placeholder:"答え"});
-                $("#question-type").removeClass("meaning").addClass("reading");
-            }
-            else {
-                BRQuestion.askingFor = MEANING;
-                disableKanaInput();
-                $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
-                $("#question-type").removeClass("reading").addClass("meaning");
-            }
-        }
-        else if (BRQuestion.IsRadical()) {
+        else {
+            BRQuestion.askingFor = MEANING;
             disableKanaInput();
             $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
             $("#question-type").removeClass("reading").addClass("meaning");
         }
-        if (!BRLangJP) {
-            document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "Meaning" :
-                ((BRQuestion.IsKanji()) ? ((BRQuestion.Item.important_reading == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
-        }
-        else {
-            document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "意味" :
-                ((BRQuestion.IsKanji()) ? ((BRQuestion.Item.important_reading == "onyomi") ? "音読み" : "訓読み") : "読み");
-        }
-
-
-        document.getElementById('user-response').value = "";
-        $("#answer-form fieldset").removeClass("correct").removeClass("incorrect");
-
+    }
+    else if (BRQuestion.IsRadical()) {
+        disableKanaInput();
+        $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
+        $("#question-type").removeClass("reading").addClass("meaning");
+    }
+    if (!BRLangJP) {
+        document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "Meaning" :
+            ((BRQuestion.IsKanji()) ? ((BRQuestion.Item.important_reading == "onyomi") ? "Onyomi Reading" : "Kunyomi Reading") : "Reading");
     }
     else {
-
-        document.getElementById("new-item").onclick = skipItem;
-
-        $("body").prepend('<div id="dim-overlay" style="position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none"></div>');
-        BRLog("Overlay applied");
-
-        newBRItem();
-        BRLog("Got new item");
-
-        var characterText = BRQuestion.Item.character;
-        var reviewTypeText;
-        if (!BRLangJP) {
-            reviewTypeText = (BRQuestion.IsAskingForMeaning() ? "Meaning" : BRQuestion.IsRadical() ? BRQuestion.Item.character : // TODO - I don't think this needs to check if it's a radical
-                       (BRQuestion.IsKanji() ? BRQuestion.Item.important_reading.substring(0, 1).toUpperCase() + BRQuestion.Item.important_reading.substring(1) + " Reading" : "Reading")); //TODO - use css text-transform: capitalize
-        }
-        else { // TODO - Remove the fact this is a repeated conditional
-            reviewTypeText = BRQuestion.IsAskingForMeaning() ? "意味" : BRQuestion.IsRadical() ? BRQuestion.Item.character :
-                              (BRQuestion.IsKanji() ? (BRQuestion.Item.important_reading == "onyomi" ? "音" : "訓") : "") + "読み";
-        }
-
-        //TODO - Strip out the inline css - should be able to put everything together in one generated stylesheet. Inline CSS is for styles that change.
-        var strReview =
-            "<div class=\"answer-exception-form\" id=\"answer-exception\" align=\"center\" style=\"position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none\">"            +
-                "<span style=\"background-color: rgba(162, 162, 162, 0.75), box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75)\">Answer goes here</span></div>"                                                                                         +
-                    "<div id=\"question\" style=\"position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px\">"                                                                        +
-                        "<div class=\"item-toggle-buttons\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">"                                                                              +
-                            "<div class=\"brbir" + ((BRConfig.RadicalsEnabled) ? ' on' : '') + "\">"                                                                                                                                                 +
-                               "<span lang=\"ja\">部</span>"                                                                                                                                                                                         +
-                            "</div>"                                                                                                                                                                                                                 +
-                            "<div class=\"brbik" + ((BRConfig.KanjiEnabled) ? ' on' : '') + "\" style=\"padding-top: 1px !important\">"                                                                                                              +
-                                "<span lang=\"ja\">漢</span>"                                                                                                                                                                                        +
-                            "</div>"                                                                                                                                                                                                                 +
-                        "<div class=\"brbiv" + ((BRConfig.VocabEnabled) ? ' on' : '') + "\">"                                                                                                                                                        +
-                            "<span lang=\"ja\">語</span>"                                                                                                                                                                                            +
-                        "</div>"                                                                                                                                                                                                                     +
-                    "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"left-side-action-buttons\" style=\"width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11\">"                                                                            +
-                        "<div class=\"brbsl\" style=\"height: 35px\">"                                                                                                                                                                               +
-                            "<span lang=\"ja\" style=\"font-size: 10px; " + ((!BRLangJP) ? 'margin: 5px 0 0 0\">Load' : 'margin: 2px 0 0 0\">ロード') + "</span>"                                                                                    +
-                        "</div>"                                                                                                                                                                                                                     +
-                        "<div class=\"brbss" + ((localStorage.getItem("BRStartButton") !== null) ? ' on' : '') + "\" style=\"height: 35px !important\">"                                                                                             +
-                            "<span lang=\"ja\" style=\"margin-top: 2px"                                                                                                                                                                              +
-                            ((!BRLangJP) ? '; font-size: 10px; line-height: 0.9\">Start Button' : 'font-size: 11px !important; line-height: 1.1; margin-left: -1px\">開始\rボタン')                                                                  +
-                            "</span>"                                                                                                                                                                                                                +
-                        "</div>"                                                                                                                                                                                                                     +
-                    "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"right-side-toggle-buttons\">"                                                                                                                                                                                      +
-                        "<div class=\"toggle-language-button" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>"                                                                                     +
-                        "<div class=\"resize-button\">"                                                                                                                                                                                              +
-                            "<span lang=\"ja\" style=\"" + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit\">Resize' : 'margin-top: 4px; font-size: 10px\">拡大する') + "</span>"                                                                +
-                        "</div>"                                                                                                                                                                                                                     +
-                    "</div>"                                                                                                                                                                                                                         +
-                    "<div class=\"brk\" style=\"background-repeat: repeat-x; height: 39px; padding-top: 28px; padding-bottom: 3px; margin-top: 0px; margin-left: 0px; text-align: center\">"                                                         +
-                        "<span class=\"bri\" lang=\"ja\" style=\"color: #ffffff; font-size: 48px; text-shadow:0 1px 0 rgba(0,0,0,0.2)\">" + characterText + "</span>"                                                                                +
-                        "</div>"                                                                                                                                                                                                                     +
-                    "<div id=\"question-type\" style=\"margin: 0px 0px 0px 0px; height: 33px\"><h1 id=\"question-type-text\" align=\"center\" style=\"margin: -5px 0px 0px 0px; text-shadow: none\">" + reviewTypeText + "</h1></div>"               +
-                    "<div id=\"answer-form\">"                                                                                                                                                                                                       +
-                        "<form onSubmit=\"return false\">"                                                                                                                                                                                           +
-                            "<fieldset style=\"padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px\">"                                                                                                                                                 +
-                                "<input autocapitalize=\"off\" autocomplete=\"off\" autocorrect=\"off\" id=\"user-response\" name=\"user-response\" placeholder=\"Your Response\" type=\"text\" style=\"height: 35px; margin-bottom: 0px\"></input>" +
-                                "<button id=\"answer-button\" style=\"width: 0px; height: 34px; padding: 0px 20px 0px 5px; top: 0px; right: 0px\" ><i class=\"icon-chevron-right\"></i></button>"                                                    +
-                            "</fieldset>"                                                                                                                                                                                                            +
-                        "</form>"                                                                                                                                                                                                                    +
-                    "</div>"                                                                                                                                                                                                                         +
-                "</div>"                                                                                                                                                                                                                             +
-            "</div>";
-
-        BRLog(strReview);
-    	return strReview;
+        document.getElementById("question-type-text").innerHTML = (BRQuestion.IsAskingForMeaning()) ? "意味" :
+            ((BRQuestion.IsKanji()) ? ((BRQuestion.Item.important_reading == "onyomi") ? "音読み" : "訓読み") : "読み");
     }
+
+
+    document.getElementById('user-response').value = "";
+    $("#answer-form fieldset").removeClass("correct").removeClass("incorrect");
+
+}
+
+
+function constructBurnReviewHtml() {
+
+    BRLog("Constructing Burn Review HTML");
+    BRQuestion.SetAnswered(false);
+    $("#user-response").attr("disabled", false).val("").focus();
+
+    $("body").prepend('<div id="dim-overlay" style="position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none"></div>');
+    BRLog("Overlay applied");
+
+    newBRItem();
+    BRLog("Got new item");
+
+    var characterText = BRQuestion.Item.character;
+    var reviewTypeText;
+    if (!BRLangJP) {
+        reviewTypeText = (BRQuestion.IsAskingForMeaning() ? "Meaning" : BRQuestion.IsRadical() ? BRQuestion.Item.character : // TODO - I don't think this needs to check if it's a radical
+                   (BRQuestion.IsKanji() ? BRQuestion.Item.important_reading.substring(0, 1).toUpperCase() + BRQuestion.Item.important_reading.substring(1) + " Reading" : "Reading")); //TODO - use css text-transform: capitalize
+    }
+    else { // TODO - Remove the fact this is a repeated conditional
+        reviewTypeText = BRQuestion.IsAskingForMeaning() ? "意味" : BRQuestion.IsRadical() ? BRQuestion.Item.character :
+                          (BRQuestion.IsKanji() ? (BRQuestion.Item.important_reading == "onyomi" ? "音" : "訓") : "") + "読み";
+    }
+
+    //TODO - Strip out the inline css - should be able to put everything together in one generated stylesheet. Inline CSS is for styles that change.
+    var strReview =
+        "<div class=\"answer-exception-form\" id=\"answer-exception\" align=\"center\" style=\"position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none\">"            +
+            "<span style=\"background-color: rgba(162, 162, 162, 0.75), box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75)\">Answer goes here</span></div>"                                                                                         +
+                "<div id=\"question\" style=\"position: relative; background-color: #d4d4d4; margin-top: -2px; padding-left: 30px; padding-right: 30px; height: 142px\">"                                                                        +
+                    "<div class=\"item-toggle-buttons\" style=\"width: 30px; height: 32px; position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11\">"                                                                              +
+                        "<div class=\"brbir" + ((BRConfig.RadicalsEnabled) ? ' on' : '') + "\">"                                                                                                                                                 +
+                           "<span lang=\"ja\">部</span>"                                                                                                                                                                                         +
+                        "</div>"                                                                                                                                                                                                                 +
+                        "<div class=\"brbik" + ((BRConfig.KanjiEnabled) ? ' on' : '') + "\" style=\"padding-top: 1px !important\">"                                                                                                              +
+                            "<span lang=\"ja\">漢</span>"                                                                                                                                                                                        +
+                        "</div>"                                                                                                                                                                                                                 +
+                    "<div class=\"brbiv" + ((BRConfig.VocabEnabled) ? ' on' : '') + "\">"                                                                                                                                                        +
+                        "<span lang=\"ja\">語</span>"                                                                                                                                                                                            +
+                    "</div>"                                                                                                                                                                                                                     +
+                "</div>"                                                                                                                                                                                                                         +
+                "<div class=\"left-side-action-buttons\" style=\"width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11\">"                                                                            +
+                    "<div class=\"brbsl\" style=\"height: 35px\">"                                                                                                                                                                               +
+                        "<span lang=\"ja\" style=\"font-size: 10px; " + ((!BRLangJP) ? 'margin: 5px 0 0 0\">Load' : 'margin: 2px 0 0 0\">ロード') + "</span>"                                                                                    +
+                    "</div>"                                                                                                                                                                                                                     +
+                    "<div class=\"brbss" + ((localStorage.getItem("BRStartButton") !== null) ? ' on' : '') + "\" style=\"height: 35px !important\">"                                                                                             +
+                        "<span lang=\"ja\" style=\"margin-top: 2px"                                                                                                                                                                              +
+                        ((!BRLangJP) ? '; font-size: 10px; line-height: 0.9\">Start Button' : 'font-size: 11px !important; line-height: 1.1; margin-left: -1px\">開始\rボタン')                                                                  +
+                        "</span>"                                                                                                                                                                                                                +
+                    "</div>"                                                                                                                                                                                                                     +
+                "</div>"                                                                                                                                                                                                                         +
+                "<div class=\"right-side-toggle-buttons\">"                                                                                                                                                                                      +
+                    "<div class=\"toggle-language-button" + ((BRLangJP) ? ' on' : '') + "\"><span lang=\"ja\" style=\"margin-top: 4px\">日本語</span></div>"                                                                                     +
+                    "<div class=\"resize-button\">"                                                                                                                                                                                              +
+                        "<span lang=\"ja\" style=\"" + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit\">Resize' : 'margin-top: 4px; font-size: 10px\">拡大する') + "</span>"                                                                +
+                    "</div>"                                                                                                                                                                                                                     +
+                "</div>"                                                                                                                                                                                                                         +
+                "<div class=\"brk\" style=\"background-repeat: repeat-x; height: 39px; padding-top: 28px; padding-bottom: 3px; margin-top: 0px; margin-left: 0px; text-align: center\">"                                                         +
+                    "<span class=\"bri\" lang=\"ja\" style=\"color: #ffffff; font-size: 48px; text-shadow:0 1px 0 rgba(0,0,0,0.2)\">" + characterText + "</span>"                                                                                +
+                    "</div>"                                                                                                                                                                                                                     +
+                "<div id=\"question-type\" style=\"margin: 0px 0px 0px 0px; height: 33px\"><h1 id=\"question-type-text\" align=\"center\" style=\"margin: -5px 0px 0px 0px; text-shadow: none\">" + reviewTypeText + "</h1></div>"               +
+                "<div id=\"answer-form\">"                                                                                                                                                                                                       +
+                    "<form onSubmit=\"return false\">"                                                                                                                                                                                           +
+                        "<fieldset style=\"padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px\">"                                                                                                                                                 +
+                            "<input autocapitalize=\"off\" autocomplete=\"off\" autocorrect=\"off\" id=\"user-response\" name=\"user-response\" placeholder=\"Your Response\" type=\"text\" style=\"height: 35px; margin-bottom: 0px\"></input>" +
+                            "<button id=\"answer-button\" style=\"width: 0px; height: 34px; padding: 0px 20px 0px 5px; top: 0px; right: 0px\" ><i class=\"icon-chevron-right\"></i></button>"                                                    +
+                        "</fieldset>"                                                                                                                                                                                                            +
+                    "</form>"                                                                                                                                                                                                                    +
+                "</div>"                                                                                                                                                                                                                         +
+            "</div>"                                                                                                                                                                                                                             +
+        "</div>";
+
+    BRLog(strReview);
+    $(strReview).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
 }
 
 function newBRItem() {
@@ -440,7 +442,7 @@ function setItemFontSize() {
 
 function skipItem() {
    	BRQuestion.Skip();
-    getBurnReview(false);
+    getBurnReview();
     return false;
 }
 
@@ -650,7 +652,7 @@ function initBurnReviews() {
 function constructBurnReviewWidget() {
 
     BRLog("Adding burn review section");
-    $(getBurnReview(true)).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
+    constructBurnReviewHtml();
 
     document.getElementById("answer-button").onclick = submitBRAnswer;
     updateBRItem(false);
@@ -685,6 +687,12 @@ function bindMouseClickEvents() {
     bindResizeButtonClickEvent();
 
     bindDimOverlayClickEvent();
+
+    bindNewItemButtonClickEvent();
+}
+
+function bindNewItemButtonClickEvent() {
+    document.getElementById("new-item").onclick = skipItem;
 }
 
 function bindLanguageToggleButtonClickEvent() {
@@ -984,7 +992,7 @@ function submitBRAnswer() {
         checkBurnReviewAnswer();
     }
     else {
-        getBurnReview(false);
+        getBurnReview();
     }
 }
 
@@ -1036,7 +1044,9 @@ function main() {
 
         document.addEventListener('keydown', function(event) {
             if(event.keyCode == 13) { //Enter
-                if (BRQuestion.IsAnswered()) getBurnReview(false);
+                if (BRQuestion.IsAnswered()) {
+                    getBurnReview();
+                }
             }
          });
 
