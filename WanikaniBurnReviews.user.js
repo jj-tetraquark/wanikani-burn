@@ -25,6 +25,10 @@ var DEBUG   = 7;
 var WARNING = 8;
 var ERROR   = 9;
 
+var LITEBLUE = "#00a0f1";
+var PINK     = "#f100a0";
+var PURPLE   = "#a000f1";
+
 // Globals....ewww
 var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
@@ -413,7 +417,8 @@ function updateBRItem(updateText) {
         setItemFontSize();
     }
 
-    var bg = BRQuestion.DependingOnTypeUse("#00a0f1","#f100a0","#a000f1"); // TODO - these colours are standard. Should be written to consts, or better, done with CSS
+    // TODO - this should probably done just with adding and removing classes
+    var bg = BRQuestion.DependingOnTypeUse(LITEBLUE, PINK, PURPLE);
     var bgi = "linear-gradient(to bottom, ";
 
     bgi += BRQuestion.DependingOnTypeUse("#0af, #0093dd", "#f0a, #dd0093", "#a0f, #9300dd");
@@ -460,15 +465,15 @@ function displayLoadingMessage(color, english, japanese) {
 }
 
 function displayRadicalLoadingMessage() {
-    displayLoadingMessage("#00a0f1", "Retrieving radical data...", "部首データを検索中…");
+    displayLoadingMessage(LITEBLUE, "Retrieving radical data...", "部首データを検索中…");
 }
 
 function displayKanjiLoadingMessage() {
-    displayLoadingMessage("#f100a0","Retrieving kanji data...", "漢字データを検索中…");
+    displayLoadingMessage(PINK,"Retrieving kanji data...", "漢字データを検索中…");
 }
 
 function displayVocabLoadingMessage() {
-    displayLoadingMessage("#a000f1","Retrieving vocabulary data...", "単語データを検索中…");
+    displayLoadingMessage(PURPLE,"Retrieving vocabulary data...", "単語データを検索中…");
 }
 
 
