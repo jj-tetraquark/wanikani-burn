@@ -108,12 +108,14 @@ function getSection() {
         "<div class=\"span4\">"                                                                                                                                           +
             "<section class=\"burn-reviews kotoba-table-list dashboard-sub-section\" style=\"z-index: 2; position: relative\">"                                           +
                 "<h3 class=\"small-caps\">"                                                                                                                               +
-                    ((!BRLangJP) ? "BURN REVIEWS" : "焦げた復習")                                                                                                         +
+                    '<span class="br-en">BURN REVIEWS</span>'                                                                                                           +
+                    '<span class="br-jp">焦げた復習</span>'                                                                                                               +
                 "</h3>"                                                                                                                                                   +
                 "<div id=\"loadingBR\" align=\"center\" style=\"position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px\"></div>" +
                 "<div class=\"see-more\" style=\"margin-top: -1px\">"                                                                                                     +
                     "<a href=\"javascript:void(0)\" id=\"new-item\" class=\"small-caps\">"                                                                                +
-                        ((!BRLangJP) ? "NEW ITEM" : "新しい項目")                                                                                                         +
+                        '<span class="br-en">NEW ITEM</span>'                                                                                                             +
+                        '<span class="br-jp">新しい項目</span>'                                                                                                           +
                     "</a>"                                                                                                                                                +
                 "</div>"                                                                                                                                                  +
             "</section>"                                                                                                                                                  +
@@ -179,6 +181,10 @@ function getButtonCSS() {
                 "user-select: none;"                                                                                      +
                 "cursor: default;"                                                                                        +
             "}"                                                                                                           +
+            ".right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {"                                                   +
+                "background-color: #80c100; "                                                                             +
+                "background-image: linear-gradient(to bottom, #8c0, #73ad00);"                                            +
+            "}"                                                                                                           +
             ".item-toggle-buttons div {"                                                                                  +
                 "height: 23px;"                                                                                           +
             "}"                                                                                                           +
@@ -201,9 +207,15 @@ function getButtonCSS() {
                 "position: absolute;"                                                                                     +
                 "right: 0;"                                                                                               +
             "}"                                                                                                           +
-            ".right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {"                                                   +
-                "background-color: #80c100; "                                                                             +
-                "background-image: linear-gradient(to bottom, #8c0, #73ad00);"                                            +
+            "div.brbsl {"                                                                                                 +
+                "height: 35px;"                                                                                           +
+            "}"                                                                                                           +
+            ".brbsl span {"                                                                                               +
+                "padding: 2px;"                                                                                           +
+                "font-size: 10px;"                                                                                        +
+            "}"                                                                                                           +
+            ".br-hide {"                                                                                                  +
+                "display:none;"                                                                                           +
             "}"                                                                                                           +
         "</style>";
     return strButtons;
@@ -243,7 +255,7 @@ function appendAdditionalCSS() {
 }
 
 function rand(low, high) {
-    return Math.floor(Math.random()*(high+1)) + low;
+    return Math.floor(Math.random()*(high + 1)) + low;
 }
 
 function enableKanaInput() {
@@ -343,19 +355,23 @@ function constructBurnReviewHtml() {
                    '</div>'                                                                                                                                                                                                     +
                '</div>'                                                                                                                                                                                                         +
                '<div class="left-side-action-buttons" style="width: 15px; height: 70px; position: absolute; margin-top: 70px; margin-left: -30px; z-index: 11">'                                                                +
-                   '<div class="brbsl" style="height: 35px">'                                                                                                                                                                   +
-                       '<span lang="ja" style="font-size: 10px;' + ((!BRLangJP) ? 'margin: 5px 0 0 0">Load' : 'margin: 2px 0 0 0">ロード') +'</span>'                                                                           +
+                   '<div class="brbsl">'                                                                                                                                                                                        +
+                       '<span class="br-en" lang="ja" style="font-size: 10px; margin: 5px 0 0 0">Load</span>'                                                                                                                   +
+                       '<span class="br-jp" lang="ja" style="font-size: 10px; margin: 2px 0 0 0">ロード</span>'                                                                                                                 +
                    '</div>'                                                                                                                                                                                                     +
                    '<div class="brbss' + ((localStorage.getItem('"BRStartButton') !== null) ? ' on' : '') +'" style="height: 35px !important">'                                                                                 +
-                       '<span lang="ja" style="margin-top: 2px'                                                                                                                                                                 +
-                        ((!BRLangJP) ? '; font-size: 10px; line-height: 0.9">Start Button' : 'font-size: 11px !important; line-height: 1.1; margin-left: -1px">開始rボタン')                                                    +
-                       '</span>'                                                                                                                                                                                                +
+                       '<span lang="ja" class="br-en" style="margin-top: 2px; font-size: 10px; line-height: 0.9">Start Button</span>'                                                                                           +
+                       '<span lang="ja" class="br-jp" style="margin-top: 2px; font-size: 11px !important; line-height: 1.1; margin-left: -1px">開始ボタン</span>'                                                              +
                    '</div>'                                                                                                                                                                                                     +
                '</div>'                                                                                                                                                                                                         +
                '<div class="right-side-toggle-buttons">'                                                                                                                                                                        +
-                   '<div class="toggle-language-button' + ((BRLangJP) ? ' on' : '') +'"><span lang="ja" style="margin-top: 4px">日本語</span></div>'                                                                            +
+                   '<div class="toggle-language-button">'                                                                                                                                                                       +
+                        '<span lang="ja" class="br-en">日本語</span>'                                                                                                                                                           +
+                        '<span lang="ja" class="br-jp">English</span>'                                                                                                                                                          +
+                    '</div>'                                                                                                                                                                                                    +
                    '<div class="resize-button">'                                                                                                                                                                                +
-                       '<span lang="ja" style="' + ((!BRLangJP) ? 'margin-top: 3px; font-size: inherit">Resize' : 'margin-top: 4px; font-size: 10px">拡大する') +'</span>'                                                      +
+                       '<span lang="ja" class="br-en" style="margin-top: 3px; font-size: inherit">Resize</span>'                                                                                                                +
+                       '<span lang="ja" class="br-jp" style="margin-top: 4px; font-size: 10px">拡大する</span>'                                                                                                                 +
                    '</div>'                                                                                                                                                                                                     +
                '</div>'                                                                                                                                                                                                         +
                '<div class="brk" style="background-repeat: repeat-x; height: 39px; padding-top: 28px; padding-bottom: 3px; margin-top: 0px; margin-left: 0px; text-align: center">'                                             +
@@ -375,6 +391,12 @@ function constructBurnReviewHtml() {
 
     BRLog(strReview);
     $(strReview).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
+    setLanguage();
+}
+
+function setLanguage() {
+    var langToHide = BRLangJP ? ".br-en" : ".br-jp";
+    $(langToHide).addClass("br-hide");
 }
 
 function newBRItem() {
@@ -844,6 +866,18 @@ function bindDimOverlayClickEvent() {
 }
 
 function switchBRLang() {
+    if (!BRLangJP) {
+        localStorage.setItem("BRLangJP", true);
+    }
+    else {
+        localStorage.removeItem("BRLangJP");
+    }
+    BRLangJP = !BRLangJP;
+
+    $('.br-en,.br-jp').toggleClass('br-hide');
+}
+
+function switchBRLangDEPRECATED() {
 
     if (!BRLangJP) {
         localStorage.setItem("BRLangJP", true);
