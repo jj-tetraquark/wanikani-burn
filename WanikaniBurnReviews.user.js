@@ -254,15 +254,13 @@ function disableKanaInput() {
     wanakana.unbind(document.getElementById('user-response'));
 }
 
-function getBurnReview() {
+function newQuestion() {
 
     BRLog("Getting burn review");
 
     BRQuestion.SetAnswered(false);
 
     $("#user-response").attr("disabled", false).val("").focus();
-
-
     $(".answer-exception-form").css("display", "none");
 
     if (BRQuestion.IsComplete()) {
@@ -447,17 +445,13 @@ function setItemFontSize() {
 
 function skipItem() {
    	BRQuestion.Skip();
-    getBurnReview();
+    newQuestion();
     return false;
 }
 
 function displayStartMessage() {
-    if (!BRLangJP) {
-        $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">Start</a>');
-    }
-    else {
-        $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">開始</a>');
-    }
+    var text = BRLangJP ? "開始" : "Start";
+    $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">' + text + '</a>');
 }
 
 function displayLoadingMessage(color, english, japanese) {
@@ -997,7 +991,7 @@ function submitBRAnswer() {
         checkBurnReviewAnswer();
     }
     else {
-        getBurnReview();
+        newQuestion();
     }
 }
 
@@ -1050,7 +1044,7 @@ function main() {
         document.addEventListener('keydown', function(event) {
             if(event.keyCode == 13) { //Enter
                 if (BRQuestion.IsAnswered()) {
-                    getBurnReview();
+                    newQuestion();
                 }
             }
          });
