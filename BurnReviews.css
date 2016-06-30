@@ -1,5 +1,6 @@
-//TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'
-// Button CSS
+/*TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'*/
+/* Button CSS*/
+
 .item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{                    
     background-color: rgb(67, 67, 67);                                                                      
     background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));                         
