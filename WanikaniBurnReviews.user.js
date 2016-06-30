@@ -149,44 +149,6 @@ function getSection() {
     return strSection;
 }
 
-function getFadeCSS() {
-    var strFadeIn =
-    "<style type=\"text/css\">"          +
-	".fadeIn {"                          +
-        "-webkit-animation: fadein 1s;"  +
-                "animation: fadein 1s;"  +
-    "}"                                  +
-    "@keyframes fadein {"                +
-        "from { opacity: 0; }"           +
-        "to   { opacity: 0.9; }"         +
-    "}"                                  +
-    "@-webkit-keyframes fadein {"        +
-        "from { opacity: 0; }"           +
-        "to   { opacity: 0.9; }"         +
-    "}"                                  +
-	".fadeOut {"                         +
-        "-webkit-animation: fadeout 1s;" +
-                "animation: fadeout 1s;" +
-    "}"                                  +
-    "@keyframes fadeout {"               +
-        "from { opacity: 0.9; }"         +
-        "to   { opacity: 0; }"           +
-    "}"                                  +
-    "@-webkit-keyframes fadeout {"       +
-        "from { opacity: 0.9; }"         +
-        "to   { opacity: 0; }"           +
-    "}"                                  +
-    "</style>";
-    return strFadeIn;
-}
-
-//TODO - make a class for buttons so we're not targeting child divs
-//TODO - make this handle all non-file based CSS
-function getButtonCSS() {
-    var strButtons = "URL PENDING HOLD ON";
-    return strButtons;
-}
-
 function getApiKeyThen(callback) {
 
     // First check if the API key is in local storage.
@@ -210,14 +172,45 @@ function getApiKeyThen(callback) {
     return callback(api_key);
 }
 
+function addBurnReviewStylesThen(callback) {
+    BRLog("Getting the review page stylesheet...");
+    $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
+        function(data) {
+            BRLog("Got the review page document. Extracting styles");
+            var parser = new DOMParser();
+            var reviewsdoc = parser.parseFromString(data, "text/html");
+            var links = reviewsdoc.head.getElementsByTagName("link");
+            for (var i = 0; i < links.length; i++)
+            {
+                var link = links[i];
+                if (link.type == "text/css")
+                {
+                    BRLog("Adding " + link.outerHTML + " to document head");
+                    $("head").append(link);
+                }
+            }
+            appendAdditionalCSS();
+            callback();
+        });
+}
 
 function appendAdditionalCSS() {
-    BRLog("Undoing conflicting CSS");
-    $("head").append('<style type="text/css">.srs { width: 236px } menu, ol, ul { padding: 0 } p { margin: 0 0 10px }</style>');
-    $(getFadeCSS()).appendTo($("head"));
-    $(getButtonCSS()).appendTo($("head"));
-    $('<style type="text/css"> .radical-question { height:100%; margin-top:-10px; }</style>').appendTo($("head"));
-    $("ul").css("padding-left", "0px");
+    BRLog("Adding additional CSS");
+    $(getHackyCSS()).appendTo($("head"));
+    $(getBurnReviewStylesheet()).appendTo($("head"));
+}
+
+// This is for dumping CSS that hasn't made it in to the main file yet
+function getHackyCSS() {
+    var strFadeIn =
+    "<style type=\"text/css\">" +
+    "</style>";
+    return strFadeIn;
+}
+
+function getBurnReviewStylesheet() {
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css"; //TODO - remember to update this when you merge to master
+    return '<link rel="stylesheet" type="text/css" href="' + cssFile + '">';
 }
 
 function rand(low, high) {
@@ -587,30 +580,6 @@ function confirmRes() {
     return false;
 }
 
-function addBurnReviewStylesThen(callback) {
-    BRLog("Getting the review page stylesheet...");
-    $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
-        function(data) {
-            BRLog("Got the review page document. Extracting styles");
-            var parser = new DOMParser();
-            var reviewsdoc = parser.parseFromString(data, "text/html");
-            var links = reviewsdoc.head.getElementsByTagName("link");
-            for (var i = 0; i < links.length; i++)
-            {
-                var link = links[i];
-                if (link.type == "text/css")
-                {
-                    BRLog("Adding " + link.outerHTML + " to document head");
-                    $("head").append(link);
-                }
-            }
-            //Undo conflicting CSS from above import
-            appendAdditionalCSS();
-            callback();
-        });
-}
-
-
 function initBurnReviews() {
 
     BRLog("Initialising the Burn Review widget");
@@ -965,7 +934,5 @@ if (document.readyState === 'complete')
     main();
 else
     window.addEventListener("load", main, false);
-
-
 
 // ==/UserScript==

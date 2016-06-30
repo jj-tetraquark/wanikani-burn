@@ -1,6 +1,43 @@
 /*TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'*/
-/* Button CSS*/
+/*TODO - make a class for buttons so we're not targeting child divs*/
+/* Undo CSS conflicts from import */
+.srs { 
+    width: 236px;
+} 
+menu, ol, ul { 
+    padding: 0;
+} 
+p { 
+    margin: 0 0 10px;
+}
 
+/* Fade animations */
+.fadeIn {                          
+    -webkit-animation: fadein 1s;  
+            animation: fadein 1s;  
+}                                  
+@keyframes fadein {                
+    from { opacity: 0; }           
+    to   { opacity: 0.9; }         
+}                                  
+@-webkit-keyframes fadein {        
+    from { opacity: 0; }           
+    to   { opacity: 0.9; }         
+}                                  
+.fadeOut {                         
+    -webkit-animation: fadeout 1s; 
+            animation: fadeout 1s; 
+}                                  
+@keyframes fadeout {               
+    from { opacity: 0.9; }         
+    to   { opacity: 0; }           
+}                                  
+@-webkit-keyframes fadeout {       
+    from { opacity: 0.9; }         
+    to   { opacity: 0; }           
+}                                  
+
+/* Button CSS*/
 .item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{                    
     background-color: rgb(67, 67, 67);                                                                      
     background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));                         
@@ -58,3 +95,8 @@ div.brbsl {
 .br-hide {                                                                                                  
     display:none;                                                                                           
 }                                                                                                           
+
+.radical-question { 
+    height:100%;
+    margin-top:-10px; 
+}
