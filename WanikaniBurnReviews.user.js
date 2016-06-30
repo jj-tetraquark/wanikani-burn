@@ -124,31 +124,6 @@ function importWanaKana() {
     $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
 }
 
-function injectWidgetHtmlWrapper() {
-        $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
-        $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
-}
-
-function getSection() {
-    var strSection =
-        "<div class=\"span4\">"                                                                                                                                           +
-            "<section class=\"burn-reviews kotoba-table-list dashboard-sub-section\" style=\"z-index: 2; position: relative\">"                                           +
-                "<h3 class=\"small-caps\">"                                                                                                                               +
-                    '<span class="br-en">BURN REVIEWS</span>'                                                                                                             +
-                    '<span class="br-jp">焦げた復習</span>'                                                                                                               +
-                "</h3>"                                                                                                                                                   +
-                "<div id=\"loadingBR\" align=\"center\" style=\"position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px\"></div>" +
-                "<div class=\"see-more\" style=\"margin-top: -1px\">"                                                                                                     +
-                    "<a href=\"javascript:void(0)\" id=\"new-item\" class=\"small-caps\">"                                                                                +
-                        '<span class="br-en">NEW ITEM</span>'                                                                                                             +
-                        '<span class="br-jp">新しい項目</span>'                                                                                                           +
-                    "</a>"                                                                                                                                                +
-                "</div>"                                                                                                                                                  +
-            "</section>"                                                                                                                                                  +
-        "</div>";
-    return strSection;
-}
-
 function getApiKeyThen(callback) {
 
     // First check if the API key is in local storage.
@@ -213,76 +188,38 @@ function getBurnReviewStylesheet() {
     return '<link rel="stylesheet" type="text/css" href="' + cssFile + '">';
 }
 
-function rand(low, high) {
-    return Math.floor(Math.random()*(high + 1)) + low;
+function injectWidgetHtmlWrapper() {
+        $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
+        $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
 }
 
-function enableKanaInput() {
-    wanakana.bind(document.getElementById('user-response'));
+function getSection() {
+    var strSection =
+        '<div class="span4">'                                                                                                                                       +
+            '<section class="burn-reviews kotoba-table-list dashboard-sub-section" style="z-index: 2; position: relative">'                                         +
+                '<h3 class="small-caps">'                                                                                                                           +
+                    '<span class="br-en">BURN REVIEWS</span>'                                                                                                       +
+                    '<span class="br-jp">焦げた復習</span>'                                                                                                         +
+                '</h3>'                                                                                                                                             +
+                '<div id="loadingBR" align="center" style="position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px"></div>' +
+                '<div class="see-more" style="margin-top: -1px">'                                                                                                   +
+                    '<a href="javascript:void(0)" id="new-item" class="small-caps">'                                                                                +
+                        '<span class="br-en">NEW ITEM</span>'                                                                                                       +
+                        '<span class="br-jp">新しい項目</span>'                                                                                                     +
+                    '</a>'                                                                                                                                          +
+                '</div>'                                                                                                                                            +
+            '</section>'                                                                                                                                            +
+        '</div>';
+    return strSection;
 }
-
-function disableKanaInput() {
-    wanakana.unbind(document.getElementById('user-response'));
-}
-
-function newQuestion() {
-
-    BRLog("Getting burn review");
-
-    BRQuestion.SetAnswered(false);
-
-    $("#user-response").attr("disabled", false).val("").focus();
-    $(".answer-exception-form").css("display", "none");
-
-    if (BRQuestion.IsComplete()) {
-        newBRItem();
-        updateBRItem(true);
-    }
-
-    configureInputForEnglishOrJapanese();
-    $("#question-type-text").html(getReviewTypeText());
-    setLanguage(); //TODO See if there's a way to bind this to jquery.html();
-
-    document.getElementById('user-response').value = "";
-    $("#answer-form fieldset").removeClass("correct").removeClass("incorrect");
-
-}
-
-function getReviewTypeText() {
-    var reviewTypeTextEng;
-    var reviewTypeTextJp;
-
-    if (BRQuestion.IsAskingForMeaning()) {
-        reviewTypeTextEng = "Meaning";
-        reviewTypeTextJp  = "意味";
-    }
-    else {
-        if (BRQuestion.Item.important_reading == "onyomi") {
-            reviewTypeTextEng = "onyomi";
-            reviewTypeTextJp  = "音";
-        }
-        else {
-            reviewTypeTextEng = "kunyomi";
-            reviewTypeTextJp  = "訓";
-        }
-        reviewTypeTextEng += " Reading";
-        reviewTypeTextJp  += "読み";
-    }
-    return '<span class="br-en">' + reviewTypeTextEng + '</span><span class="br-jp">' + reviewTypeTextJp + '</span>';
-}
-
 
 function constructBurnReviewHtml() {
 
     BRLog("Constructing Burn Review HTML");
-    BRQuestion.SetAnswered(false);
     $("#user-response").attr("disabled", false).val("").focus();
 
     $("body").prepend('<div id="dim-overlay" style="position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none"></div>');
     BRLog("Overlay applied");
-
-    newBRItem();
-    BRLog("Got new item");
 
     //TODO - Strip out the inline css - should be able to put everything together in one generated stylesheet. Inline CSS is for styles that change.
     var strReview =
@@ -339,6 +276,64 @@ function constructBurnReviewHtml() {
     BRLog(strReview);
     $(strReview).insertAfter($(".burn-reviews.kotoba-table-list.dashboard-sub-section h3"));
     setLanguage();
+}
+
+function rand(low, high) {
+    return Math.floor(Math.random()*(high + 1)) + low;
+}
+
+function enableKanaInput() {
+    wanakana.bind(document.getElementById('user-response'));
+}
+
+function disableKanaInput() {
+    wanakana.unbind(document.getElementById('user-response'));
+}
+
+function newQuestion() {
+
+    BRLog("Getting burn review");
+
+    BRQuestion.SetAnswered(false);
+
+    $("#user-response").attr("disabled", false).val("").focus();
+    $(".answer-exception-form").css("display", "none");
+
+    if (BRQuestion.IsComplete()) {
+        newBRItem();
+        updateBRItem(true);
+    }
+
+    configureInputForEnglishOrJapanese();
+    $("#question-type-text").html(getReviewTypeText());
+    setLanguage(); //TODO See if there's a way to bind this to jquery.html();
+
+    document.getElementById('user-response').value = "";
+    $("#answer-form fieldset").removeClass("correct").removeClass("incorrect");
+
+}
+
+function getReviewTypeText() {
+    var reviewTypeTextEng;
+    var reviewTypeTextJp;
+
+    if (BRQuestion.IsAskingForMeaning()) {
+        reviewTypeTextEng = "Meaning";
+        reviewTypeTextJp  = "意味";
+    }
+    else {
+        if (BRQuestion.Item.important_reading == "onyomi") {
+            reviewTypeTextEng = "onyomi";
+            reviewTypeTextJp  = "音";
+        }
+        else {
+            reviewTypeTextEng = "kunyomi";
+            reviewTypeTextJp  = "訓";
+        }
+        reviewTypeTextEng += " Reading";
+        reviewTypeTextJp  += "読み";
+    }
+    return '<span class="br-en">' + reviewTypeTextEng + '</span><span class="br-jp">' + reviewTypeTextJp + '</span>';
 }
 
 function setLanguage() {
@@ -421,6 +416,12 @@ function skipItem() {
 function displayStartMessage() {
     var text = BRLangJP ? "開始" : "Start";
     $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">' + text + '</a>');
+}
+
+function bindStartButtonClickEvent() {
+    $("#loadingBR a").click(function() {
+        startWaniKaniBurnReviews();
+    });
 }
 
 function displayLoadingMessage(color, english, japanese) {
@@ -596,6 +597,9 @@ function initBurnReviews() {
 
 function constructBurnReviewWidget() {
 
+    BRLog("Getting new burn review item");
+    newBRItem();
+
     BRLog("Adding burn review section");
     constructBurnReviewHtml();
 
@@ -627,7 +631,7 @@ function bindMouseClickEvents() {
 
     bindLoadButtonClickEvent();
 
-    bindStartButtonClickEvent();
+    bindStartButtonToggleButtonClickEvent();
 
     bindLanguageToggleButtonClickEvent();
 
@@ -710,7 +714,7 @@ function bindLoadButtonClickEvent() {
     });
 }
 
-function bindStartButtonClickEvent() {
+function bindStartButtonToggleButtonClickEvent() {
     $(".brbss").click(function() {
         $(this).toggleClass("on");
         if ($(this).hasClass("on")) {
@@ -795,6 +799,7 @@ function switchBRLang() {
     $('.br-en,.br-jp').toggleClass('br-hide');
 }
 
+//TODO - Refactor this
 function checkBurnReviewAnswer() {
     var response = $("#user-response").val().toLowerCase().trim();
     var match = false;
@@ -876,6 +881,21 @@ function isAsciiPresent(e){
     return (BRQuestion.IsAskingForMeaning()) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
 }
 
+function startWaniKaniBurnReviews() {
+    if (!useCache) {
+        clearBurnedItemData();
+    }
+    BRLog("Loading...");
+
+    var checkReady = setInterval(function() {
+        BRLog("Checking for wanakana...");
+        if (wanakana !== undefined) {
+            clearInterval(checkReady);
+            initBurnReviews();
+        }
+    }, 250);
+}
+
 function main() {
 
     importWanaKana();
@@ -902,21 +922,7 @@ function main() {
         injectWidgetHtmlWrapper();
 
         displayStartMessage();
-
-        $("#loadingBR a").click( function() {
-
-            if (!useCache) clearBurnedItemData();
-            BRLog("Loading...");
-
-            var checkReady = setInterval(function() {
-                BRLog("Checking for wanakana...");
-                if (wanakana !== undefined) {
-                    clearInterval(checkReady);
-                    initBurnReviews();
-                }
-            }, 250);
-
-        });
+        bindStartButtonClickEvent();
 
         document.addEventListener('keydown', function(event) {
             if(event.keyCode == 13) { //Enter
