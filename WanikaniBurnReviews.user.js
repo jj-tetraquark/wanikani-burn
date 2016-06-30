@@ -120,7 +120,14 @@ window.BRDisableLogging = function() {
     localStorage.removeItem("BRLoggingEnabled");
 };
 
-$("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
+function importWanaKana() {
+    $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
+}
+
+function injectWidgetHtmlWrapper() {
+    $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
+    $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
+}
 
 function getSection() {
     var strSection =
@@ -962,6 +969,7 @@ function isAsciiPresent(e){
 
 function main() {
 
+    importWanaKana();
     getApiKeyThen(function(key) {
 
         apiKey = key; //global
@@ -982,8 +990,7 @@ function main() {
             return(this.replace(/^ +/,'').replace(/ +$/,''));
         };
 
-        $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
-        $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
+        injectWidgetHtmlWrapper();
 
         displayStartMessage();
 
