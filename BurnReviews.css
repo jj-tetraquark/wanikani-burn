@@ -1,0 +1,59 @@
+//TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'
+// Button CSS
+.item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{                    
+    background-color: rgb(67, 67, 67);                                                                      
+    background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));                         
+    color: #ffffff;                                                                                         
+    width: 30px;                                                                                            
+    vertical-align: middle;                                                                                 
+    font-size: 14px;                                                                                        
+    text-shadow: none;                                                                                      
+}                                                                                                           
+.item-toggle-buttons span, .right-side-toggle-buttons span, .left-side-action-buttons span{                 
+    -ms-writing-mode: tb-rl;                                                                                
+    -webkit-writing-mode: vertical-rl;                                                                      
+    writing-mode: vertical-rl;                                                                              
+    -webkit-touch-callout: none;                                                                            
+    -webkit-user-select: none;                                                                              
+    -khtml-user-select: none;                                                                               
+    -moz-user-select: none;                                                                                 
+    -ms-user-select: none;                                                                                  
+    user-select: none;                                                                                      
+    cursor: default;                                                                                        
+}                                                                                                           
+.right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {                                                   
+    background-color: #80c100;                                                                              
+    background-image: linear-gradient(to bottom, #8c0, #73ad00);                                            
+}                                                                                                           
+.item-toggle-buttons div {                                                                                  
+    height: 23px;                                                                                           
+}                                                                                                           
+.item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover { 
+    text-shadow: 0 0 0.2em #ffffff;                                                                         
+}                                                                                                           
+.item-toggle-buttons span, .toggle-language-button span {                                                   
+    margin-top: 5px                                                                                         
+}                                                                                                           
+.brbir.on {                                                                                                 
+    background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);                 
+}                                                                                                           
+.brbik.on {                                                                                                 
+    background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);                 
+}                                                                                                           
+.brbiv.on {                                                                                                 
+    background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);                 
+}                                                                                                           
+.right-side-toggle-buttons {                                                                                
+    position: absolute;                                                                                     
+    right: 0;                                                                                               
+}                                                                                                           
+div.brbsl {                                                                                                 
+    height: 35px;                                                                                           
+}                                                                                                           
+.brbsl span {                                                                                               
+    padding: 2px;                                                                                           
+    font-size: 10px;                                                                                        
+}                                                                                                           
+.br-hide {                                                                                                  
+    display:none;                                                                                           
+}                                                                                                           
