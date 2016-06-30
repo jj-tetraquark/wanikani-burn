@@ -47,17 +47,36 @@ BRQuestion = {
     IsKanji   : function() { return this.itemType === KANJI; },
     IsVocab   : function() { return this.itemType === VOCAB; },
 
-    IsAskingForMeaning: function() { return this.askingFor === MEANING; },
+    IsAskingForMeaning: function() { return this.askingFor === MEANING || this.IsRadical(); },
     IsAskingForReading: function() { return this.askingFor === READING; },
 
     IsAnswered : function() { return this.answered; },
     SetAnswered: function(answered) { this.answered = answered; },
 
+    GetAnswers : function() {
+        if (this.IsAskingForMeaning()) {
+            //TODO - user synonyms should be concatenated at fetch time
+            return (this.Item.usyn !== null) ? this.Item.meaning.concat(this.Item.usyn) : this.Item.meaning;
+        }
+        else {
+            if (BRQuestion.IsKanji()) {
+                var importantReading = BRQuestion.Item.important_reading;
+                return BRQuestion.Item[importantReading];
+            }
+            else {
+                return BRQuestion.Item.kana;
+            }
+        }
+    },
+
     Started    : function() { return this.progress > 0; },
     IsComplete : function() { return (this.IsRadical() && this.Started()) || this.progress === 2; },
     Restart    : function() { this.progress = 0; },
-    NextPart   : function() { this.progress++; },
     Skip       : function() { this.progress = 2; },
+    NextPart   : function() {
+        this.progress++;
+        this.askingFor = this.IsAskingForMeaning() ? READING : MEANING;
+    },
 
     DependingOnTypeUse : function (ifRadical, ifKanji, ifVocab) {
         return this.IsRadical() ? ifRadical : this.IsKanji() ? ifKanji : ifVocab;
@@ -65,11 +84,11 @@ BRQuestion = {
 
     //TODO - This method can probably be removed if I can stop this from being global
     Reset : function() {
-                this.askingFor = UNDEFINED;
-                this.itemType  = UNDEFINED;
-                this.Item      = {};
-                this.progress  = 0;
-                this.answered  = false;
+        this.askingFor = UNDEFINED;
+        this.itemType  = UNDEFINED;
+        this.Item      = {};
+        this.progress  = 0;
+        this.answered  = false;
     }
 };
 
@@ -108,7 +127,7 @@ function getSection() {
         "<div class=\"span4\">"                                                                                                                                           +
             "<section class=\"burn-reviews kotoba-table-list dashboard-sub-section\" style=\"z-index: 2; position: relative\">"                                           +
                 "<h3 class=\"small-caps\">"                                                                                                                               +
-                    '<span class="br-en">BURN REVIEWS</span>'                                                                                                           +
+                    '<span class="br-en">BURN REVIEWS</span>'                                                                                                             +
                     '<span class="br-jp">焦げた復習</span>'                                                                                                               +
                 "</h3>"                                                                                                                                                   +
                 "<div id=\"loadingBR\" align=\"center\" style=\"position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px\"></div>" +
@@ -280,25 +299,7 @@ function newQuestion() {
         updateBRItem(true);
     }
 
-    if (!BRQuestion.IsRadical() && (!BRQuestion.Started() || $("#answer-form fieldset").hasClass("correct"))) {
-        if (BRQuestion.IsAskingForMeaning()) {
-            BRQuestion.askingFor = READING;
-            enableKanaInput();
-            $("#user-response").attr({lang:"ja",placeholder:"答え"});
-            $("#question-type").removeClass("meaning").addClass("reading");
-        }
-        else {
-            BRQuestion.askingFor = MEANING;
-            disableKanaInput();
-            $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
-            $("#question-type").removeClass("reading").addClass("meaning");
-        }
-    }
-    else if (BRQuestion.IsRadical()) {
-        disableKanaInput();
-        $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
-        $("#question-type").removeClass("reading").addClass("meaning");
-    }
+    configureInputForEnglishOrJapanese();
     $("#question-type-text").html(getReviewTypeText());
     setLanguage(); //TODO See if there's a way to bind this to jquery.html();
 
@@ -695,10 +696,12 @@ function configureInputForEnglishOrJapanese() {
         disableKanaInput();
         $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
         $("#question-type").addClass("meaning");
+        $("#question-type").removeClass("reading");
     } else {
         enableKanaInput();
         $("#user-response").attr({lang:"ja",placeholder:"答え"});
         $("#question-type").addClass("reading");
+        $("#question-type").removeClass("meaning");
     }
 }
 
@@ -879,26 +882,9 @@ function switchBRLang() {
 function checkBurnReviewAnswer() {
     var response = $("#user-response").val().toLowerCase().trim();
     var match = false;
-    var answers;
+    var answers = BRQuestion.GetAnswers();
 
     $("#user-response").attr("disabled", true);
-
-    if (BRQuestion.IsAskingForMeaning()) {
-        answers = BRQuestion.Item.meaning;
-    }
-    else {
-        if (BRQuestion.IsKanji()) {
-            var importantReading = BRQuestion.Item.important_reading;
-            answers = BRQuestion.Item[importantReading];
-        }
-        else {
-            answers = BRQuestion.Item.kana;
-        }
-    }
-
-    if (BRQuestion.IsAskingForMeaning() && BRQuestion.Item.usyn !== null) {
-            answers = answers.concat(BRQuestion.Item.usyn);
-    }
 
     for (var a = 0; a < answers.length; a++) {
         if (response == answers[a]) match = true;
@@ -927,17 +913,17 @@ function checkBurnReviewAnswer() {
             if (match) {
                 $("#answer-form fieldset").removeClass("incorrect");
                 $("#answer-form fieldset").addClass("correct");
-                BRQuestion.NextPart();
+                BRQuestion.NextPart(); // TODO - this should sit in newQuestion but needs some reshuffling
             } else {
                 $("#answer-form fieldset").removeClass("correct");
                 $("#answer-form fieldset").addClass("incorrect");
 
-                // if array, concat in to string of comma-separated answers
-                answers = (answers instanceof Array) ? answers.join(", ") : answers;
+                // concat in to string of comma-separated answers
+                var answerList = answers.join(", ");
                 var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
 
-                var answerTextEng = '<div class="br-en">The answer was:<br />' + answers + '<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
-                var answerTextJp  = '<div class="br-jp">解答は<br />「' + answers + '」であった。<br />この項目を' + resurrectButton + '復活</a>したいか？</div>';
+                var answerTextEng = '<div class="br-en">The answer was:<br />' + answerList + '<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
+                var answerTextJp  = '<div class="br-jp">解答は<br />「' + answerList + '」であった。<br />この項目を' + resurrectButton + '復活</a>したいか？</div>';
                 $('.answer-exception-form span').html(answerTextEng + answerTextJp);
                 setLanguage();
 
@@ -978,7 +964,7 @@ function main() {
 
     getApiKeyThen(function(key) {
 
-        apiKey = key;
+        apiKey = key; //global
         BRLog("Running!");
 
         useCache            =  !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
