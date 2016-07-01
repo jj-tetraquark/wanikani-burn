@@ -44,7 +44,7 @@ p {
     color: #ffffff;                                                                                         
     width: 30px;                                                                                            
     vertical-align: middle;                                                                                 
-    font-size: 14px;                                                                                        
+    font-size: 12px;                                                                                        
     text-shadow: none;                                                                                      
 }                                                                                                           
 .item-toggle-buttons span, .right-side-toggle-buttons span, .left-side-action-buttons span{                 
@@ -59,6 +59,17 @@ p {
     user-select: none;                                                                                      
     cursor: default;                                                                                        
 }                                                                                                           
+div.left-side-action-buttons {
+    position:absolute;
+    left:0;
+    z-index: 11;
+}
+div.item-toggle-buttons {
+    position: absolute;
+    top: 0;
+    z-index: 11; 
+}
+
 .right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {                                                   
     background-color: #80c100;                                                                              
     background-image: linear-gradient(to bottom, #8c0, #73ad00);                                            
@@ -92,6 +103,17 @@ div.brbsl {
     padding: 2px;                                                                                           
     font-size: 10px;                                                                                        
 }                                                                                                           
+.brbsl span.br-jp {
+    padding: 6px;
+}
+.brbsl span.br-en {
+    padding: 4px;
+}
+
+.toggle-language-button {
+    height: 56px;
+}
+
 .br-hide {                                                                                                  
     display:none;                                                                                           
 }                                                                                                           
