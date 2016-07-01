@@ -44,7 +44,6 @@ p {
     color: #ffffff;                                                                                         
     width: 30px;                                                                                            
     vertical-align: middle;                                                                                 
-    font-size: 12px;                                                                                        
     text-shadow: none;                                                                                      
 }                                                                                                           
 .item-toggle-buttons span, .right-side-toggle-buttons span, .left-side-action-buttons span{                 
@@ -62,11 +61,13 @@ p {
 div.left-side-action-buttons {
     position:absolute;
     left:0;
+    bottom: 2px;
     z-index: 11;
 }
 div.item-toggle-buttons {
     position: absolute;
     top: 0;
+    left: 0;
     z-index: 11; 
 }
 
@@ -104,10 +105,10 @@ div.brbsl {
     font-size: 10px;                                                                                        
 }                                                                                                           
 .brbsl span.br-jp {
-    padding: 6px;
+    padding: 4px;
 }
 .brbsl span.br-en {
-    padding: 4px;
+    padding: 6px;
 }
 
 .toggle-language-button {
