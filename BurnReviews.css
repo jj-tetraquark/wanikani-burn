@@ -37,6 +37,55 @@ p {
     to   { opacity: 0; }           
 }                                  
 
+#br-question {
+    position: relative;
+    background-color: #d4d4d4;
+    padding-left: 30px;
+    padding-right: 30px;
+    height: 142px;
+}
+
+.answer-exception-form {
+    position: absolute;
+    width: 310px;
+    margin-top: 78px;
+    margin-left: 30px;
+    top: initial;
+    bottom: initial;
+    left: initial;
+    display: none;
+}
+
+.answer-exception-form span {
+    background-color: rgba(162, 162, 162, 0.9);
+    box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75);
+}
+
+.brk {
+    background-repeat: repeat-x;
+    height: 70px;
+    margin-top: 0px;
+    margin-left: 0px;
+    box-sizing: border-box;
+    padding-top: 25px;
+    text-align: center;
+}
+
+.bri {
+    color: #ffffff;
+    font-size: 48px;
+    text-shadow:0 1px 0 rgba(0,0,0,0.2);
+}
+
+.question-type {
+    height: 33px;
+}
+
+.question-type h1 {
+    margin: -0.25em 0 0 0;
+    text-shadow: none;
+}
+
 /* Button CSS*/
 .item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{                    
     background-color: rgb(67, 67, 67);                                                                      
@@ -58,11 +107,18 @@ p {
     user-select: none;                                                                                      
     cursor: default;                                                                                        
 }                                                                                                           
+
+.left-side-action-buttons div {
+    height: 35px;
+}
+
+
 div.left-side-action-buttons {
     position:absolute;
     left:0;
     bottom: 2px;
     z-index: 11;
+    font-size: 10px;
 }
 div.item-toggle-buttons {
     position: absolute;
@@ -97,12 +153,8 @@ div.item-toggle-buttons {
     position: absolute;                                                                                     
     right: 0;                                                                                               
 }                                                                                                           
-div.brbsl {                                                                                                 
-    height: 35px;                                                                                           
-}                                                                                                           
 .brbsl span {                                                                                               
     padding: 2px;                                                                                           
-    font-size: 10px;                                                                                        
 }                                                                                                           
 .brbsl span.br-jp {
     padding: 4px;
@@ -118,6 +170,16 @@ div.brbsl {
 .br-hide {                                                                                                  
     display:none;                                                                                           
 }                                                                                                           
+
+.brbss {
+    height: 35px;
+    line-height: 1.1;
+    box-sizing: border-box;
+    padding: 1px;
+}
+.brbss .br-en {
+    line-height: 0.9;
+}
 
 .radical-question { 
     height:100%;

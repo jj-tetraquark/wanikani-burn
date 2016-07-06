@@ -184,6 +184,7 @@ function getHackyCSS() {
 }
 
 function getBurnReviewStylesheet() {
+    // TODO - add a version query string to help prevent caching
     var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css"; //TODO - remember to update this when you merge to master
     return '<link rel="stylesheet" type="text/css" href="' + cssFile + '">';
 }
@@ -191,6 +192,7 @@ function getBurnReviewStylesheet() {
 function injectWidgetHtmlWrapper() {
         $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
         $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
+        setLanguage();
 }
 
 function getSection() {
@@ -223,11 +225,11 @@ function constructBurnReviewHtml() {
 
     //TODO - Strip out the inline css - should be able to put everything together in one generated stylesheet. Inline CSS is for styles that change.
     var strReview =
-       '<div class="answer-exception-form" id="answer-exception" align="center" style="position: absolute; width: 310px; margin-top: 78px; margin-left: 30px; top: initial; bottom: initial; left: initial; display: none">'     +
-           '<span style="background-color: rgba(162, 162, 162, 0.9); box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75)">Answer goes here</span>'                                                                                   +
+       '<div class="answer-exception-form" id="answer-exception" align="center">'                                                                                                                                                +
+           '<span>Answer goes here</span>'                                                                                                                                                                                       +
         '</div>'                                                                                                                                                                                                                 +
-        '<div id="question" style="position: relative; background-color: #d4d4d4; padding-left: 30px; padding-right: 30px; height: 142px">'                                                                                      +
-            '<div class="item-toggle-buttons" position: absolute; margin-top: 0px; margin-left: -30px; z-index: 11">'                                                                                                            +
+        '<div id="br-question">'                                                                                                                                                                                                 +
+            '<div class="item-toggle-buttons">'                                                                                                                                                                                  +
                 '<div class="brbir' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                                                                            +
                     '<span lang="ja">部</span>'                                                                                                                                                                                  +
                 '</div>'                                                                                                                                                                                                         +
@@ -243,9 +245,9 @@ function constructBurnReviewHtml() {
                     '<span class="br-en" lang="ja">Load</span>'                                                                                                                                                                  +
                     '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                                                                +
                 '</div>'                                                                                                                                                                                                         +
-                '<div class="brbss' + ((localStorage.getItem('"BRStartButton') !== null) ? ' on' : '') +'" style="height: 35px !important">'                                                                                     +
-                    '<span lang="ja" class="br-en" style="margin-top: 2px; font-size: 10px; line-height: 0.9">Start Button</span>'                                                                                               +
-                    '<span lang="ja" class="br-jp" style="margin-top: 2px; font-size: 11px !important; line-height: 1.1; margin-left: -1px">開始ボタン</span>'                                                                   +
+                '<div class="brbss' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                                                                                      +
+                    '<span lang="ja" class="br-en">Start Button</span>'                                                                                                                                                          +
+                    '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                                                                                                                      +
                 '</div>'                                                                                                                                                                                                         +
             '</div>'                                                                                                                                                                                                             +
             '<div class="right-side-toggle-buttons">'                                                                                                                                                                            +
@@ -258,10 +260,10 @@ function constructBurnReviewHtml() {
                     '<span lang="ja" class="br-jp" style="margin-top: 4px; font-size: 10px">拡大する</span>'                                                                                                                     +
                 '</div>'                                                                                                                                                                                                         +
                 '</div>'                                                                                                                                                                                                         +
-                '<div class="brk" style="background-repeat: repeat-x; height: 39px; padding-top: 28px; padding-bottom: 3px; margin-top: 0px; margin-left: 0px; text-align: center">'                                             +
-                    '<span class="bri" lang="ja" style="color: #ffffff; font-size: 48px; text-shadow:0 1px 0 rgba(0,0,0,0.2)">' + BRQuestion.Item.character +'</span>'                                                           +
+                '<div class="brk">' /*TODO - Rename this class */                                                                                                                                                                +
+                    '<span class="bri" lang="ja">' + BRQuestion.Item.character +'</span>'  /*TODO - Rename this class too */                                                                                                     +
                 '</div>'                                                                                                                                                                                                         +
-                '<div id="question-type" style="margin: 0px 0px 0px 0px; height: 33px"><h1 id="question-type-text" align="center" style="margin: -5px 0px 0px 0px; text-shadow: none">' + getReviewTypeText() +'</h1></div>'     +
+                '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                                                                       +
                 '<div id="answer-form">'                                                                                                                                                                                         +
                     '<form onSubmit="return false">'                                                                                                                                                                             +
                         '<fieldset style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px">'                                                                                                                                   +
