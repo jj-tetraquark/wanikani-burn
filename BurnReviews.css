@@ -37,7 +37,7 @@ p {
     to   { opacity: 0; }           
 }                                  
 
-#br-question {
+.br-question {
     position: relative;
     background-color: #d4d4d4;
     padding-left: 30px;
