@@ -164,15 +164,14 @@ function addBurnReviewStylesThen(callback) {
                     $("head").append(link);
                 }
             }
-            appendAdditionalCSS();
-            callback();
+            appendAdditionalCSSThen(callback);
         });
 }
 
-function appendAdditionalCSS() {
+function appendAdditionalCSSThen(callback) {
     BRLog("Adding additional CSS");
     $(getHackyCSS()).appendTo($("head"));
-    $(getBurnReviewStylesheet()).appendTo($("head"));
+    appendBurnReviewStylesThen(callback);
 }
 
 // This is for dumping CSS that hasn't made it in to the main file yet
@@ -183,10 +182,18 @@ function getHackyCSS() {
     return strFadeIn;
 }
 
-function getBurnReviewStylesheet() {
+function appendBurnReviewStylesThen(callback) {
     // TODO - add a version query string to help prevent caching
     var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css"; //TODO - remember to update this when you merge to master
-    return '<link rel="stylesheet" type="text/css" href="' + cssFile + '">';
+
+    $.get(cssFile, function(content) {
+
+        if (!$('#burnReviewStyles').length) {
+            $('head').append('<style id="burnReviewStyles"></style>');
+        }
+        $('#burnReviewStyles').text(content);
+        callback();
+    });
 }
 
 function injectWidgetHtmlWrapper() {
@@ -934,7 +941,10 @@ function main() {
             }
          });
 
-        if (localStorage.getItem("BRStartButton") === null) $("#loadingBR a").click();
+        if (localStorage.getItem("BRStartButton") === null)
+        {
+            startWaniKaniBurnReviews();
+        }
     });
 }
 
