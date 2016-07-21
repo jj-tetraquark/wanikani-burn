@@ -183,8 +183,8 @@ function getHackyCSS() {
 }
 
 function appendBurnReviewStylesThen(callback) {
-    // TODO - add a version query string to help prevent caching
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css"; //TODO - remember to update this when you merge to master
+    // TODO - tie query string to release version
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.1"; //TODO - remember to update this when you merge to master
 
     $.get(cssFile, function(content) {
 
@@ -232,54 +232,54 @@ function constructBurnReviewHtml() {
 
     //TODO - Strip out the inline css - should be able to put everything together in one generated stylesheet. Inline CSS is for styles that change.
     var strReview =
-       '<div class="answer-exception-form" id="answer-exception" align="center">'                                                                                                                                                +
-           '<span>Answer goes here</span>'                                                                                                                                                                                       +
-        '</div>'                                                                                                                                                                                                                 +
-        '<div id="question" class="br-question">'                                                                                                                                                                                +
-            '<div class="item-toggle-buttons">'                                                                                                                                                                                  +
-                '<div class="brbir' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                                                                            +
-                    '<span lang="ja">部</span>'                                                                                                                                                                                  +
-                '</div>'                                                                                                                                                                                                         +
-                '<div class="brbik' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px !important">'                                                                                                           +
-                    '<span lang="ja">漢</span>'                                                                                                                                                                                  +
-                '</div>'                                                                                                                                                                                                         +
-                '<div class="brbiv' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                                                                               +
-                    '<span lang="ja">語</span>'                                                                                                                                                                                  +
-                '</div>'                                                                                                                                                                                                         +
-            '</div>'                                                                                                                                                                                                             +
-            '<div class="left-side-action-buttons" margin-top: 70px; z-index: 11">'                                                                                                                                              +
-                '<div class="brbsl">'                                                                                                                                                                                            +
-                    '<span class="br-en" lang="ja">Load</span>'                                                                                                                                                                  +
-                    '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                                                                +
-                '</div>'                                                                                                                                                                                                         +
-                '<div class="brbss' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                                                                                      +
-                    '<span lang="ja" class="br-en">Start Button</span>'                                                                                                                                                          +
-                    '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                                                                                                                      +
-                '</div>'                                                                                                                                                                                                         +
-            '</div>'                                                                                                                                                                                                             +
-            '<div class="right-side-toggle-buttons">'                                                                                                                                                                            +
-                '<div class="toggle-language-button">'                                                                                                                                                                           +
-                    '<span lang="ja" class="br-en">日本語</span>'                                                                                                                                                                +
-                    '<span lang="ja" class="br-jp">English</span>'                                                                                                                                                               +
-                '</div>'                                                                                                                                                                                                         +
-                '<div class="resize-button">'                                                                                                                                                                                    +
-                    '<span lang="ja" class="br-en" style="margin-top: 3px; font-size: inherit">Resize</span>'                                                                                                                    +
-                    '<span lang="ja" class="br-jp" style="margin-top: 4px; font-size: 10px">拡大する</span>'                                                                                                                     +
-                '</div>'                                                                                                                                                                                                         +
-                '</div>'                                                                                                                                                                                                         +
-                '<div class="brk">' /*TODO - Rename this class */                                                                                                                                                                +
-                    '<span class="bri" lang="ja">' + BRQuestion.Item.character +'</span>'  /*TODO - Rename this class too */                                                                                                     +
-                '</div>'                                                                                                                                                                                                         +
-                '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                                                                       +
-                '<div id="answer-form">'                                                                                                                                                                                         +
-                    '<form onSubmit="return false">'                                                                                                                                                                             +
-                        '<fieldset style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px">'                                                                                                                                   +
-                            '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text" style="height: 35px; margin-bottom: 0px"></input>' +
-                            '<button id="answer-button" style="width: 0px; height: 34px; padding: 0px 20px 0px 5px; top: 0px; right: 0px" ><i class="icon-chevron-right"></i></button>'                                          +
-                        '</fieldset>'                                                                                                                                                                                            +
-                    '</form>'                                                                                                                                                                                                    +
-                '</div>'                                                                                                                                                                                                         +
-            '</div>'                                                                                                                                                                                                             +
+       '<div class="answer-exception-form" id="answer-exception" align="center">'                                                                                                       +
+           '<span>Answer goes here</span>'                                                                                                                                              +
+        '</div>'                                                                                                                                                                        +
+        '<div id="question" class="br-question">'                                                                                                                                       +
+            '<div class="item-toggle-buttons">'                                                                                                                                         +
+                '<div class="brbir' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                                   +
+                    '<span lang="ja">部</span>'                                                                                                                                         +
+                '</div>'                                                                                                                                                                +
+                '<div class="brbik' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px !important">'                                                                  +
+                    '<span lang="ja">漢</span>'                                                                                                                                         +
+                '</div>'                                                                                                                                                                +
+                '<div class="brbiv' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                                      +
+                    '<span lang="ja">語</span>'                                                                                                                                         +
+                '</div>'                                                                                                                                                                +
+            '</div>'                                                                                                                                                                    +
+            '<div class="left-side-action-buttons" margin-top: 70px; z-index: 11">'                                                                                                     +
+                '<div class="brbsl">'                                                                                                                                                   +
+                    '<span class="br-en" lang="ja">Load</span>'                                                                                                                         +
+                    '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                       +
+                '</div>'                                                                                                                                                                +
+                '<div class="brbss' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                                             +
+                    '<span lang="ja" class="br-en">Start Button</span>'                                                                                                                 +
+                    '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                                                                             +
+                '</div>'                                                                                                                                                                +
+            '</div>'                                                                                                                                                                    +
+            '<div class="right-side-toggle-buttons">'                                                                                                                                   +
+                '<div class="toggle-language-button">'                                                                                                                                  +
+                    '<span lang="ja" class="br-en">日本語</span>'                                                                                                                       +
+                    '<span lang="ja" class="br-jp">English</span>'                                                                                                                      +
+                '</div>'                                                                                                                                                                +
+                '<div class="resize-button">'                                                                                                                                           +
+                    '<span lang="ja" class="br-en" style="margin-top: 3px; font-size: inherit">Resize</span>'                                                                           +
+                    '<span lang="ja" class="br-jp" style="margin-top: 4px; font-size: 10px">拡大する</span>'                                                                            +
+                '</div>'                                                                                                                                                                +
+                '</div>'                                                                                                                                                                +
+                '<div class="brk">' /*TODO - Rename this class */                                                                                                                       +
+                    '<span class="bri" lang="ja">' + BRQuestion.Item.character +'</span>'  /*TODO - Rename this class too */                                                            +
+                '</div>'                                                                                                                                                                +
+                '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
+                '<div id="answer-form">'                                                                                                                                                +
+                    '<form onSubmit="return false">'                                                                                                                                    +
+                        '<fieldset style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px">'                                                                                          +
+                            '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text"></input>' +
+                            '<button id="answer-button"><i class="icon-chevron-right"></i></button>'                                                                                    +
+                        '</fieldset>'                                                                                                                                                   +
+                    '</form>'                                                                                                                                                           +
+                '</div>'                                                                                                                                                                +
+            '</div>'                                                                                                                                                                    +
         '</div>';
 
     BRLog(strReview);

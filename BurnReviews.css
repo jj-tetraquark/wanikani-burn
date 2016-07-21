@@ -185,3 +185,16 @@ div.item-toggle-buttons {
     height:100%;
     margin-top:-10px; 
 }
+
+input#user-response {
+    height: 35px;
+    margin-bottom: 0px;
+}
+
+button#answer-button {
+    width: 0px;
+    height: 34px;
+    padding: 0px 20px 0px 5px;
+    top: 0px;
+    right: 0px;
+}
