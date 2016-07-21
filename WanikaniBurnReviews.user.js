@@ -184,7 +184,7 @@ function getHackyCSS() {
 
 function appendBurnReviewStylesThen(callback) {
     // TODO - tie query string to release version
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.1"; //TODO - remember to update this when you merge to master
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.4"; //TODO - remember to update this when you merge to master
 
     $.get(cssFile, function(content) {
 
@@ -247,7 +247,7 @@ function constructBurnReviewHtml() {
                     '<span lang="ja">語</span>'                                                                                                                                         +
                 '</div>'                                                                                                                                                                +
             '</div>'                                                                                                                                                                    +
-            '<div class="left-side-action-buttons" margin-top: 70px; z-index: 11">'                                                                                                     +
+            '<div class="left-side-action-buttons">'                                                                                                                                    +
                 '<div class="brbsl">'                                                                                                                                                   +
                     '<span class="br-en" lang="ja">Load</span>'                                                                                                                         +
                     '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                       +
@@ -263,8 +263,8 @@ function constructBurnReviewHtml() {
                     '<span lang="ja" class="br-jp">English</span>'                                                                                                                      +
                 '</div>'                                                                                                                                                                +
                 '<div class="resize-button">'                                                                                                                                           +
-                    '<span lang="ja" class="br-en" style="margin-top: 3px; font-size: inherit">Resize</span>'                                                                           +
-                    '<span lang="ja" class="br-jp" style="margin-top: 4px; font-size: 10px">拡大する</span>'                                                                            +
+                    '<span lang="ja" class="br-en">Resize</span>'                                                                                                                       +
+                    '<span lang="ja" class="br-jp">拡大する</span>'                                                                                                                     +
                 '</div>'                                                                                                                                                                +
                 '</div>'                                                                                                                                                                +
                 '<div class="brk">' /*TODO - Rename this class */                                                                                                                       +

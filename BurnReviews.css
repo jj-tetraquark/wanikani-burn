@@ -112,7 +112,6 @@ p {
     height: 35px;
 }
 
-
 div.left-side-action-buttons {
     position:absolute;
     left:0;
@@ -127,6 +126,11 @@ div.item-toggle-buttons {
     z-index: 11; 
 }
 
+.left-side-action-buttons span, .right-side-toggle-buttons span {
+    height: 100%;
+    text-align: center;
+}
+
 .right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {                                                   
     background-color: #80c100;                                                                              
     background-image: linear-gradient(to bottom, #8c0, #73ad00);                                            
@@ -136,9 +140,6 @@ div.item-toggle-buttons {
 }                                                                                                           
 .item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover { 
     text-shadow: 0 0 0.2em #ffffff;                                                                         
-}                                                                                                           
-.item-toggle-buttons span, .toggle-language-button span {                                                   
-    margin-top: 5px                                                                                         
 }                                                                                                           
 .brbir.on {                                                                                                 
     background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);                 
@@ -153,18 +154,13 @@ div.item-toggle-buttons {
     position: absolute;                                                                                     
     right: 0;                                                                                               
 }                                                                                                           
-.brbsl span {                                                                                               
-    padding: 2px;                                                                                           
-}                                                                                                           
-.brbsl span.br-jp {
-    padding: 4px;
-}
-.brbsl span.br-en {
-    padding: 6px;
-}
 
 .toggle-language-button {
-    height: 56px;
+    height: 70px;
+}
+
+.resize-button {
+    height: 69px;
 }
 
 .br-hide {                                                                                                  
