@@ -195,11 +195,37 @@ button#answer-button {
     right: 0px;
 }
 
+.burn-review-container {
+    float:left;
+}
 
 @media (max-width: 979px) and (min-width: 768px) {
     #question #question-type h1 span.br-en {
         font-size: 0.7em;
     }
 
+}
+
+@media (max-width: 767px) {
+    .burn-review-container {
+        float: none;
+    }
+
+    #question #question-type h1 span.br-en {
+        font-size: 2em;
+    }
+
+    #answer-form input#user-response {
+        font-size: 1.5em;
+    }
+
+    .resize-button {
+        display:none;
+    }
+
+    .toggle-language-button {
+        height: 139px;
+        font-size:18px;
+    }
 }
 

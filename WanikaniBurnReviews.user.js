@@ -184,7 +184,7 @@ function getHackyCSS() {
 
 function appendBurnReviewStylesThen(callback) {
     // TODO - tie query string to release version
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.4"; //TODO - remember to update this when you merge to master
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.6"; //TODO - remember to update this when you merge to master
 
     $.get(cssFile, function(content) {
 
@@ -197,7 +197,7 @@ function appendBurnReviewStylesThen(callback) {
 }
 
 function injectWidgetHtmlWrapper() {
-        $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col" style="float: left"></div>');
+        $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col burn-review-container"></div>');
         $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
         setLanguage();
 }
