@@ -400,17 +400,19 @@ function setItemFontSize() {
     var itemLength = BRQuestion.Item.character.length;
     var fontSize = 48;
     switch(itemLength) {
+        case 1:
+        case 2:
+        case 3:
+            fontSize = 48;
+            break;
         case 4:
             fontSize = 38;
             break;
         case 5:
             fontSize = 28;
             break;
-        case 6:
-            fontSize = 24;
-            break;
         default:
-            fontSize = 48;
+            fontSize = 24;
             break;
     }
     $(".bri").css("font-size", fontSize + "px");
@@ -852,7 +854,7 @@ function checkBurnReviewAnswer() {
                 var answerList = answers.join(", ");
                 var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
 
-                var answerTextEng = '<div class="br-en">The answer was:<br />' + answerList + '<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
+                var answerTextEng = '<div class="br-en">The answer was:<br />"' + answerList + '"<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
                 var answerTextJp  = '<div class="br-jp">解答は<br />「' + answerList + '」であった。<br />この項目を' + resurrectButton + '復活</a>したいか？</div>';
                 $('.answer-exception-form span').html(answerTextEng + answerTextJp);
                 setLanguage();
