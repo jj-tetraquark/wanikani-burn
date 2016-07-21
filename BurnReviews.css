@@ -186,7 +186,7 @@ div.item-toggle-buttons {
     margin-top:-10px; 
 }
 
-input#user-response {
+#answer-form input#user-response {
     height: 35px;
     margin-bottom: 0px;
 }
