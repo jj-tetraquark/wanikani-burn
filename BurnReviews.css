@@ -86,6 +86,7 @@ p {
     text-shadow: none;
 }
 
+
 /* Button CSS*/
 .item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{                    
     background-color: rgb(67, 67, 67);                                                                      
@@ -193,3 +194,12 @@ button#answer-button {
     top: 0px;
     right: 0px;
 }
+
+
+@media (max-width: 979px) and (min-width: 768px) {
+    #question #question-type h1 span.br-en {
+        font-size: 0.7em;
+    }
+
+}
+
