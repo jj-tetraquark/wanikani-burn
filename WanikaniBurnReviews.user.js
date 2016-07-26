@@ -149,7 +149,10 @@ function getApiKeyThen(callback) {
 
 function addBurnReviewStylesThen(callback) {
 
-    $(getPriorityCSS()).appendTo($("head"));
+    if (stylesAlreadyAdded()) {
+        return callback();
+    }
+
     BRLog("Getting the review page stylesheet...");
     $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
         function(data) {
@@ -166,27 +169,16 @@ function addBurnReviewStylesThen(callback) {
                     $("head").append(link);
                 }
             }
-            appendAdditionalCSSThen(callback);
+            appendExternalBurnReviewStylesheetThen(callback);
         });
 }
 
-function appendAdditionalCSSThen(callback) {
+function stylesAlreadyAdded() {
+    return $('#burnReviewStyles').length > 0;
+}
+
+function appendExternalBurnReviewStylesheetThen(callback) {
     BRLog("Adding additional CSS");
-    appendExternalBurnReviewStylesheet(callback);
-}
-
-// This is for dumping CSS that must be present before loading main stylesheet
-function getPriorityCSS() {
-    var strFadeIn =
-    '<style type="text/css">' +
-        '.burn-review-container {' +
-            'float:left;' +
-        '}' +
-    '</style>';
-    return strFadeIn;
-}
-
-function appendExternalBurnReviewStylesheet(callback) {
     // TODO - tie query string to release version
     var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.6"; //TODO - remember to update this when you merge to master
 
@@ -198,6 +190,18 @@ function appendExternalBurnReviewStylesheet(callback) {
         $('#burnReviewStyles').text(content);
         callback();
     });
+}
+
+// This is for dumping CSS that must be present before loading main stylesheet
+function getPriorityCSS() {
+    var strFadeIn =
+    '<style type="text/css">' +
+        '.burn-review-container {' +
+            'float:left;' +
+        '}' +
+    '</style>';
+    $(strFadeIn).appendTo($("head"));
+    return strFadeIn;
 }
 
 function injectWidgetHtmlWrapper() {
@@ -934,6 +938,7 @@ function main() {
             return(this.replace(/^ +/,'').replace(/ +$/,''));
         };
 
+        getPriorityCSS();
         injectWidgetHtmlWrapper();
 
         displayStartMessage();
