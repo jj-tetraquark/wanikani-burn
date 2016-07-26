@@ -150,6 +150,7 @@ function getApiKeyThen(callback) {
 function addBurnReviewStylesThen(callback) {
 
     if (stylesAlreadyAdded()) {
+        BRLog("Styles already added, don't need to add again");
         return callback();
     }
 
@@ -193,7 +194,7 @@ function appendExternalBurnReviewStylesheetThen(callback) {
 }
 
 // This is for dumping CSS that must be present before loading main stylesheet
-function getPriorityCSS() {
+function appendPriorityCSS() {
     var strFadeIn =
     '<style type="text/css">' +
         '.burn-review-container {' +
@@ -938,7 +939,7 @@ function main() {
             return(this.replace(/^ +/,'').replace(/ +$/,''));
         };
 
-        getPriorityCSS();
+        appendPriorityCSS();
         injectWidgetHtmlWrapper();
 
         displayStartMessage();
