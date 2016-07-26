@@ -148,6 +148,8 @@ function getApiKeyThen(callback) {
 }
 
 function addBurnReviewStylesThen(callback) {
+
+    $(getPriorityCSS()).appendTo($("head"));
     BRLog("Getting the review page stylesheet...");
     $.ajax({url:"https://www.wanikani.com/review", dataType:"html"}).done(
         function(data) {
@@ -170,19 +172,21 @@ function addBurnReviewStylesThen(callback) {
 
 function appendAdditionalCSSThen(callback) {
     BRLog("Adding additional CSS");
-    $(getHackyCSS()).appendTo($("head"));
-    appendBurnReviewStylesThen(callback);
+    appendExternalBurnReviewStylesheet(callback);
 }
 
-// This is for dumping CSS that hasn't made it in to the main file yet
-function getHackyCSS() {
+// This is for dumping CSS that must be present before loading main stylesheet
+function getPriorityCSS() {
     var strFadeIn =
-    "<style type=\"text/css\">" +
-    "</style>";
+    '<style type="text/css">' +
+        '.burn-review-container {' +
+            'float:left;' +
+        '}' +
+    '</style>';
     return strFadeIn;
 }
 
-function appendBurnReviewStylesThen(callback) {
+function appendExternalBurnReviewStylesheet(callback) {
     // TODO - tie query string to release version
     var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.6"; //TODO - remember to update this when you merge to master
 
