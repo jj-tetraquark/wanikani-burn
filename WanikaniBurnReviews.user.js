@@ -2,14 +2,14 @@
 // @name        Wanikani Burn Reviews
 // @namespace   wkburnreviewnew
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
-// @exclude		*.wanikani.com
-// @include     *.wanikani.com/dashboard*
 // @version     2.1.2
 // @author      Jonny Dark
+// @license     Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0); http://creativecommons.org/licenses/by-nc/4.0/
+// @include     http://www.wanikani.com/
+// @include     https://www.wanikani.com/
+// @include     http://www.wanikani.com/dashboard
+// @include     https://www.wanikani.com/dashboard
 // @grant       none
-
-/* This script is licensed under the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license
-*  Details: http://creativecommons.org/licenses/by-nc/4.0/ */
 
 
 // CONSTANTS
@@ -916,7 +916,16 @@ function startWaniKaniBurnReviews() {
     }, 250);
 }
 
+function pageIsDashboard() {
+    return $('title').text().search("Dashboard") > 0;
+}
+
 function main() {
+
+    if (!pageIsDashboard()) {
+        BRLog("Script not running on dashboard, exiting...");
+        return;
+    }
 
     importWanaKana();
     getApiKeyThen(function(key) {
