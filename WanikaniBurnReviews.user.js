@@ -55,8 +55,7 @@ BRQuestion = {
 
     GetAnswers : function() {
         if (this.IsAskingForMeaning()) {
-            //TODO - user synonyms should be concatenated at fetch time
-            return (this.Item.usyn !== null) ? this.Item.meaning.concat(this.Item.usyn) : this.Item.meaning;
+            return this.Item.meaning;
         }
         else {
             if (BRQuestion.IsKanji()) {
@@ -466,16 +465,21 @@ function getRadicalCharacter(radical) {
             "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
 }
 
-function ItemIsBurned(item) {
+function itemIsBurned(item) {
     return item.user_specific ? item.user_specific.burned : false;
+}
+
+function getMeaning(item) {
+    var usyn = item.user_specific ? item.user_specific.user_synonyms : null;
+    var meaning = item.meaning.split(',');
+    return usyn !== null ? meaning.concat(usyn) : meaning;
 }
 
 function fetchAndCacheBurnedRadicalsThen(callback) {
     fetchAndCacheBurnedItemsThen(callback, "radicals", "Radicals", "burnedRadicals",
         function(radical) {
             return { character : getRadicalCharacter(radical),
-                     meaning   : radical.meaning.split(", "),
-                     usyn      : radical.user_specific ? radical.user_specific.user_synonyms : null
+                     meaning   : getMeaning(radical)
             };
         });
 }
@@ -484,11 +488,10 @@ function fetchAndCacheBurnedKanjiThen(callback) {
     fetchAndCacheBurnedItemsThen(callback, "kanji", "Kanji", "burnedKanji",
         function(kanji) {
             return { character         : kanji.character,
-                     meaning           : kanji.meaning.split(", "),
+                     meaning           : getMeaning(kanji),
                      onyomi            : kanji.onyomi ? kanji.onyomi.split(", ") : null,
                      kunyomi           : kanji.kunyomi ? kanji.kunyomi.split(", ") : null,
                      important_reading : kanji.important_reading,
-                     usyn              : kanji.user_specific ? kanji.user_specific.user_synonyms : null
             };
         });
 }
@@ -497,9 +500,8 @@ function fetchAndCacheBurnedVocabThen(callback) {
     fetchAndCacheBurnedItemsThen(callback, "vocabulary", "Vocab", "burnedVocab",
         function(vocab) {
             return { character : vocab.character,
-                     meaning   : vocab.meaning.split(", "),
+                     meaning   : getMeaning(vocab),
                      kana      : vocab.kana.split(", "),
-                     usyn      : vocab.user_specific ? vocab.user_specific.user_synonyms : null
             };
         });
 }
@@ -510,7 +512,7 @@ function fetchAndCacheBurnedItemsThen(callback, requestedResource, type, storage
             // vocabulary for some reason has everything in a child called general, kanji and radicals do not
             var requestData = response.requested_information.general ?
                                 response.requested_information.general : response.requested_information;
-            var burnedItems = requestData.filter(ItemIsBurned);
+            var burnedItems = requestData.filter(itemIsBurned);
             BRData[type] = burnedItems.map(mapFunction);
 
             localStorage.setItem(storageKey, JSON.stringify(BRData[type]));
