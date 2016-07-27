@@ -180,7 +180,7 @@ function stylesAlreadyAdded() {
 function appendExternalBurnReviewStylesheetThen(callback) {
     BRLog("Adding additional CSS");
     // TODO - tie query string to release version
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.7"; //TODO - remember to update this when you merge to master
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.8"; //TODO - remember to update this when you merge to master
 
     $.get(cssFile, function(content) {
 
@@ -213,7 +213,7 @@ function injectWidgetHtmlWrapper() {
 function getSection() {
     var strSection =
         '<div class="span4">'                                                                                                                                       +
-            '<section class="burn-reviews kotoba-table-list dashboard-sub-section" class="one-second-transition" style="z-index: 2; position: relative">'           +
+            '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">'           +
                 '<h3 class="small-caps">'                                                                                                                           +
                     '<span class="br-en">BURN REVIEWS</span>'                                                                                                       +
                     '<span class="br-jp">焦げた復習</span>'                                                                                                         +
