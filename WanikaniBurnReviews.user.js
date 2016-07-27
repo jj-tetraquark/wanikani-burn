@@ -673,12 +673,22 @@ function bindLanguageToggleButtonClickEvent() {
     });
 }
 
+function resizeWidget() {
+    if (!resizeWidget.complete) return;
+
+    resizeWidget.complete = false;
+    $('.resize-button').toggleClass("on");
+    $(".burn-reviews.kotoba-table-list.dashboard-sub-section").toggleClass("scale-up"); // TODO - put that long class as a constant
+    $("#dim-overlay").fadeToggle({
+        duration: 1000,
+        complete: function() { resizeWidget.complete = true; }
+    });
+}
+resizeWidget.complete = true;
 
 function bindResizeButtonClickEvent() {
     $('.resize-button').click(function() {
-        $(this).toggleClass("on");
-        $(".burn-reviews.kotoba-table-list.dashboard-sub-section").toggleClass("scale-up"); // TODO - put that long class as a constant
-        $("#dim-overlay").fadeToggle(1000);
+        resizeWidget();
     });
 }
 
