@@ -180,7 +180,7 @@ function stylesAlreadyAdded() {
 function appendExternalBurnReviewStylesheetThen(callback) {
     BRLog("Adding additional CSS");
     // TODO - tie query string to release version
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.6"; //TODO - remember to update this when you merge to master
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.7"; //TODO - remember to update this when you merge to master
 
     $.get(cssFile, function(content) {
 
@@ -213,7 +213,7 @@ function injectWidgetHtmlWrapper() {
 function getSection() {
     var strSection =
         '<div class="span4">'                                                                                                                                       +
-            '<section class="burn-reviews kotoba-table-list dashboard-sub-section" style="z-index: 2; position: relative">'                                         +
+            '<section class="burn-reviews kotoba-table-list dashboard-sub-section" class="one-second-transition" style="z-index: 2; position: relative">'           +
                 '<h3 class="small-caps">'                                                                                                                           +
                     '<span class="br-en">BURN REVIEWS</span>'                                                                                                       +
                     '<span class="br-jp">焦げた復習</span>'                                                                                                         +
@@ -238,7 +238,6 @@ function constructBurnReviewHtml() {
     $("body").prepend('<div id="dim-overlay" style="position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none"></div>');
     BRLog("Overlay applied");
 
-    //TODO - Strip out the inline css - should be able to put everything together in one generated stylesheet. Inline CSS is for styles that change.
     var strReview =
        '<div class="answer-exception-form" id="answer-exception" align="center">'                                                                                                       +
            '<span>Answer goes here</span>'                                                                                                                                              +
@@ -281,7 +280,7 @@ function constructBurnReviewHtml() {
                 '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
                 '<div id="answer-form">'                                                                                                                                                +
                     '<form onSubmit="return false">'                                                                                                                                    +
-                        '<fieldset style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px">'                                                                                          +
+                        '<fieldset>'                                                                                                                                                    +
                             '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text"></input>' +
                             '<button id="answer-button"><i class="icon-chevron-right"></i></button>'                                                                                    +
                         '</fieldset>'                                                                                                                                                   +
@@ -682,11 +681,8 @@ function bindResizeButtonClickEvent() {
         if ($(this).hasClass("on")) {
             if ($("#dim-overlay").css("display") == "none") {
                 $("#dim-overlay").css("display", "block").addClass("fadeIn");
-                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css({"-webkit-transition": "1s ease-in-out",
-                    "-moz-transition": "1s ease-in-out",
-                    "-o-transition": "1s ease-in-out",
-                    "transition": "1s ease-in-out"}
-                    ).css("transform", "scaleX(2)scaleY(2)").one('transitionend webkitTransitionEnd',function() {
+                $(".burn-reviews.kotoba-table-list.dashboard-sub-section")
+                    .addClass("scale-up").one('transitionend webkitTransitionEnd',function() {
                         $("#dim-overlay").removeClass("fadeIn");
                         if (queueBRAnim) {
                             queueBRAnim = false;
@@ -714,7 +710,7 @@ function bindResizeButtonClickEvent() {
                         allowQueueBRAnim = true;
                     }
                 });
-                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css("transform", "scaleX(1)scaleY(1)");
+                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").removeClass("scale-up");
             } else if (!queueBRAnim && allowQueueBRAnim) {
                 queueBRAnim = true;
             }

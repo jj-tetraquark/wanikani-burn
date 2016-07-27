@@ -180,6 +180,11 @@ div.item-toggle-buttons {
     margin-top:-10px; 
 }
 
+#answer-form fieldset {
+    padding: 0;
+    margin: 0;
+}
+
 #answer-form input#user-response {
     height: 38px;
     margin-bottom: 0px;
@@ -198,6 +203,19 @@ button#answer-button {
 .burn-review-container {
     float:left;
 }
+
+.one-second-transition {
+    -webkit-transition": "1s ease-in-out;
+    -moz-transition": "1s ease-in-out;
+    -o-transition": "1s ease-in-out;
+    transition": "1s ease-in-out;
+}
+
+.scale-up {
+    transform: scale(2,2);
+}
+
+
 
 @media (max-width: 979px) and (min-width: 768px) {
     #question #question-type h1 span.br-en {
