@@ -11,32 +11,6 @@ p {
     margin: 0 0 10px;
 }
 
-/* Fade animations */
-.fadeIn {                          
-    -webkit-animation: fadein 1s;  
-            animation: fadein 1s;  
-}                                  
-@keyframes fadein {                
-    from { opacity: 0; }           
-    to   { opacity: 0.9; }         
-}                                  
-@-webkit-keyframes fadein {        
-    from { opacity: 0; }           
-    to   { opacity: 0.9; }         
-}                                  
-.fadeOut {                         
-    -webkit-animation: fadeout 1s; 
-            animation: fadeout 1s; 
-}                                  
-@keyframes fadeout {               
-    from { opacity: 0.9; }         
-    to   { opacity: 0; }           
-}                                  
-@-webkit-keyframes fadeout {       
-    from { opacity: 0.9; }         
-    to   { opacity: 0; }           
-}                                  
-
 .br-question {
     position: relative;
     background-color: #d4d4d4;

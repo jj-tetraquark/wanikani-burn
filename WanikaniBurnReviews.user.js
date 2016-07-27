@@ -247,7 +247,7 @@ function constructBurnReviewHtml() {
                 '<div class="brbir' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                                   +
                     '<span lang="ja">部</span>'                                                                                                                                         +
                 '</div>'                                                                                                                                                                +
-                '<div class="brbik' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px !important">'                                                                  +
+                '<div class="brbik' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px">'                                                                             +
                     '<span lang="ja">漢</span>'                                                                                                                                         +
                 '</div>'                                                                                                                                                                +
                 '<div class="brbiv' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                                      +
@@ -669,54 +669,25 @@ function bindNewItemButtonClickEvent() {
 
 function bindLanguageToggleButtonClickEvent() {
     $('.toggle-language-button').click(function() {
-        $(this).toggleClass("on");
         switchBRLang();
     });
 }
 
-//TODO - break this out in to seperate functions for each of the buttons
+
 function bindResizeButtonClickEvent() {
-    $('.right-side-toggle-buttons div').click(function() {
+    $('.resize-button').click(function() {
         $(this).toggleClass("on");
-        if ($(this).hasClass("on")) {
-            if ($("#dim-overlay").css("display") == "none") {
-                $("#dim-overlay").css("display", "block").addClass("fadeIn");
-                $(".burn-reviews.kotoba-table-list.dashboard-sub-section")
-                    .addClass("scale-up").one('transitionend webkitTransitionEnd',function() {
-                        $("#dim-overlay").removeClass("fadeIn");
-                        if (queueBRAnim) {
-                            queueBRAnim = false;
-                            allowQueueBRAnim = false;
-                            $(".resize-button").trigger("click");
-                        } else  {
-                            allowQueueBRAnim = true;
-                        }
-                    });
-            } else if (!queueBRAnim && allowQueueBRAnim) {
-                queueBRAnim = true;
-            }
-        }
-        else {
-            if (!$("#dim-overlay").hasClass("fadeIn")) {
-                $("#dim-overlay").addClass("fadeOut");
-                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").one('transitionend webkitTransitionEnd', function() {
-                    $("#dim-overlay").removeClass("fadeOut").css("display", "none");
-                    if (queueBRAnim) {
-                        queueBRAnim = false;
-                        allowQueueBRAnim = false;
-                        $(".resize-button").trigger("click");
-                    }
-                    else {
-                        allowQueueBRAnim = true;
-                    }
-                });
-                $(".burn-reviews.kotoba-table-list.dashboard-sub-section").removeClass("scale-up");
-            } else if (!queueBRAnim && allowQueueBRAnim) {
-                queueBRAnim = true;
-            }
-        }
+        $(".burn-reviews.kotoba-table-list.dashboard-sub-section").toggleClass("scale-up"); // TODO - put that long class as a constant
+        $("#dim-overlay").fadeToggle(1000);
     });
 }
+
+function bindDimOverlayClickEvent() {
+    $("#dim-overlay").click(function () {
+        $('.resize-button').trigger("click");
+    });
+}
+
 
 function bindLoadButtonClickEvent() {
     $(".brbsl").click(function() {
@@ -779,29 +750,6 @@ function bindItemToggleButtonClickEvent(cssClass, storageKey, configKey, current
             BRConfig[configKey] = true;
         }
         $(this).toggleClass("on");
-    });
-}
-
-function bindDimOverlayClickEvent() {
-    $("#dim-overlay").click(function () {
-        $(".resize-button").removeClass("on");
-        if (!$(this).hasClass("fadeIn")) {
-            $(this).addClass("fadeOut");
-            $(".burn-reviews.kotoba-table-list.dashboard-sub-section").one('transitionend webkitTransitionEnd', function() {
-                $("#dim-overlay").removeClass("fadeOut").css("display", "none");
-                if (queueBRAnim) {
-                    queueBRAnim = false;
-                    allowQueueBRAnim = false;
-					$(".brk").trigger("click");
-                }
-                else {
-                    allowQueueBRAnim = true;
-                }
-            });
-            $(".burn-reviews.kotoba-table-list.dashboard-sub-section").css("transform", "scaleX(1)scaleY(1)");
-        } else if (!queueBRAnim && allowQueueBRAnim) {
-            queueBRAnim = true;
-        }
     });
 }
 
