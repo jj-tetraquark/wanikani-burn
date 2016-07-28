@@ -180,7 +180,7 @@ function stylesAlreadyAdded() {
 function appendExternalBurnReviewStylesheetThen(callback) {
     BRLog("Adding additional CSS");
     // TODO - tie query string to release version
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.9"; //TODO - remember to update this when you merge to master
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.10"; //TODO - remember to update this when you merge to master
 
     $.get(cssFile, function(content) {
 
@@ -785,6 +785,7 @@ function checkBurnReviewAnswer() {
 
     if (responseIsValid(response)) {
         if (isIncorrectReading(response, answerIsCorrect)) {
+            shakeAnswerForm();
             displayIncorrectReadingMessage();
             $("#user-response").attr("disabled", false);
         }
@@ -797,6 +798,7 @@ function checkBurnReviewAnswer() {
             BRQuestion.SetAnswered(true);
     	}
     } else {
+        shakeAnswerForm();
         $("#user-response").attr("disabled", false);
     }
 }
@@ -810,6 +812,10 @@ function isAnswerCorrect(response, answers) {
     return false;
 }
 
+function shakeAnswerForm() {
+    $('#answer-form').addClass('shake').delay(500).removeClass('shake');
+}
+
 function onCorrectAnswer() {
     $("#answer-form fieldset").removeClass("incorrect").addClass("correct");
     BRQuestion.NextPart(); // TODO - this should sit in newQuestion but needs some reshuffling
@@ -817,7 +823,7 @@ function onCorrectAnswer() {
 
 function onIncorrectAnswer() {
     $("#answer-form fieldset").removeClass("correct").addClass("incorrect");
-    displayIncorrectAnswerMessage(answers);
+    displayIncorrectAnswerMessage();
 }
 
 function responseIsValid(response) {
@@ -825,9 +831,9 @@ function responseIsValid(response) {
             (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "";
 }
 
-function displayIncorrectAnswerMessage(answers) {
+function displayIncorrectAnswerMessage() {
     // concat in to string of comma-separated answers
-    var answerList = answers.join(", ");
+    var answerList = BRQuestion.GetAnswers().join(", ");
     var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
 
     var answerTextEng = '<div class="br-en">The answer was:<br />"' + answerList + '"<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
