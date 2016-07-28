@@ -35,7 +35,7 @@ p {
     box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75);
 }
 
-.brk {
+.review-item-container {
     background-repeat: repeat-x;
     height: 70px;
     margin-top: 0px;
@@ -45,7 +45,7 @@ p {
     text-align: center;
 }
 
-.bri {
+.review-item {
     color: #ffffff;
     font-size: 48px;
     text-shadow:0 1px 0 rgba(0,0,0,0.2);

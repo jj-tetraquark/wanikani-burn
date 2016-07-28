@@ -274,8 +274,8 @@ function constructBurnReviewHtml() {
                     '<span lang="ja" class="br-jp">拡大する</span>'                                                                                                                     +
                 '</div>'                                                                                                                                                                +
                 '</div>'                                                                                                                                                                +
-                '<div class="brk">' /*TODO - Rename this class */                                                                                                                       +
-                    '<span class="bri" lang="ja">' + BRQuestion.Item.character +'</span>'  /*TODO - Rename this class too */                                                            +
+                '<div class="review-item-container">'                                                                                                                                   +
+                    '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                                                                       +
                 '</div>'                                                                                                                                                                +
                 '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
                 '<div id="answer-form">'                                                                                                                                                +
@@ -391,7 +391,7 @@ function updateBRItem(updateText) {
 
     BRLog("Updating Burn review item");
     if (updateText) {
-        $(".bri").html(BRQuestion.Item.character);
+        $(".review-item").html(BRQuestion.Item.character);
         setItemFontSize();
     }
 
@@ -400,7 +400,7 @@ function updateBRItem(updateText) {
     var bgi = "linear-gradient(to bottom, ";
 
     bgi += BRQuestion.DependingOnTypeUse("#0af, #0093dd", "#f0a, #dd0093", "#a0f, #9300dd");
-    $(".brk").css({"background-color": bg, "background-image": bgi });
+    $(".review-item-container").css({"background-color": bg, "background-image": bgi });
 }
 
 function setItemFontSize() {
@@ -422,7 +422,7 @@ function setItemFontSize() {
             fontSize = 24;
             break;
     }
-    $(".bri").css("font-size", fontSize + "px");
+    $(".review-item").css("font-size", fontSize + "px");
 }
 
 function skipItem() {
@@ -581,7 +581,7 @@ function clearBurnedItemData() {
     BRData.Vocab    = [];
 }
 
-function confirmRes() {
+function confirmResurrection() {
     $(".answer-exception-form").css({"display": "block", "opacity": "0", "-webkit-transform": "translateY(20px)", "-moz-transform": "translateY(20px)"}).removeClass("animated fadeInUp");
     $(".answer-exception-form").addClass("animated fadeInUp");
 
@@ -678,7 +678,7 @@ function resizeWidget() {
 
     resizeWidget.complete = false;
     $('.resize-button').toggleClass("on");
-    $(".burn-reviews.kotoba-table-list.dashboard-sub-section").toggleClass("scale-up"); // TODO - put that long class as a constant
+    $(".burn-reviews.kotoba-table-list.dashboard-sub-section").toggleClass("scale-up");
     $("#dim-overlay").fadeToggle({
         duration: 1000,
         complete: function() { resizeWidget.complete = true; }
@@ -777,71 +777,89 @@ function switchBRLang() {
 
 //TODO - Refactor this
 function checkBurnReviewAnswer() {
+    BRLog("Checking answer");
     var response = $("#user-response").val().toLowerCase().trim();
-    var match = false;
     var answers = BRQuestion.GetAnswers();
+    var answerIsCorrect = isAnswerCorrect(response, answers);
 
     $("#user-response").attr("disabled", true);
 
-    for (var a = 0; a < answers.length; a++) {
-        if (response == answers[a]) match = true;
-    }
-
-    if (((BRQuestion.IsAskingForMeaning() && isAsciiPresent(response)) || (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "") {
-
-        if (!match && BRQuestion.IsKanji() && BRQuestion.IsAskingForReading() && ((BRQuestion.Item.important_reading == "onyomi" &&
-       		compareKunyomiReading(response, BRQuestion.Item.kunyomi)) || (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi))) {
-
-            var incorrectReadingText = '<div class="br-en">Oops! You entered the wrong reading.</div>' +
-                                       '<div class="br-jp">おっと、異なる読みを入力してしまった。</div>';
-       		$(".answer-exception-form span").html(incorrectReadingText);
-            setLanguage();
-
-            $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp").delay(5000).queue(function(){
-    			$(this).addClass("fadeOut").dequeue().delay(800).queue(function(){
-                    $(this).removeClass("fadeOut").css("display", "none").dequeue();
-                });
-			});
+    if (responseIsValid(response)) {
+        if (isIncorrectReading(response, answerIsCorrect)) {
+            displayIncorrectReadingMessage();
             $("#user-response").attr("disabled", false);
-
         }
         else {
-
-            if (match) {
-                $("#answer-form fieldset").removeClass("incorrect");
-                $("#answer-form fieldset").addClass("correct");
-                BRQuestion.NextPart(); // TODO - this should sit in newQuestion but needs some reshuffling
+            if (answerIsCorrect) {
+                onCorrectAnswer();
             } else {
-                $("#answer-form fieldset").removeClass("correct");
-                $("#answer-form fieldset").addClass("incorrect");
-
-                // concat in to string of comma-separated answers
-                var answerList = answers.join(", ");
-                var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
-
-                var answerTextEng = '<div class="br-en">The answer was:<br />"' + answerList + '"<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
-                var answerTextJp  = '<div class="br-jp">解答は<br />「' + answerList + '」であった。<br />この項目を' + resurrectButton + '復活</a>したいか？</div>';
-                $('.answer-exception-form span').html(answerTextEng + answerTextJp);
-                setLanguage();
-
-                $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp");
-                $('.resurrect-btn').on('click', confirmRes);
+                onIncorrectAnswer();
             }
-
             BRQuestion.SetAnswered(true);
-
     	}
     } else {
         $("#user-response").attr("disabled", false);
     }
 }
 
+function isAnswerCorrect(response, answers) {
+    for (var a = 0; a < answers.length; a++) {
+        if (response == answers[a]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function onCorrectAnswer() {
+    $("#answer-form fieldset").removeClass("incorrect").addClass("correct");
+    BRQuestion.NextPart(); // TODO - this should sit in newQuestion but needs some reshuffling
+}
+
+function onIncorrectAnswer() {
+    $("#answer-form fieldset").removeClass("correct").addClass("incorrect");
+    displayIncorrectAnswerMessage(answers);
+}
+
+function responseIsValid(response) {
+    return ((BRQuestion.IsAskingForMeaning() && isAsciiPresent(response)) ||
+            (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "";
+}
+
+function displayIncorrectAnswerMessage(answers) {
+    // concat in to string of comma-separated answers
+    var answerList = answers.join(", ");
+    var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
+
+    var answerTextEng = '<div class="br-en">The answer was:<br />"' + answerList + '"<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
+    var answerTextJp  = '<div class="br-jp">解答は<br />「' + answerList + '」であった。<br />この項目を' + resurrectButton + '復活</a>したいか？</div>';
+    $('.answer-exception-form span').html(answerTextEng + answerTextJp);
+    setLanguage();
+
+    $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp");
+    $('.resurrect-btn').on('click', confirmResurrection);
+}
+
+function isIncorrectReading(response, answerIsCorrect) {
+    return (!answerIsCorrect && BRQuestion.IsKanji() && BRQuestion.IsAskingForReading() && ((BRQuestion.Item.important_reading == "onyomi" &&
+       		compareKunyomiReading(response, BRQuestion.Item.kunyomi)) || (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi)));
+}
+
+function displayIncorrectReadingMessage() {
+    var incorrectReadingText = '<div class="br-en">Oops! You entered the wrong reading.</div>' +
+                               '<div class="br-jp">おっと、異なる読みを入力してしまった。</div>';
+    $(".answer-exception-form span").html(incorrectReadingText);
+    setLanguage();
+
+    $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp").delay(5000).queue(function(){
+        $(this).addClass("fadeOut").dequeue().delay(800).queue(function(){
+            $(this).removeClass("fadeOut").css("display", "none").dequeue();
+        });
+    });
+}
+
 function compareKunyomiReading(input, reading) {
-    var match = false;
-
-    if (input == reading || input == reading.toString().substring(0, reading.indexOf(".")) || input == reading.toString().replace("*", input.substring(reading.indexOf(".") + 1)).replace(".", "")) match = true;
-
-    return match;
+    return (input == reading || input == reading.toString().substring(0, reading.indexOf(".")) || input == reading.toString().replace("*", input.substring(reading.indexOf(".") + 1)).replace(".", ""));
 }
 
 function submitBRAnswer() {
