@@ -180,7 +180,7 @@ function stylesAlreadyAdded() {
 function appendExternalBurnReviewStylesheetThen(callback) {
     BRLog("Adding additional CSS");
     // TODO - tie query string to release version
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.8"; //TODO - remember to update this when you merge to master
+    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.9"; //TODO - remember to update this when you merge to master
 
     $.get(cssFile, function(content) {
 
@@ -194,14 +194,13 @@ function appendExternalBurnReviewStylesheetThen(callback) {
 
 // This is for dumping CSS that must be present before loading main stylesheet
 function appendPriorityCSS() {
-    var strFadeIn =
-    '<style type="text/css">' +
-        '.burn-review-container {' +
-            'float:left;' +
-        '}' +
+    var priorityStyles =
+    '<style type="text/css">'                                                                                             +
+        '.burn-review-container { float:left;}'                                                                           +
+        '#loadingBR { position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px; }' +
+        '#dim-overlay { position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none; }' +
     '</style>';
-    $(strFadeIn).appendTo($("head"));
-    return strFadeIn;
+    $(priorityStyles).appendTo($("head"));
 }
 
 function injectWidgetHtmlWrapper() {
@@ -212,20 +211,20 @@ function injectWidgetHtmlWrapper() {
 
 function getSection() {
     var strSection =
-        '<div class="span4">'                                                                                                                                       +
-            '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">'           +
-                '<h3 class="small-caps">'                                                                                                                           +
-                    '<span class="br-en">BURN REVIEWS</span>'                                                                                                       +
-                    '<span class="br-jp">焦げた復習</span>'                                                                                                         +
-                '</h3>'                                                                                                                                             +
-                '<div id="loadingBR" align="center" style="position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px"></div>' +
-                '<div class="see-more" style="margin-top: -1px">'                                                                                                   +
-                    '<a href="javascript:void(0)" id="new-item" class="small-caps">'                                                                                +
-                        '<span class="br-en">NEW ITEM</span>'                                                                                                       +
-                        '<span class="br-jp">新しい項目</span>'                                                                                                     +
-                    '</a>'                                                                                                                                          +
-                '</div>'                                                                                                                                            +
-            '</section>'                                                                                                                                            +
+        '<div class="span4">'                                                                                                                     +
+            '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">' +
+                '<h3 class="small-caps">'                                                                                                         +
+                    '<span class="br-en">BURN REVIEWS</span>'                                                                                     +
+                    '<span class="br-jp">焦げた復習</span>'                                                                                       +
+                '</h3>'                                                                                                                           +
+                '<div id="loadingBR" align="center" style=""></div>'                                                                              +
+                '<div class="see-more" style="margin-top: -1px">'                                                                                 +
+                    '<a href="javascript:void(0)" id="new-item" class="small-caps">'                                                              +
+                        '<span class="br-en">NEW ITEM</span>'                                                                                     +
+                        '<span class="br-jp">新しい項目</span>'                                                                                   +
+                    '</a>'                                                                                                                        +
+                '</div>'                                                                                                                          +
+            '</section>'                                                                                                                          +
         '</div>';
     return strSection;
 }
@@ -235,7 +234,7 @@ function constructBurnReviewHtml() {
     BRLog("Constructing Burn Review HTML");
     $("#user-response").attr("disabled", false).val("").focus();
 
-    $("body").prepend('<div id="dim-overlay" style="position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none"></div>');
+    $("body").prepend('<div id="dim-overlay"></div>');
     BRLog("Overlay applied");
 
     var strReview =
