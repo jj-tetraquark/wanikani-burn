@@ -184,11 +184,10 @@ function appendExternalBurnReviewStylesheetThen(callback) {
 
     $.get(cssFile, function(content) {
 
-        if (!$('#burnReviewStyles').length) {
-            $('head').append('<style id="burnReviewStyles"></style>');
-        }
+        $('head').append('<style id="burnReviewStyles"></style>');
         $('#burnReviewStyles').text(content);
-        callback();
+
+    callback();
     });
 }
 
@@ -813,7 +812,7 @@ function isAnswerCorrect(response, answers) {
 }
 
 function shakeAnswerForm() {
-    $('#answer-form').addClass('shake').delay(500).removeClass('shake');
+    $('#answer-form').addClass('shake').delay(1000).removeClass('shake');
 }
 
 function onCorrectAnswer() {
