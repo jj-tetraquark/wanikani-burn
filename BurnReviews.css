@@ -93,7 +93,6 @@ div.left-side-action-buttons {
     position:absolute;
     left:0;
     bottom: 2px;
-    z-index: 11;
     font-size: 10px;
 }
 div.item-toggle-buttons {
@@ -103,7 +102,7 @@ div.item-toggle-buttons {
     z-index: 11; 
 }
 
-.right-side-toggle-buttons .on, .brbss.on, .brbsl:hover {                                                   
+.right-side-toggle-buttons .on, .brbss.on {                                                   
     background-color: #80c100;                                                                              
     background-image: linear-gradient(to bottom, #8c0, #73ad00);                                            
 }                                                                                                           

@@ -812,7 +812,12 @@ function isAnswerCorrect(response, answers) {
 }
 
 function shakeAnswerForm() {
-    $('#answer-form').addClass('shake').delay(1000).removeClass('shake');
+    $('#answer-form').addClass('shake')
+                     .delay(1000)
+                     .queue(function(next) {
+                        $(this).removeClass('shake');
+                        next();
+                     });
 }
 
 function onCorrectAnswer() {
