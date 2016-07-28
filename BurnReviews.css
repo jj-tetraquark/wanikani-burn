@@ -19,7 +19,7 @@ p {
     height: 142px;
 }
 
-.burn-reviews .answer-exception-form {
+.burn-reviews #answer-exception.answer-exception-form {
     position: absolute;
     width: 310px;
     margin-top: 78px;
@@ -30,7 +30,7 @@ p {
     display: none;
 }
 
-.answer-exception-form span {
+.burn-reviews #answer-exception.answer-exception-form span {
     background-color: rgba(162, 162, 162, 0.9);
     box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75);
 }
