@@ -158,6 +158,11 @@ div.item-toggle-buttons {
     margin: 0;
 }
 
+#answer-form:focus {
+    outline:none;
+}
+
+
 #answer-form input#user-response {
     height: 38px;
     margin-bottom: 0px;

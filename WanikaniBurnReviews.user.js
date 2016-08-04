@@ -35,7 +35,6 @@ var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 BRData = { Radicals: [], Kanji: [], Vocab: [] };
 BRConfig = { RadicalsEnabled: true, KanjiEnabled: true, VocabEnabled: true };
 
-// TODO - Should be able to make this non global and constructed via a function
 BRQuestion = {
     Item      : {},
     askingFor : UNDEFINED,
@@ -69,7 +68,7 @@ BRQuestion = {
     },
 
     Started    : function() { return this.progress > 0; },
-    IsComplete : function() { return (this.IsRadical() && this.Started()) || this.progress === 2; },
+    IsComplete : function() { return (this.IsRadical() && this.Started()) || this.progress >= 2; },
     Restart    : function() { this.progress = 0; },
     Skip       : function() { this.progress = 2; },
     NextPart   : function() {
@@ -81,7 +80,6 @@ BRQuestion = {
         return this.IsRadical() ? ifRadical : this.IsKanji() ? ifKanji : ifVocab;
     },
 
-    //TODO - This method can probably be removed if I can stop this from being global
     Reset : function() {
         this.askingFor = UNDEFINED;
         this.itemType  = UNDEFINED;
@@ -276,11 +274,11 @@ function constructBurnReviewHtml() {
                     '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                                                                       +
                 '</div>'                                                                                                                                                                +
                 '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
-                '<div id="answer-form">'                                                                                                                                                +
+                '<div id="answer-form" tabindex="10">'                                                                                                                                   +
                     '<form onSubmit="return false">'                                                                                                                                    +
                         '<fieldset>'                                                                                                                                                    +
                             '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text"></input>' +
-                            '<button id="answer-button"><i class="icon-chevron-right"></i></button>'                                                                                    +
+                            '<button id="answer-button" type="button"><i class="icon-chevron-right"></i></button>'                                                                      +
                         '</fieldset>'                                                                                                                                                   +
                     '</form>'                                                                                                                                                           +
                 '</div>'                                                                                                                                                                +
@@ -304,10 +302,11 @@ function disableKanaInput() {
     wanakana.unbind(document.getElementById('user-response'));
 }
 
-function newQuestion() {
+function nextQuestion() {
 
     BRLog("Getting burn review");
 
+    BRQuestion.NextPart();
     BRQuestion.SetAnswered(false);
 
     $("#user-response").attr("disabled", false).val("").focus();
@@ -393,7 +392,6 @@ function updateBRItem(updateText) {
         setItemFontSize();
     }
 
-    // TODO - this should probably done just with adding and removing classes
     var bg = BRQuestion.DependingOnTypeUse(LITEBLUE, PINK, PURPLE);
     var bgi = "linear-gradient(to bottom, ";
 
@@ -425,7 +423,7 @@ function setItemFontSize() {
 
 function skipItem() {
    	BRQuestion.Skip();
-    newQuestion();
+    nextQuestion();
     return false;
 }
 
@@ -468,7 +466,7 @@ function itemIsBurned(item) {
 
 function getMeaning(item) {
     var usyn = item.user_specific ? item.user_specific.user_synonyms : null;
-    var meaning = item.meaning.split(',');
+    var meaning = item.meaning.split(', ');
     return usyn !== null ? meaning.concat(usyn) : meaning;
 }
 
@@ -622,7 +620,9 @@ function constructBurnReviewWidget() {
     BRLog("Adding burn review section");
     constructBurnReviewHtml();
 
-    document.getElementById("answer-button").onclick = submitBRAnswer;
+    $("#answer-button").click(function() {
+        submitBRAnswer();
+    });
     updateBRItem(false);
     configureInputForEnglishOrJapanese();
 
@@ -773,20 +773,20 @@ function switchBRLang() {
     $('.br-en,.br-jp').toggleClass('br-hide');
 }
 
-//TODO - Refactor this
 function checkBurnReviewAnswer() {
     BRLog("Checking answer");
     var response = $("#user-response").val().toLowerCase().trim();
     var answers = BRQuestion.GetAnswers();
     var answerIsCorrect = isAnswerCorrect(response, answers);
 
+    $("#answer-form").focus(); // fix for FF to stop focus being trapped
     $("#user-response").attr("disabled", true);
 
     if (responseIsValid(response)) {
         if (isIncorrectReading(response, answerIsCorrect)) {
             shakeAnswerForm();
             displayIncorrectReadingMessage();
-            $("#user-response").attr("disabled", false);
+            $("#user-response").attr("disabled", false).focus();
         }
         else {
             if (answerIsCorrect) {
@@ -798,7 +798,7 @@ function checkBurnReviewAnswer() {
     	}
     } else {
         shakeAnswerForm();
-        $("#user-response").attr("disabled", false);
+        $("#user-response").attr("disabled", false).focus();
     }
 }
 
@@ -822,7 +822,6 @@ function shakeAnswerForm() {
 
 function onCorrectAnswer() {
     $("#answer-form fieldset").removeClass("incorrect").addClass("correct");
-    BRQuestion.NextPart(); // TODO - this should sit in newQuestion but needs some reshuffling
 }
 
 function onIncorrectAnswer() {
@@ -876,7 +875,7 @@ function submitBRAnswer() {
         checkBurnReviewAnswer();
     }
     else {
-        newQuestion();
+        nextQuestion();
     }
 }
 
@@ -937,11 +936,10 @@ function main() {
         displayStartMessage();
         bindStartButtonClickEvent();
 
-        document.addEventListener('keydown', function(event) {
+        $(document).unbind('keypress').bind('keypress', function(event) {
             if(event.keyCode == 13) { //Enter
-                if (BRQuestion.IsAnswered()) {
-                    newQuestion();
-                }
+                BRLog("User pressed Enter");
+                submitBRAnswer();
             }
          });
 
