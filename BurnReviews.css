@@ -190,6 +190,9 @@ button#answer-button {
 }
 
 .scale-up {
+    filter: none; 
+    -webkit-filter: blur(0px); 
+    -moz-filter: blur(0px); 
     transform: scale(2,2);
 }
 
