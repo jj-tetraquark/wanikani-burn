@@ -1,13 +1,12 @@
 /*TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'*/
-/*TODO - make a class for buttons so we're not targeting child divs*/
 /* Undo CSS conflicts from import */
-.srs { 
+.srs {
     width: 236px;
-} 
-menu, ol, ul { 
+}
+menu, ol, ul {
     padding: 0;
-} 
-p { 
+}
+p {
     margin: 0 0 10px;
 }
 
@@ -62,28 +61,28 @@ p {
 
 
 /* Button CSS*/
-.item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{                    
-    background-color: rgb(67, 67, 67);                                                                      
-    background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));                         
-    color: #ffffff;                                                                                         
-    width: 30px;                                                                                            
-    vertical-align: middle;                                                                                 
-    text-shadow: none;                                                                                      
-}                                                                                                           
-.item-toggle-buttons span, .right-side-toggle-buttons span, .left-side-action-buttons span{                 
-    -ms-writing-mode: tb-rl;                                                                                
-    -webkit-writing-mode: vertical-rl;                                                                      
-    writing-mode: vertical-rl;                                                                              
-    -webkit-touch-callout: none;                                                                            
-    -webkit-user-select: none;                                                                              
-    -khtml-user-select: none;                                                                               
-    -moz-user-select: none;                                                                                 
-    -ms-user-select: none;                                                                                  
-    user-select: none;                                                                                      
-    cursor: default;                                                                                        
+.item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{
+    background-color: rgb(67, 67, 67);
+    background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));
+    color: #ffffff;
+    width: 30px;
+    vertical-align: middle;
+    text-shadow: none;
+}
+.item-toggle-buttons span, .right-side-toggle-buttons span, .left-side-action-buttons span{
+    -ms-writing-mode: tb-rl;
+    -webkit-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
     height: 100%;
     text-align: center;
-}                                                                                                           
+}
 
 .left-side-action-buttons div {
     height: 35px;
@@ -99,32 +98,32 @@ div.item-toggle-buttons {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 11; 
+    z-index: 11;
 }
 
-.right-side-toggle-buttons .on, .brbss.on {                                                   
-    background-color: #80c100;                                                                              
-    background-image: linear-gradient(to bottom, #8c0, #73ad00);                                            
-}                                                                                                           
-.item-toggle-buttons div {                                                                                  
-    height: 23px;                                                                                           
-}                                                                                                           
-.item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover { 
-    text-shadow: 0 0 0.2em #ffffff;                                                                         
-}                                                                                                           
-.brbir.on {                                                                                                 
-    background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);                 
-}                                                                                                           
-.brbik.on {                                                                                                 
-    background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);                 
-}                                                                                                           
-.brbiv.on {                                                                                                 
-    background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);                 
-}                                                                                                           
-.right-side-toggle-buttons {                                                                                
-    position: absolute;                                                                                     
-    right: 0;                                                                                               
-}                                                                                                           
+.right-side-toggle-buttons .on, .start-button-toggle.on {
+    background-color: #80c100;
+    background-image: linear-gradient(to bottom, #8c0, #73ad00);
+}
+.item-toggle-buttons div {
+    height: 23px;
+}
+.item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover {
+    text-shadow: 0 0 0.2em #ffffff;
+}
+.radicals-toggle.on {
+    background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);
+}
+.kanji-toggle.on {
+    background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);
+}
+.vocab-toggle.on {
+    background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);
+}
+.right-side-toggle-buttons {
+    position: absolute;
+    right: 0;
+}
 
 .toggle-language-button {
     height: 70px;
@@ -134,23 +133,23 @@ div.item-toggle-buttons {
     height: 69px;
 }
 
-.br-hide {                                                                                                  
-    display:none;                                                                                           
-}                                                                                                           
+.br-hide {
+    display:none;
+}
 
-.brbss {
+.start-button-toggle {
     height: 35px;
     line-height: 1.1;
     box-sizing: border-box;
     padding: 1px;
 }
-.brbss .br-en {
+.start-button-toggle .br-en {
     line-height: 0.9;
 }
 
-.radical-question { 
+.radical-question {
     height:100%;
-    margin-top:-10px; 
+    margin-top:-10px;
 }
 
 #answer-form fieldset {
@@ -190,9 +189,9 @@ button#answer-button {
 }
 
 .scale-up {
-    filter: none; 
-    -webkit-filter: blur(0px); 
-    -moz-filter: blur(0px); 
+    filter: none;
+    -webkit-filter: blur(0px);
+    -moz-filter: blur(0px);
     transform: scale(2,2);
 }
 

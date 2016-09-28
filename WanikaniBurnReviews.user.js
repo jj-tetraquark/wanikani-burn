@@ -179,6 +179,7 @@ function appendExternalBurnReviewStylesheetThen(callback) {
     BRLog("Adding additional CSS");
     // TODO - tie query string to release version
     var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.10"; //TODO - remember to update this when you merge to master
+    // https://raw.githubusercontent.com/jonnydark/wanikani-burn/unstable/BurnReviews.css  // need to change to master
 
     $.get(cssFile, function(content) {
 
@@ -202,12 +203,12 @@ function appendPriorityCSS() {
 
 function injectWidgetHtmlWrapper() {
         $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col burn-review-container"></div>');
-        $("<br />" + getSection() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
+        $("<br />" + wrapperHTML() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
         setLanguage();
 }
 
-function getSection() {
-    var strSection =
+function wrapperHTML() {
+    var html =
         '<div class="span4">'                                                                                                                     +
             '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">' +
                 '<h3 class="small-caps">'                                                                                                         +
@@ -223,7 +224,7 @@ function getSection() {
                 '</div>'                                                                                                                          +
             '</section>'                                                                                                                          +
         '</div>';
-    return strSection;
+    return html;
 }
 
 function constructBurnReviewHtml() {
@@ -240,22 +241,22 @@ function constructBurnReviewHtml() {
         '</div>'                                                                                                                                                                        +
         '<div id="question" class="br-question">'                                                                                                                                       +
             '<div class="item-toggle-buttons">'                                                                                                                                         +
-                '<div class="brbir' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                                   +
+                '<div class="radicals-toggle' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                         +
                     '<span lang="ja">部</span>'                                                                                                                                         +
                 '</div>'                                                                                                                                                                +
-                '<div class="brbik' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px">'                                                                             +
+                '<div class="kanji-toggle' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px">'                                                                      +
                     '<span lang="ja">漢</span>'                                                                                                                                         +
                 '</div>'                                                                                                                                                                +
-                '<div class="brbiv' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                                      +
+                '<div class="vocab-toggle' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                               +
                     '<span lang="ja">語</span>'                                                                                                                                         +
                 '</div>'                                                                                                                                                                +
             '</div>'                                                                                                                                                                    +
             '<div class="left-side-action-buttons">'                                                                                                                                    +
-                '<div class="brbsl">'                                                                                                                                                   +
+                '<div class="load-button">'                                                                                                                                             +
                     '<span class="br-en" lang="ja">Load</span>'                                                                                                                         +
                     '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                       +
                 '</div>'                                                                                                                                                                +
-                '<div class="brbss' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                                             +
+                '<div class="start-button-toggle' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                               +
                     '<span lang="ja" class="br-en">Start Button</span>'                                                                                                                 +
                     '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                                                                             +
                 '</div>'                                                                                                                                                                +
@@ -274,7 +275,7 @@ function constructBurnReviewHtml() {
                     '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                                                                       +
                 '</div>'                                                                                                                                                                +
                 '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
-                '<div id="answer-form" tabindex="10">'                                                                                                                                   +
+                '<div id="answer-form" tabindex="10">'                                                                                                                                  +
                     '<form onSubmit="return false">'                                                                                                                                    +
                         '<fieldset>'                                                                                                                                                    +
                             '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text"></input>' +
@@ -698,13 +699,13 @@ function bindDimOverlayClickEvent() {
 
 
 function bindLoadButtonClickEvent() {
-    $(".brbsl").click(function() {
+    $(".load-button").click(function() {
         $("#dim-overlay").remove();
         $(".burn-reviews").parent().remove();
         BRQuestion.Reset();
         queueBRAnim = false;
         allowQueueBRAnim = true;
-        $(getSection()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
+        $(wrapperHTML()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
         displayStartMessage();
         clearBurnedItemData();
         initBurnReviews();
@@ -712,7 +713,7 @@ function bindLoadButtonClickEvent() {
 }
 
 function bindStartButtonToggleButtonClickEvent() {
-    $(".brbss").click(function() {
+    $(".start-button-toggle").click(function() {
         $(this).toggleClass("on");
         if ($(this).hasClass("on")) {
             localStorage.setItem("BRStartButton", true);
@@ -730,15 +731,15 @@ function bindQuestionTypeToggleButtonClickEvents() {
 }
 
 function bindVocabToggleButtonClickEvent() {
-    bindItemToggleButtonClickEvent('.brbiv', "BRVocabEnabled", "VocabEnabled", BRQuestion.IsVocab.bind(BRQuestion));
+    bindItemToggleButtonClickEvent('.vocab-toggle', "BRVocabEnabled", "VocabEnabled", BRQuestion.IsVocab.bind(BRQuestion));
 }
 
 function bindKanjiToggleButtonClickEvent() {
-    bindItemToggleButtonClickEvent('.brbik', "BRKanjiEnabled", "KanjiEnabled", BRQuestion.IsKanji.bind(BRQuestion));
+    bindItemToggleButtonClickEvent('.kanji-toggle', "BRKanjiEnabled", "KanjiEnabled", BRQuestion.IsKanji.bind(BRQuestion));
 }
 
 function bindRadicalsToggleButtonClickEvent() {
-    bindItemToggleButtonClickEvent('.brbir', "BRRadicalsEnabled", "RadicalsEnabled", BRQuestion.IsRadical.bind(BRQuestion));
+    bindItemToggleButtonClickEvent('.radicals-toggle', "BRRadicalsEnabled", "RadicalsEnabled", BRQuestion.IsRadical.bind(BRQuestion));
 }
 
 function bindItemToggleButtonClickEvent(cssClass, storageKey, configKey, currentQuestionIsType) {
