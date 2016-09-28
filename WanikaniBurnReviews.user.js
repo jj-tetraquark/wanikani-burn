@@ -178,8 +178,7 @@ function stylesAlreadyAdded() {
 function appendExternalBurnReviewStylesheetThen(callback) {
     BRLog("Adding additional CSS");
     // TODO - tie query string to release version
-    var cssFile = "https://rawgit.com/jonnydark/wanikani-burn/unstable/BurnReviews.css?v=0.10"; //TODO - remember to update this when you merge to master
-    // https://raw.githubusercontent.com/jonnydark/wanikani-burn/unstable/BurnReviews.css  // need to change to master
+    var cssFile = "https://cdn.rawgit.com/jonnydark/wanikani-burn/master/BurnReviews.css?v=2.2";
 
     $.get(cssFile, function(content) {
 
