@@ -1,4 +1,3 @@
-/*TODO - make all the css namespaced. i.e. parent container with the class 'burn-reviews'*/
 /* Undo CSS conflicts from import */
 .srs {
     width: 236px;
@@ -10,7 +9,7 @@ p {
     margin: 0 0 10px;
 }
 
-.br-question {
+.burn-reviews .br-question {
     position: relative;
     background-color: #d4d4d4;
     padding-left: 30px;
@@ -34,7 +33,7 @@ p {
     box-shadow: 3px 3px 0 rgba(225, 225, 225, 0.75);
 }
 
-.review-item-container {
+.burn-reviews .review-item-container {
     background-repeat: repeat-x;
     height: 70px;
     margin-top: 0px;
@@ -44,24 +43,24 @@ p {
     text-align: center;
 }
 
-.review-item {
+.burn-reviews .review-item {
     color: #ffffff;
     font-size: 48px;
     text-shadow:0 1px 0 rgba(0,0,0,0.2);
 }
 
-#question-type {
+.burn-reviews #question-type {
     height: 33px;
 }
 
-#question-type h1 {
+.burn-reviews #question-type h1 {
     margin: -0.25em 0 0 0;
     text-shadow: none;
 }
 
 
 /* Button CSS*/
-.item-toggle-buttons div, .right-side-toggle-buttons div, .left-side-action-buttons div{
+.burn-reviews .item-toggle-buttons div, .burn-reviews .right-side-toggle-buttons div, .burn-reviews .left-side-action-buttons div {
     background-color: rgb(67, 67, 67);
     background-image: linear-gradient(to bottom, rgb(85, 85, 85), rgb(67, 67, 67));
     color: #ffffff;
@@ -69,7 +68,8 @@ p {
     vertical-align: middle;
     text-shadow: none;
 }
-.item-toggle-buttons span, .right-side-toggle-buttons span, .left-side-action-buttons span{
+
+.burn-reviews .item-toggle-buttons span, .burn-reviews .right-side-toggle-buttons span, .burn-reviews .left-side-action-buttons span {
     -ms-writing-mode: tb-rl;
     -webkit-writing-mode: vertical-rl;
     writing-mode: vertical-rl;
@@ -84,92 +84,92 @@ p {
     text-align: center;
 }
 
-.left-side-action-buttons div {
+.burn-reviews .left-side-action-buttons div {
     height: 35px;
 }
 
-div.left-side-action-buttons {
+.burn-reviews div.left-side-action-buttons {
     position:absolute;
     left:0;
     bottom: 2px;
     font-size: 10px;
 }
-div.item-toggle-buttons {
+.burn-reviews div.item-toggle-buttons {
     position: absolute;
     top: 0;
     left: 0;
     z-index: 11;
 }
 
-.right-side-toggle-buttons .on, .start-button-toggle.on {
+.burn-reviews .right-side-toggle-buttons .on, .burn-reviews .start-button-toggle.on {
     background-color: #80c100;
     background-image: linear-gradient(to bottom, #8c0, #73ad00);
 }
-.item-toggle-buttons div {
+.burn-reviews .item-toggle-buttons div {
     height: 23px;
 }
-.item-toggle-buttons div:hover, .right-side-toggle-buttons div:hover, .left-side-action-buttons div:hover {
+.burn-reviews .item-toggle-buttons div:hover, .burn-reviews .right-side-toggle-buttons div:hover, .burn-reviews .left-side-action-buttons div:hover {
     text-shadow: 0 0 0.2em #ffffff;
 }
-.radicals-toggle.on {
+.burn-reviews .radicals-toggle.on {
     background-color: #00a0f1; background-image: linear-gradient(to bottom, #0af, #0093dd);
 }
-.kanji-toggle.on {
+.burn-reviews .kanji-toggle.on {
     background-color: #f100a0; background-image: linear-gradient(to bottom, #f0a, #dd0093);
 }
-.vocab-toggle.on {
+.burn-reviews .vocab-toggle.on {
     background-color: #a000f1; background-image: linear-gradient(to bottom, #a0f, #9300dd);
 }
-.right-side-toggle-buttons {
+.burn-reviews .right-side-toggle-buttons {
     position: absolute;
     right: 0;
 }
 
-.toggle-language-button {
+.burn-reviews .toggle-language-button {
     height: 70px;
 }
 
-.resize-button {
+.burn-reviews .resize-button {
     height: 69px;
 }
 
-.br-hide {
+.burn-reviews .br-hide {
     display:none;
 }
 
-.start-button-toggle {
+.burn-reviews .start-button-toggle {
     height: 35px;
     line-height: 1.1;
     box-sizing: border-box;
     padding: 1px;
 }
-.start-button-toggle .br-en {
+.burn-reviews .start-button-toggle .br-en {
     line-height: 0.9;
 }
 
-.radical-question {
+.burn-reviews .radical-question {
     height:100%;
     margin-top:-10px;
 }
 
-#answer-form fieldset {
+.burn-reviews #answer-form fieldset {
     padding: 0;
     margin: 0;
 }
 
-#answer-form:focus {
+.burn-reviews #answer-form:focus {
     outline:none;
 }
 
 
-#answer-form input#user-response {
+.burn-reviews #answer-form input#user-response {
     height: 38px;
     margin-bottom: 0px;
     box-shadow:none;
     border-bottom: #e1e1e1 solid 4px;
 }
 
-button#answer-button {
+.burn-reviews button#answer-button {
     width: 0px;
     height: 34px;
     padding: 0px 20px 0px 5px;
@@ -198,7 +198,7 @@ button#answer-button {
 
 
 @media (max-width: 979px) and (min-width: 768px) {
-    #question #question-type h1 span.br-en {
+    .burn-reviews #question #question-type h1 span {
         font-size: 0.7em;
     }
 
@@ -209,19 +209,19 @@ button#answer-button {
         float: none;
     }
 
-    #question #question-type h1 span.br-en {
+    .burn-reviews #question #question-type h1 span {
         font-size: 2em;
     }
 
-    #answer-form input#user-response {
+    .burn-reviews #answer-form input#user-response {
         font-size: 1.5em;
     }
 
-    .resize-button {
+    .burn-reviews .resize-button {
         display:none;
     }
 
-    .toggle-language-button {
+    .burn-reviews .toggle-language-button {
         height: 139px;
         font-size:18px;
     }
@@ -261,7 +261,7 @@ button#answer-button {
   }
 }
 
-.shake {
+.burn-reviews .shake {
   -webkit-animation-name: shake;
   animation-name: shake;
   animation-duration: 1s;
