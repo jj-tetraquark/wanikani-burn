@@ -9,6 +9,7 @@
 // @include     https://www.wanikani.com/
 // @include     http://www.wanikani.com/dashboard
 // @include     https://www.wanikani.com/dashboard
+// @require https://greasyfork.org/scripts/19781-wanakana/code/WanaKana.js?version=126349
 // @grant       none
 
 
@@ -116,10 +117,6 @@ window.BRDisableLogging = function() {
     BRLoggingEnabled = false;
     localStorage.removeItem("BRLoggingEnabled");
 };
-
-function importWanaKana() {
-    $("head").append('<script src="https://rawgit.com/WaniKani/WanaKana/master/lib/wanakana.min.js" type="text/javascript"></script>');
-}
 
 function getApiKeyThen(callback) {
 
@@ -909,7 +906,6 @@ function main() {
         return;
     }
 
-    importWanaKana();
     getApiKeyThen(function(key) {
 
         apiKey = key; //global
