@@ -2,14 +2,14 @@
 // @name        Wanikani Burn Reviews
 // @namespace   wkburnreviewnew
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
-// @version     2.2.3
+// @version     2.2.4
 // @author      Jonny Dark
 // @license     Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0); http://creativecommons.org/licenses/by-nc/4.0/
 // @include     http://www.wanikani.com/
 // @include     https://www.wanikani.com/
 // @include     http://www.wanikani.com/dashboard
 // @include     https://www.wanikani.com/dashboard
-// @require https://greasyfork.org/scripts/19781-wanakana/code/WanaKana.js?version=126349
+// @require     https://greasyfork.org/scripts/19781-wanakana/code/WanaKana.js?version=126349
 // @grant       none
 
 
@@ -119,26 +119,30 @@ window.BRDisableLogging = function() {
 };
 
 function getApiKeyThen(callback) {
-
     // First check if the API key is in local storage.
     var api_key = localStorage.getItem('apiKey');
-    if (typeof api_key !== 'string' || api_key.length !== 32) {
-
-        // We don't have the API key.  Fetch it from the /account page.
+    if (typeof api_key === 'string' && api_key.length === 32) {
+        return callback(api_key);
+    }
+    else {
+        // We don't have the API key.  Fetch it from the /settings/account page.
         console.log('Fetching api_key');
-        $.get('/account')
+        $.get('/settings/account')
             .done(function(page) {
                 if (typeof page !== 'string') return callback(null);
 
                 // Extract the API key.
-                api_key = $(page).find('#api-button').parent().find('input').attr('value');
+                api_key = $(page).find('#user_api_key').val();
                 if (typeof api_key == 'string' && api_key.length == 32) {
                     // Store the updated user info.
                     localStorage.setItem('apiKey', api_key);
                 }
+                else {
+                    BRLog("Failed to get API key :( instead got: '" + api_key + "'", ERROR);
+                }
+                return callback(api_key);
             });
     }
-    return callback(api_key);
 }
 
 function addBurnReviewStylesThen(callback) {
@@ -917,6 +921,11 @@ function main() {
     }
 
     getApiKeyThen(function(key) {
+
+        if (key === null) {
+            BRLog("Couldn't fetch API key. It's all gone Pete Tong. Cannot continue ;__;", ERROR);
+            return;
+        }
 
         apiKey = key; //global
         BRLog("Running!");
