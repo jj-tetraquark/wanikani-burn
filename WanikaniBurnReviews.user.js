@@ -772,7 +772,7 @@ function switchBRLang() {
 
 function checkBurnReviewAnswer() {
     BRLog("Checking answer");
-    var response = $("#user-response").val().toLowerCase().trim();
+    var response = addTerminalN($("#user-response").val().toLowerCase().trim());
     var answers = BRQuestion.GetAnswers();
     var answerIsCorrect = isAnswerCorrect(response, answers);
 
@@ -787,9 +787,9 @@ function checkBurnReviewAnswer() {
         }
         else {
             if (answerIsCorrect) {
-                onCorrectAnswer();
+                onCorrectAnswer(response);
             } else {
-                onIncorrectAnswer();
+                onIncorrectAnswer(response);
             }
             BRQuestion.SetAnswered(true);
     	}
@@ -797,6 +797,10 @@ function checkBurnReviewAnswer() {
         shakeAnswerForm();
         $("#user-response").attr("disabled", false).focus();
     }
+}
+
+function addTerminalN(str = '') {
+  return /n/i.test(str.slice(-1)) ? `${str.slice(0, -1)}ん` : str;
 }
 
 function isAnswerCorrect(response, answers) {
@@ -817,12 +821,18 @@ function shakeAnswerForm() {
                      });
 }
 
-function onCorrectAnswer() {
-    $("#answer-form fieldset").removeClass("incorrect").addClass("correct");
+function setInputValue(text) {
+    $("#user-response").val(text);
 }
 
-function onIncorrectAnswer() {
+function onCorrectAnswer(answer) {
+    $("#answer-form fieldset").removeClass("incorrect").addClass("correct");
+    setInputValue(answer);
+}
+
+function onIncorrectAnswer(answer) {
     $("#answer-form fieldset").removeClass("correct").addClass("incorrect");
+    setInputValue(answer);
     displayIncorrectAnswerMessage();
 }
 
@@ -932,12 +942,17 @@ function main() {
         displayStartMessage();
         bindStartButtonClickEvent();
 
-        $(document).unbind('keypress').bind('keypress', function(event) {
-            if(event.keyCode == 13) { //Enter
+        function submitOnEnterPress(event) {
+            console.log(event.target);
+            const isEnterKey = event.keyCode == 13;
+            const isNotWkSearchInput = !event.target.matches('#query.search-query');
+            if(isNotWkSearchInput && isEnterKey) {
                 BRLog("User pressed Enter");
                 submitBRAnswer();
             }
-         });
+         }
+
+        $(document).unbind('keypress', submitOnEnterPress).bind('keypress', submitOnEnterPress);
 
         if (localStorage.getItem("BRStartButton") === null)
         {
