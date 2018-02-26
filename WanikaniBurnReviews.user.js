@@ -2,7 +2,7 @@
 // @name        Wanikani Burn Reviews
 // @namespace   wkburnreviewnew
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
-// @version     2.2.4
+// @version     2.2.5
 // @author      Jonny Dark
 // @license     Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0); http://creativecommons.org/licenses/by-nc/4.0/
 // @include     http://www.wanikani.com/
@@ -776,7 +776,8 @@ function switchBRLang() {
 
 function checkBurnReviewAnswer() {
     BRLog("Checking answer");
-    var response = addTerminalN($("#user-response").val().toLowerCase().trim());
+    var response = $("#user-response").val().toLowerCase().trim();
+    response = BRQuestion.IsAskingForReading() ? addTerminalN(response) : response;
     var answers = BRQuestion.GetAnswers();
     var answerIsCorrect = isAnswerCorrect(response, answers);
 
