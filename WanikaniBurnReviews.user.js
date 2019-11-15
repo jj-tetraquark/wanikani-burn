@@ -121,19 +121,19 @@ window.BRDisableLogging = function() {
 function getApiKeyThen(callback) {
     // First check if the API key is in local storage.
     var api_key = localStorage.getItem('apiKey');
-    if (typeof api_key === 'string' && api_key.length === 32) {
+    if (typeof api_key === 'string' && api_key.length === 36) {
         return callback(api_key);
     }
     else {
         // We don't have the API key.  Fetch it from the /settings/account page.
         console.log('Fetching api_key');
-        $.get('/settings/account')
+        $.get('/settings/personal_access_tokens')
             .done(function(page) {
                 if (typeof page !== 'string') return callback(null);
 
                 // Extract the API key.
-                api_key = $(page).find('#user_api_key').val();
-                if (typeof api_key == 'string' && api_key.length == 32) {
+                api_key = $(page).find('.personal-access-token-token').first().children().first().text();
+                if (typeof api_key == 'string' && api_key.length == 36) {
                     // Store the updated user info.
                     localStorage.setItem('apiKey', api_key);
                 }
