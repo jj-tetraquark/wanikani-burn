@@ -2,7 +2,7 @@
 // @name        Wanikani Burn Reviews
 // @namespace   wkburnreviewnew
 // @description Adds a space on the main page that reviews random burned items. This is a maintained fork of the original script by Samuel Harbord
-// @version     2.2.5
+// @version     2.2.6
 // @author      Jonny Dark
 // @license     Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0); http://creativecommons.org/licenses/by-nc/4.0/
 // @include     http://www.wanikani.com/
@@ -11,7 +11,15 @@
 // @include     https://www.wanikani.com/dashboard
 // @require     https://greasyfork.org/scripts/19781-wanakana/code/WanaKana.js?version=126349
 // @grant       none
+// @require 		http://code.jquery.com/jquery-1.12.4.min.js
 
+// Use site jquery and other variables
+// Todo fix this properly to work with Greasmonkey
+try {
+  localStorage = unsafeWindow.localStorage;
+  window = unsafeWindow;
+}
+catch {}
 
 // CONSTANTS
 var RADICAL   = 0;
@@ -29,6 +37,7 @@ var ERROR   = 9;
 var LITEBLUE = "#00a0f1";
 var PINK     = "#f100a0";
 var PURPLE   = "#a000f1";
+
 
 // Globals....ewww
 var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
@@ -125,23 +134,23 @@ function getApiKeyThen(callback) {
         return callback(api_key);
     }
     else {
-        // We don't have the API key.  Fetch it from the /settings/account page.
-        console.log('Fetching api_key');
-        $.get('/settings/account')
+        // We don't have the API key.  Fetch it from the /settings/personal_access_tokens page.
+      	$.get('https://www.wanikani.com/settings/personal_access_tokens')
             .done(function(page) {
                 if (typeof page !== 'string') return callback(null);
 
                 // Extract the API key.
                 api_key = $(page).find('#user_api_key').val();
                 if (typeof api_key == 'string' && api_key.length == 32) {
-                    // Store the updated user info.
-                    localStorage.setItem('apiKey', api_key);
+                    	// Store the updated user info.
+                    	localStorage.setItem('apiKey', api_key);
                 }
                 else {
                     BRLog("Failed to get API key :( instead got: '" + api_key + "'", ERROR);
                 }
                 return callback(api_key);
             });
+
     }
 }
 
@@ -203,13 +212,13 @@ function appendPriorityCSS() {
 
 function injectWidgetHtmlWrapper() {
         $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col burn-review-container"></div>');
-        $("<br />" + wrapperHTML() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent());
+        $("<br />" + wrapperHTML() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section"));
         setLanguage();
 }
 
 function wrapperHTML() {
     var html =
-        '<div class="span4">'                                                                                                                     +
+        '<div class="">'                                                                                                                     +
             '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">' +
                 '<h3 class="small-caps">'                                                                                                         +
                     '<span class="br-en">BURN REVIEWS</span>'                                                                                     +
@@ -921,6 +930,7 @@ function main() {
         return;
     }
 
+
     getApiKeyThen(function(key) {
 
         if (key === null) {
@@ -953,7 +963,6 @@ function main() {
         bindStartButtonClickEvent();
 
         function submitOnEnterPress(event) {
-            console.log(event.target);
             const isEnterKey = event.keyCode == 13;
             const isNotWkSearchInput = !event.target.matches('#query.search-query');
             if(isNotWkSearchInput && isEnterKey) {
