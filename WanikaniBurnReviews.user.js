@@ -100,6 +100,27 @@ BRQuestion = {
     }
 };
 
+// Utility functions
+
+function rand(low, high) {
+    return Math.floor(Math.random()*(high + 1)) + low;
+}
+
+function pageIsDashboard() {
+    return $('title').text().search("Dashboard") > 0;
+}
+
+function stringTrim () {
+    return(this.replace(/^ +/,'').replace(/ +$/,''));
+};
+
+function dateInDays(date) {
+    const msInADay = 1000 * 60 * 60 * 24;
+    return Math.floor(date/(msInADay));
+}
+
+// Logging functions
+
 function BRLog(logdata, level) {
     level = (typeof level == "undefined") ? DEBUG : level;
     if (!BRLoggingEnabled && level < WARNING) return;
@@ -128,6 +149,8 @@ window.BRDisableLogging = function() {
     localStorage.removeItem("BRLoggingEnabled");
 };
 
+// WaniKani API functions
+
 function getApiKeyThen(callback) {
     // First check if the API key is in local storage.
     var api_key = localStorage.getItem('apiKey');
@@ -154,6 +177,118 @@ function getApiKeyThen(callback) {
 
     }
 }
+
+function fetchAndCacheBurnedItemsThen(callback) {
+    var nextUrl = "https://api.wanikani.com/v2/assignments?burned=true";
+
+    while(nextUrl) {
+        $.ajax(
+            {
+                url: nextUrl,
+                headers: {
+                    "Wanikani-Revision": "20170710",
+                    "Authorization": "Bearer " + apiKey,
+                },
+                dataType:"json",
+                async: false,
+            }
+        ).done(function(response) {
+            var burnedItems = response.data;
+            burnedItems.forEach(item => {
+                BRRef[item.data.subject_type].push(item);
+            });
+            nextUrl = response.pages.next_url;
+        }).fail(function(XMLHttpRequest, textStatus, errorThrown) {
+            BRLog("Request to WaniKani API failed (" + nextUrl + ").\nERROR: " +
+                errorThrown + "\nCatastrophic failure ermagerd D:", ERROR);
+            nextUrl = null;
+        });
+    }
+    fetchSubjects("radical", radicalMap, BRRef["radical"]);
+    fetchSubjects("kanji", kanjiMap, BRRef["kanji"]);
+    fetchSubjects("vocabulary", vocabularyMap, BRRef["vocabulary"]);
+    cacheBurnedItemData();
+    return callback();
+}
+
+function fetchSubjects(type, mapFunction, assignment_items) {
+    var ids = assignment_items.map(function(item){return item.data.subject_id;});
+    var nextUrl = "https://api.wanikani.com/v2/subjects?types=" + type + "&ids=" + ids.join(",");
+    var mappedData = [];
+    while (nextUrl) {
+        $.ajax(
+            {
+                url:nextUrl,
+                headers: {
+                    "Wanikani-Revision": "20170710",
+                    "Authorization": "Bearer " + apiKey,
+                },
+                dataType:"json",
+                async: false, // Can't be async or the next call will not have a url yet
+            }
+        ).done(function(response) {
+            if (response.data) {
+                var data = response.data.map(mapFunction);
+                data = data.map(function(data_item) {
+                    data_item["assignment"] = assignment_items.filter(item => item.data.subject_id == data_item.id)[0];
+                    return data_item;
+                });
+                mappedData = mappedData.concat(data);
+            }
+            nextUrl = response.pages.next_url;
+        }).fail(function(XMLHttpRequest, textStatus, errorThrown) {
+            BRLog("Request to WaniKani API failed (" + nextUrl + ").\nERROR: " +
+                errorThrown + "\nCatastrophic failure ermagerd D:", ERROR);
+            nextUrl = null;
+        });
+    }
+    BRData[type] = mappedData;
+}
+
+function radicalMap(radical) {
+    return {
+        id: radical.id,
+        character: radical.data.characters,
+        image: (radical.data.character_images.length > 0) ? radical.data.character_images[0].url:null,
+        meaning: radical.data.meanings.map(function(meaning){return meaning.meaning}),
+    }
+}
+
+function kanjiMap(kanji) {
+    return {
+        id: kanji.id,
+        character: kanji.data.characters,
+        meaning: kanji.data.meanings.map(function(meaning){return meaning.meaning}),
+        onyomi: getKanjiReading(kanji, "onyomi"),
+        kunyomi: getKanjiReading(kanji, "kunyomi"),
+        important_reading: getKanjiReading(kanji, "primary"),
+    }
+}
+
+function vocabularyMap(vocabulary) {
+    return {
+        id: vocabulary.id,
+        character: vocabulary.data.characters,
+        meaning: vocabulary.data.meanings.map(function(meaning){return meaning.meaning}),
+        kana: vocabulary.data.readings[0]["reading"],
+    }
+}
+
+function getKanjiReading(kanji, readingType) {
+    var reading;
+    if (readingType === "primary"){
+        reading = kanji.data.readings.filter(reading => reading.primary);
+    }
+    else {
+        reading = kanji.data.readings.filter(reading => reading.type === readingType);
+    }
+    if (reading.length > 0) {
+        return reading[0]["reading"];
+    }
+    return null;
+}
+
+// CSS generation functions
 
 function addBurnReviewStylesThen(callback) {
 
@@ -200,16 +335,19 @@ function appendExternalBurnReviewStylesheetThen(callback) {
     });
 }
 
-// This is for dumping CSS that must be present before loading main stylesheet
 function appendPriorityCSS() {
+    // This is for dumping CSS that must be present before loading main stylesheet
     var priorityStyles =
-        '<style type="text/css">'                                                                                         +
-        '.burn-review-container { float:left;}'                                                                           +
-        '#loadingBR { position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px; }' +
-        '#dim-overlay { position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none; }' +
+        '<style type="text/css">'                                                                                           +
+        '.burn-review-container { float:left;}'                                                                             +
+        '#loadingBR { position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px; }'   +
+        '#dim-overlay { position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1;'    +
+            ' margin-top: -122px; padding-bottom: 122px; display: none; }'                                                  +
         '</style>';
     $(priorityStyles).appendTo($("head"));
 }
+
+// HTML generation functions
 
 function injectWidgetHtmlWrapper() {
     $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col burn-review-container"></div>');
@@ -220,25 +358,25 @@ function injectWidgetHtmlWrapper() {
 function wrapperHTML() {
     var html =
         '<div class="">'                                                                                                    +
-        '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">' +
-        '<h3 class="small-caps">'                                                                                                         +
-        '<span class="br-en">BURN REVIEWS</span>'                                                                                     +
-        '<span class="br-jp">焦げた復習</span>'                                                                                       +
-        '</h3>'                                                                                                                           +
-        '<div id="loadingBR" align="center" style=""></div>'                                                                              +
-        '<div class="see-more" style="margin-top: -1px">'                                                                                 +
-        '<a href="javascript:void(0)" id="new-item" class="small-caps">'                                                              +
-        '<span class="br-en">NEW ITEM</span>'                                                                                     +
-        '<span class="br-jp">新しい項目</span>'                                                                                   +
-        '</a>'                                                                                                                        +
-        '</div>'                                                                                                                          +
-        '</section>'                                                                                                                          +
+        '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2;'    +
+            'position: relative">'                                                                                          +
+        '<h3 class="small-caps">'                                                                                           +
+        '<span class="br-en">BURN REVIEWS</span>'                                                                           +
+        '<span class="br-jp">焦げた復習</span>'                                                                             +
+        '</h3>'                                                                                                             +
+        '<div id="loadingBR" align="center" style=""></div>'                                                                +
+        '<div class="see-more" style="margin-top: -1px">'                                                                   +
+        '<a href="javascript:void(0)" id="new-item" class="small-caps">'                                                    +
+        '<span class="br-en">NEW ITEM</span>'                                                                               +
+        '<span class="br-jp">新しい項目</span>'                                                                             +
+        '</a>'                                                                                                              +
+        '</div>'                                                                                                            +
+        '</section>'                                                                                                        +
         '</div>';
     return html;
 }
 
 function constructBurnReviewHtml() {
-
     BRLog("Constructing Burn Review HTML");
     $("#user-response").attr("disabled", false).val("").focus();
 
@@ -246,54 +384,55 @@ function constructBurnReviewHtml() {
     BRLog("Overlay applied");
 
     var strReview =
-        '<div class="answer-exception-form" id="answer-exception" align="center">'                                                                                                       +
-        '<span>Answer goes here</span>'                                                                                                                                              +
-        '</div>'                                                                                                                                                                        +
-        '<div id="question" class="br-question">'                                                                                                                                       +
-        '<div class="item-toggle-buttons">'                                                                                                                                         +
-        '<div class="radicals-toggle' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                         +
-        '<span lang="ja">部</span>'                                                                                                                                         +
-        '</div>'                                                                                                                                                                +
-        '<div class="kanji-toggle' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px">'                                                                      +
-        '<span lang="ja">漢</span>'                                                                                                                                         +
-        '</div>'                                                                                                                                                                +
-        '<div class="vocab-toggle' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                               +
-        '<span lang="ja">語</span>'                                                                                                                                         +
-        '</div>'                                                                                                                                                                +
-        '</div>'                                                                                                                                                                    +
-        '<div class="left-side-action-buttons">'                                                                                                                                    +
-        '<div class="load-button">'                                                                                                                                             +
-        '<span class="br-en" lang="ja">Load</span>'                                                                                                                         +
-        '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                       +
-        '</div>'                                                                                                                                                                +
-        '<div class="start-button-toggle' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                               +
-        '<span lang="ja" class="br-en">Start Button</span>'                                                                                                                 +
-        '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                                                                             +
-        '</div>'                                                                                                                                                                +
-        '</div>'                                                                                                                                                                    +
-        '<div class="right-side-toggle-buttons">'                                                                                                                                   +
-        '<div class="toggle-language-button">'                                                                                                                                  +
-        '<span lang="ja" class="br-en">日本語</span>'                                                                                                                       +
-        '<span lang="ja" class="br-jp">English</span>'                                                                                                                      +
-        '</div>'                                                                                                                                                                +
-        '<div class="resize-button">'                                                                                                                                           +
-        '<span lang="ja" class="br-en">Resize</span>'                                                                                                                       +
-        '<span lang="ja" class="br-jp">拡大する</span>'                                                                                                                     +
-        '</div>'                                                                                                                                                                +
-        '</div>'                                                                                                                                                                +
-        '<div class="review-item-container">'                                                                                                                                   +
-        '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                                                                       +
-        '</div>'                                                                                                                                                                +
-        '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
-        '<div id="answer-form" tabindex="10">'                                                                                                                                  +
-        '<form onSubmit="return false">'                                                                                                                                    +
-        '<fieldset>'                                                                                                                                                    +
-        '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text"></input>' +
-        '<button id="answer-button" type="button"><i class="icon-chevron-right"></i></button>'                                                                      +
-        '</fieldset>'                                                                                                                                                   +
-        '</form>'                                                                                                                                                           +
-        '</div>'                                                                                                                                                                +
-        '</div>'                                                                                                                                                                    +
+        '<div class="answer-exception-form" id="answer-exception" align="center">'                                          +
+        '<span>Answer goes here</span>'                                                                                     +
+        '</div>'                                                                                                            +
+        '<div id="question" class="br-question">'                                                                           +
+        '<div class="item-toggle-buttons">'                                                                                 +
+        '<div class="radicals-toggle' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                     +
+        '<span lang="ja">部</span>'                                                                                         +
+        '</div>'                                                                                                            +
+        '<div class="kanji-toggle' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px">'                  +
+        '<span lang="ja">漢</span>'                                                                                         +
+        '</div>'                                                                                                            +
+        '<div class="vocab-toggle' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                           +
+        '<span lang="ja">語</span>'                                                                                         +
+        '</div>'                                                                                                            +
+        '</div>'                                                                                                            +
+        '<div class="left-side-action-buttons">'                                                                            +
+        '<div class="load-button">'                                                                                         +
+        '<span class="br-en" lang="ja">Load</span>'                                                                         +
+        '<span class="br-jp" lang="ja">ロード</span>'                                                                       +
+        '</div>'                                                                                                            +
+        '<div class="start-button-toggle' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'           +
+        '<span lang="ja" class="br-en">Start Button</span>'                                                                 +
+        '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                             +
+        '</div>'                                                                                                            +
+        '</div>'                                                                                                            +
+        '<div class="right-side-toggle-buttons">'                                                                           +
+        '<div class="toggle-language-button">'                                                                              +
+        '<span lang="ja" class="br-en">日本語</span>'                                                                       +
+        '<span lang="ja" class="br-jp">English</span>'                                                                      +
+        '</div>'                                                                                                            +
+        '<div class="resize-button">'                                                                                       +
+        '<span lang="ja" class="br-en">Resize</span>'                                                                       +
+        '<span lang="ja" class="br-jp">拡大する</span>'                                                                     +
+        '</div>'                                                                                                            +
+        '</div>'                                                                                                            +
+        '<div class="review-item-container">'                                                                               +
+        '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                       +
+        '</div>'                                                                                                            +
+        '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'          +
+        '<div id="answer-form" tabindex="10">'                                                                              +
+        '<form onSubmit="return false">'                                                                                    +
+        '<fieldset>'                                                                                                        +
+        '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response"'          +
+            'placeholder="Your Response" type="text"></input>'                                                              +
+        '<button id="answer-button" type="button"><i class="icon-chevron-right"></i></button>'                              +
+        '</fieldset>'                                                                                                       +
+        '</form>'                                                                                                           +
+        '</div>'                                                                                                            +
+        '</div>'                                                                                                            +
         '</div>';
 
     BRLog(strReview);
@@ -301,21 +440,7 @@ function constructBurnReviewHtml() {
     setLanguage();
 }
 
-function rand(low, high) {
-    return Math.floor(Math.random()*(high + 1)) + low;
-}
-
-function enableKanaInput() {
-    if (document.getElementById('user-response')){
-        wanakana.bind(document.getElementById('user-response'));
-    }
-}
-
-function disableKanaInput() {
-    if (document.getElementById('user-response')){
-        wanakana.unbind(document.getElementById('user-response'));
-    }
-}
+// BRQuestion functions
 
 function nextQuestion() {
 
@@ -364,11 +489,6 @@ function getReviewTypeText() {
     return '<span class="br-en">' + reviewTypeTextEng + '</span><span class="br-jp">' + reviewTypeTextJp + '</span>';
 }
 
-function setLanguage() {
-    var langToHide = BRLangJP ? ".br-en" : ".br-jp";
-    $(langToHide).addClass("br-hide");
-}
-
 function newBRItem() {
     BRLog("Getting new burn item");
 
@@ -396,7 +516,6 @@ function newBRItem() {
 
     BRLog("Burn item type: " + BRQuestion.itemType);
     BRLog("Burn item: " + BRQuestion.Item);
-
 }
 
 function updateBRItem(updateText) {
@@ -413,6 +532,136 @@ function updateBRItem(updateText) {
     bgi += BRQuestion.DependingOnTypeUse("#0af, #0093dd", "#f0a, #dd0093", "#a0f, #9300dd");
     $(".review-item-container").css({"background-color": bg, "background-image": bgi });
 }
+
+function checkBurnReviewAnswer() {
+    BRLog("Checking answer");
+    var response = $("#user-response").val().trim();
+    response = BRQuestion.IsAskingForReading() ? addTerminalN(response) : response;
+    var answers = BRQuestion.GetAnswers();
+    var answerIsCorrect = isAnswerCorrect(response, answers);
+
+    $("#answer-form").focus(); // fix for FF to stop focus being trapped
+    $("#user-response").attr("disabled", true);
+
+    if (responseIsValid(response)) {
+        if (isIncorrectReading(response, answerIsCorrect)) {
+            shakeAnswerForm();
+            displayIncorrectReadingMessage();
+            $("#user-response").attr("disabled", false).focus();
+        }
+        else {
+            if (answerIsCorrect) {
+                onCorrectAnswer(response);
+            } else {
+                onIncorrectAnswer(response);
+            }
+            BRQuestion.SetAnswered(true);
+        }
+    } else {
+        shakeAnswerForm();
+        $("#user-response").attr("disabled", false).focus();
+    }
+}
+
+function isAnswerCorrect(response, answers) {
+    for (var a = 0; a < answers.length; a++) {
+        if (response.toLocaleLowerCase() === answers[a].toLocaleLowerCase()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function setInputValue(text) {
+    $("#user-response").val(text);
+}
+
+function onCorrectAnswer(answer) {
+    $("#answer-form fieldset").removeClass("incorrect").addClass("correct");
+    //setInputValue(answer);
+}
+
+function onIncorrectAnswer(answer) {
+    $("#answer-form fieldset").removeClass("correct").addClass("incorrect");
+    //setInputValue(answer);
+    displayIncorrectAnswerMessage();
+}
+
+function responseIsValid(response) {
+    return ((BRQuestion.IsAskingForMeaning() && isAsciiPresent(response)) ||
+        (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "";
+}
+
+function compareKunyomiReading(input, reading) {
+    return (input == reading || input == reading.toString().substring(0, reading.indexOf(".")) || input == reading.toString().replace("*", input.substring(reading.indexOf(".") + 1)).replace(".", ""));
+}
+
+function submitBRAnswer() {
+    if (!BRQuestion.IsAnswered()) {
+        checkBurnReviewAnswer();
+    }
+    else {
+        nextQuestion();
+    }
+}
+
+function skipItem() {
+    BRQuestion.Skip();
+    nextQuestion();
+    return false;
+}
+
+// Input Functions
+
+function enableKanaInput() {
+    if (document.getElementById('user-response')){
+        wanakana.bind(document.getElementById('user-response'));
+    }
+}
+
+function disableKanaInput() {
+    if (document.getElementById('user-response')){
+        wanakana.unbind(document.getElementById('user-response'));
+    }
+}
+
+function configureInputForEnglishOrJapanese() {
+    if (BRQuestion.IsAskingForMeaning()) {
+        disableKanaInput();
+        $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
+        $("#question-type").addClass("meaning");
+        $("#question-type").removeClass("reading");
+    } else {
+        enableKanaInput();
+        $("#user-response").attr({lang:"ja",placeholder:"答え"});
+        $("#question-type").addClass("reading");
+        $("#question-type").removeClass("meaning");
+    }
+}
+
+function getRadicalCharacter(radical) {
+    return radical.character ? radical.character :
+        "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
+}
+
+function addTerminalN(str = '') {
+    return /n/i.test(str.slice(-1)) ? `${str.slice(0, -1)}ん` : str;
+}
+
+function isAsciiPresent(e){
+    return (BRQuestion.IsAskingForMeaning()) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
+}
+
+function submitOnEnterPress(event) {
+    const isEnterKey = event.keyCode == 13;
+    const isNotWkSearchInput = !event.target.matches('#query.search-query');
+    if(isNotWkSearchInput && isEnterKey) {
+        BRLog("User pressed Enter");
+        submitBRAnswer();
+    }
+}
+
+// UI Functions
 
 function setItemFontSize() {
     var itemLength = BRQuestion.Item.character.length;
@@ -436,295 +685,9 @@ function setItemFontSize() {
     $(".review-item").css("font-size", fontSize + "px");
 }
 
-function skipItem() {
-    BRQuestion.Skip();
-    nextQuestion();
-    return false;
-}
-
-function displayStartMessage() {
-    var text = BRLangJP ? "開始" : "Start";
-    $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">' + text + '</a>');
-}
-
-function bindStartButtonClickEvent() {
-    $("#loadingBR a").click(function() {
-        startWaniKaniBurnReviews();
-    });
-}
-
-function displayLoadingMessage(color, english, japanese) {
-    $("#loadingBR").html('<h3 style="color:' + color + '">' + (BRLangJP ? japanese : english)  + '</h3>');
-}
-
-function displayRadicalLoadingMessage() {
-    displayLoadingMessage(LITEBLUE, "Retrieving radical data...", "部首データを検索中…");
-}
-
-function displayKanjiLoadingMessage() {
-    displayLoadingMessage(PINK,"Retrieving kanji data...", "漢字データを検索中…");
-}
-
-function displayVocabLoadingMessage() {
-    displayLoadingMessage(PURPLE,"Retrieving vocabulary data...", "単語データを検索中…");
-}
-
-
-function getRadicalCharacter(radical) {
-    return radical.character ? radical.character :
-        "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
-}
-
-function itemIsBurned(item) {
-    return item.user_specific ? item.user_specific.burned : false;
-}
-
-function getMeaning(item) {
-    var usyn = item.user_specific ? item.user_specific.user_synonyms : null;
-    var meaning = item.meaning.split(', ');
-    return usyn !== null ? meaning.concat(usyn) : meaning;
-}
-
-function radicalMap(radical) {
-    return {
-        id: radical.id,
-        character: radical.data.characters,
-        image: (radical.data.character_images.length > 0) ? radical.data.character_images[0].url:null,
-        meaning: radical.data.meanings.map(function(meaning){return meaning.meaning}),
-    }
-}
-
-function kanjiMap(kanji) {
-    return {
-        id: kanji.id,
-        character: kanji.data.characters,
-        meaning: kanji.data.meanings.map(function(meaning){return meaning.meaning}),
-        onyomi: getKanjiReading(kanji, "onyomi"),
-        kunyomi: getKanjiReading(kanji, "kunyomi"),
-        important_reading: getKanjiReading(kanji, "primary"),
-    }
-}
-
-function getKanjiReading(kanji, readingType) {
-    var reading;
-    if (readingType === "primary"){
-        reading = kanji.data.readings.filter(reading => reading.primary);
-    }
-    else {
-        reading = kanji.data.readings.filter(reading => reading.type === readingType);
-    }
-    if (reading.length > 0) {
-        return reading[0]["reading"];
-    }
-    return null;
-}
-
-function vocabularyMap(vocabulary) {
-    return {
-        id: vocabulary.id,
-        character: vocabulary.data.characters,
-        meaning: vocabulary.data.meanings.map(function(meaning){return meaning.meaning}),
-        kana: vocabulary.data.readings[0]["reading"],
-    }
-}
-
-function fetchAndCacheBurnedItemsThen(callback, storageKey) {
-    var nextUrl = "https://api.wanikani.com/v2/assignments?burned=true";
-
-    while(nextUrl) {
-        $.ajax(
-            {
-                url: nextUrl,
-                headers: {
-                    "Wanikani-Revision": "20170710",
-                    "Authorization": "Bearer " + apiKey,
-                },
-                dataType:"json",
-                async: false,
-            }
-        ).done(function(response) {
-            var burnedItems = response.data;
-            burnedItems.forEach(item => {
-                BRRef[item.data.subject_type].push(item);
-            });
-            nextUrl = response.pages.next_url;
-        }).fail(function(XMLHttpRequest, textStatus, errorThrown) {
-            BRLog("Request to WaniKani API failed (" + nextUrl + ").\nERROR: " +
-                errorThrown + "\nCatastrophic failure ermagerd D:", ERROR);
-            nextUrl = null;
-        });
-    }
-    fetchAndCacheSubjects("radical", "RADICAL", radicalMap, BRRef["radical"]);
-    fetchAndCacheSubjects("kanji", "KANJI", kanjiMap, BRRef["kanji"]);
-    fetchAndCacheSubjects("vocabulary", "VOCABULARY", vocabularyMap, BRRef["vocabulary"]);
-    localStorage.setItem(storageKey, JSON.stringify(BRData));
-    callback();
-}
-
-function fetchAndCacheSubjects(type, storageKey, mapFunction, assignment_items) {
-    var ids = assignment_items.map(function(item){return item.data.subject_id;});
-    var nextUrl = "https://api.wanikani.com/v2/subjects?types=" + type + "&ids=" + ids.join(",");
-    var mappedData = [];
-    while (nextUrl) {
-        $.ajax(
-            {
-                url:nextUrl,
-                headers: {
-                    "Wanikani-Revision": "20170710",
-                    "Authorization": "Bearer " + apiKey,
-                },
-                dataType:"json",
-                async: false, // Can't be async or the next call will not have a url yet
-            }
-        ).done(function(response) {
-            if (response.data) {
-                var data = response.data.map(mapFunction);
-                data = data.map(function(data_item) {
-                    data_item["assignment"] = assignment_items.filter(item => item.data.subject_id == data_item.id)[0];
-                    return data_item;
-                });
-                mappedData = mappedData.concat(data);
-            }
-            nextUrl = response.pages.next_url;
-        }).fail(function(XMLHttpRequest, textStatus, errorThrown) {
-            BRLog("Request to WaniKani API failed (" + nextUrl + ").\nERROR: " +
-                errorThrown + "\nCatastrophic failure ermagerd D:", ERROR);
-            nextUrl = null;
-        });
-    }
-    BRData[type] = mappedData;
-    localStorage.setItem(storageKey, JSON.stringify(mappedData));
-}
-
-function maybeGetBurnedItemsThen(callback, storageKey, fetchFunction) {
-    var RawBRData = localStorage.getItem(storageKey);
-    if (RawBRData !== null) {
-        try {
-            BRData = JSON.parse(RawBRData);
-            if (BRData.length > 0) {
-                return callback();
-            }
-            BRLog("No burned " + type + " in cache. Refectching...", WARNING);
-        }
-        catch(e) {
-            BRLog("Could not parse cached data. Refetching...", WARNING);
-        }
-    }
-    return fetchFunction(callback, storageKey);
-}
-
-function getBurnReviewDataThen(callback) {
-    BRLog("Getting WaniKana data");
-
-    maybeGetBurnedItemsThen( function() {
-        BRLog("Data items { RadicalData: " + BRData.radical.length +
-            "; KanjiData: " + BRData.kanji.length +
-            "; VocabData: " + BRData.vocabulary.length + "}");
-        callback();
-    }, "BRDATA", fetchAndCacheBurnedItemsThen);
-
-}
-
-function clearBurnedItemData() {
-    localStorage.removeItem("burnedRadicals");
-    localStorage.removeItem("burnedKanji");
-    localStorage.removeItem("burnedVocab");
-    BRData.radical = [];
-    BRData.kanji    = [];
-    BRData.vocabulary    = [];
-}
-
-function confirmResurrection() {
-    $(".answer-exception-form").css({"display": "block", "opacity": "0", "-webkit-transform": "translateY(20px)", "-moz-transform": "translateY(20px)"}).removeClass("animated fadeInUp");
-    $(".answer-exception-form").addClass("animated fadeInUp");
-
-    var itemTypeForUrl = BRQuestion.DependingOnTypeUse("radicals/", "kanji/", "vocabulary/");
-    var resurrectionUrl = "https://www.wanikani.com/assignments/" + BRQuestion.Item.id + "/resurrect";
-    var resurrectionLink = '<a id="resurrect_prompt" class="btn btn-mini resurrect-btn" rel="nofollow" data-method="put" href="' + resurrectionUrl + '">';
-
-    var resurrectEng = '<div class="br-en">Are you sure you want to ' + resurrectionLink + 'Resurrect</a> the ' +
-        BRQuestion.DependingOnTypeUse("radical", "kanji item", "vocabulary item") + ' "' + BRQuestion.Item.character + '"?</div>';
-
-    var resurrectJp  = '<div class="br-jp">' + BRQuestion.DependingOnTypeUse("部首", "漢字", "単語") + "「" + BRQuestion.Item.character  + "」を" +
-        resurrectionLink + '復活</a>する<br />本当によろしいですか？</div>';
-
-    $(".answer-exception-form span").html(resurrectEng + resurrectJp);
-    setLanguage();
-
-    document.getElementById("answer-exception").onclick = "return false";
-    return false;
-}
-
-function initBurnReviews() {
-
-    BRLog("Initialising the Burn Review widget");
-
-    var loadStylesAndConstructWidget = function() {
-        useCache = false;
-        $("#loadingBR").remove();
-        addBurnReviewStylesThen(constructBurnReviewWidget);
-    };
-    getBurnReviewDataThen(loadStylesAndConstructWidget);
-
-}
-
-function constructBurnReviewWidget() {
-
-    BRLog("Getting new burn review item");
-    newBRItem();
-
-    BRLog("Adding burn review section");
-    constructBurnReviewHtml();
-
-    $("#answer-button").click(function() {
-        submitBRAnswer();
-    });
-    updateBRItem(false);
-    configureInputForEnglishOrJapanese();
-
-    bindMouseClickEvents();
-
-}
-
-function configureInputForEnglishOrJapanese() {
-    if (BRQuestion.IsAskingForMeaning()) {
-        disableKanaInput();
-        $("#user-response").removeAttr("lang").attr("placeholder","Your Response");
-        $("#question-type").addClass("meaning");
-        $("#question-type").removeClass("reading");
-    } else {
-        enableKanaInput();
-        $("#user-response").attr({lang:"ja",placeholder:"答え"});
-        $("#question-type").addClass("reading");
-        $("#question-type").removeClass("meaning");
-    }
-}
-
-function bindMouseClickEvents() {
-
-    bindQuestionTypeToggleButtonClickEvents();
-
-    bindLoadButtonClickEvent();
-
-    bindStartButtonToggleButtonClickEvent();
-
-    bindLanguageToggleButtonClickEvent();
-
-    bindResizeButtonClickEvent();
-
-    bindDimOverlayClickEvent();
-
-    bindNewItemButtonClickEvent();
-}
-
-function bindNewItemButtonClickEvent() {
-    document.getElementById("new-item").onclick = skipItem;
-}
-
-function bindLanguageToggleButtonClickEvent() {
-    $('.toggle-language-button').click(function() {
-        switchBRLang();
-    });
+function setLanguage() {
+    var langToHide = BRLangJP ? ".br-en" : ".br-jp";
+    $(langToHide).addClass("br-hide");
 }
 
 function resizeWidget() {
@@ -738,7 +701,138 @@ function resizeWidget() {
         complete: function() { resizeWidget.complete = true; }
     });
 }
-resizeWidget.complete = true;
+
+function displayStartMessage() {
+    var text = BRLangJP ? "開始" : "Start";
+    $("#loadingBR").html('<a lang="ja" href="javascript:void(0)" style="font-size: 52px; color: #434343; text-decoration: none">' + text + '</a>');
+}
+
+function switchBRLang() {
+    if (!BRLangJP) {
+        localStorage.setItem("BRLangJP", true);
+    }
+    else {
+        localStorage.removeItem("BRLangJP");
+    }
+    BRLangJP = !BRLangJP;
+
+    $('.br-en,.br-jp').toggleClass('br-hide');
+}
+
+function confirmResurrection() {
+    $(".answer-exception-form").css(
+        {   "display": "block",
+            "opacity": "0",
+            "-webkit-transform": "translateY(20px)",
+            "-moz-transform": "translateY(20px)"
+        }
+    ).removeClass("animated fadeInUp");
+    $(".answer-exception-form").addClass("animated fadeInUp");
+    
+    var itemTypeForUrl = BRQuestion.DependingOnTypeUse("radicals/", "kanji/", "vocabulary/");
+    var resurrectionUrl = "https://www.wanikani.com/assignments/" + BRQuestion.Item.id + "/resurrect";
+
+    // TODO Change this so that it does an ajax request instead of taking the user to a new page
+    var resurrectionLink =  '<a id="resurrect_prompt" class="btn btn-mini ' + 
+                            'resurrect-btn" rel="nofollow" data-method='    +
+                            '"put" href="' + resurrectionUrl + '">';
+
+    var resurrectEng =      '<div class="br-en">Are you sure you want to '                              +
+                            resurrectionLink + 'Resurrect</a> the '                                     +
+                            BRQuestion.DependingOnTypeUse("radical", "kanji item", "vocabulary item")   +
+                            ' "' + BRQuestion.Item.character + '"?</div>';
+
+    var resurrectJp  =      '<div class="br-jp">'                                   + 
+                            BRQuestion.DependingOnTypeUse("部首", "漢字", "単語")   +
+                            "「" + BRQuestion.Item.character  + "」を"              +
+                            resurrectionLink                                        + 
+                            '復活</a>する<br />本当によろしいですか？</div>';
+
+    $(".answer-exception-form span").html(resurrectEng + resurrectJp);
+    setLanguage();
+
+    document.getElementById("answer-exception").onclick = "return false";
+    return false;
+}
+
+function displayIncorrectAnswerMessage() {
+    // concat in to string of comma-separated answers
+    var answerList = BRQuestion.GetAnswers();//.join(", ");
+    var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
+
+    var answerTextEng = '<div class="br-en">The answer was:<br />"' +
+                        answerList  + '"<br />' + resurrectButton   +
+                        'Resurrect</a> this item?</div>';
+    var answerTextJp  = '<div class="br-jp">解答は<br />「'         +
+                        answerList + '」であった。<br />この項目を' +
+                        resurrectButton + '復活</a>したいか？</div>';
+
+    $('.answer-exception-form span').html(answerTextEng + answerTextJp);
+    setLanguage();
+    $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp");
+    $('.resurrect-btn').on('click', confirmResurrection);
+}
+
+function isIncorrectReading(response, answerIsCorrect) {
+    return (
+            !answerIsCorrect && BRQuestion.IsKanji() && BRQuestion.IsAskingForReading() && (
+                (BRQuestion.Item.important_reading == "onyomi" && compareKunyomiReading(response, BRQuestion.Item.kunyomi)) ||
+                (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi)
+            )
+    );
+}
+
+function displayIncorrectReadingMessage() {
+    var incorrectReadingText =  '<div class="br-en">Oops! You entered the wrong reading.</div>' +
+                                '<div class="br-jp">おっと、異なる読みを入力してしまった。</div>';
+    $(".answer-exception-form span").html(incorrectReadingText);
+    setLanguage();
+
+    $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp").delay(5000).queue(function(){
+        $(this).addClass("fadeOut").dequeue().delay(800).queue(function(){
+            $(this).removeClass("fadeOut").css("display", "none").dequeue();
+        });
+    });
+}
+
+function shakeAnswerForm() {
+    $('#answer-form').addClass('shake')
+                     .delay(1000)
+                     .queue(
+                        function(next) {
+                            $(this).removeClass('shake');
+                            next();
+                        }
+                     );
+}
+
+// Events binding functions
+
+function bindMouseClickEvents() {
+    bindQuestionTypeToggleButtonClickEvents();
+    bindLoadButtonClickEvent();
+    bindStartButtonToggleButtonClickEvent();
+    bindLanguageToggleButtonClickEvent();
+    bindResizeButtonClickEvent();
+    bindDimOverlayClickEvent();
+    bindNewItemButtonClickEvent();
+}
+
+function bindStartButtonClickEvent() {
+    $("#loadingBR a").click(function() {
+        startWaniKaniBurnReviews();
+    });
+}
+
+function bindNewItemButtonClickEvent() {
+    document.getElementById("new-item").onclick = skipItem;
+}
+
+function bindLanguageToggleButtonClickEvent() {
+    $('.toggle-language-button').click(function() {
+        switchBRLang();
+    });
+}
 
 function bindResizeButtonClickEvent() {
     $('.resize-button').click(function() {
@@ -751,7 +845,6 @@ function bindDimOverlayClickEvent() {
         $('.resize-button').trigger("click");
     });
 }
-
 
 function bindLoadButtonClickEvent() {
     $(".load-button").click(function() {
@@ -817,138 +910,71 @@ function bindItemToggleButtonClickEvent(cssClass, storageKey, configKey, current
     });
 }
 
-function switchBRLang() {
-    if (!BRLangJP) {
-        localStorage.setItem("BRLangJP", true);
-    }
-    else {
-        localStorage.removeItem("BRLangJP");
-    }
-    BRLangJP = !BRLangJP;
+// Review Data Loading Functions
 
-    $('.br-en,.br-jp').toggleClass('br-hide');
+function maybeGetBurnedItemsThen(callback, fetchFunction) {
+    var cachedBRData = getCachedBurnedItemData(); 
+    if (cachedBRData) {
+        BRData = cachedBRData;
+        return callback();
+    }
+    return fetchFunction(callback);
 }
 
-function checkBurnReviewAnswer() {
-    BRLog("Checking answer");
-    var response = $("#user-response").val().trim();
-    response = BRQuestion.IsAskingForReading() ? addTerminalN(response) : response;
-    var answers = BRQuestion.GetAnswers();
-    var answerIsCorrect = isAnswerCorrect(response, answers);
+function getBurnReviewDataThen(callback) {
+    BRLog("Getting WaniKana data");
 
-    $("#answer-form").focus(); // fix for FF to stop focus being trapped
-    $("#user-response").attr("disabled", true);
+    maybeGetBurnedItemsThen( function() {
+        BRLog("Data items { RadicalData: " + BRData.radical.length +
+            "; KanjiData: " + BRData.kanji.length +
+            "; VocabData: " + BRData.vocabulary.length + "}");
+        callback();
+    }, fetchAndCacheBurnedItemsThen);
 
-    if (responseIsValid(response)) {
-        if (isIncorrectReading(response, answerIsCorrect)) {
-            shakeAnswerForm();
-            displayIncorrectReadingMessage();
-            $("#user-response").attr("disabled", false).focus();
-        }
-        else {
-            if (answerIsCorrect) {
-                onCorrectAnswer(response);
-            } else {
-                onIncorrectAnswer(response);
+}
+
+// Caching functions
+
+function cacheBurnedItemData() {
+    localStorage.setItem("BRData", JSON.stringify(BRData));
+    localStorage.setItem("BRData_cache_time", Date.now());
+}
+
+function getCachedBurnedItemData() {
+    var RawBRData = localStorage.getItem("BRData");
+    var cacheTime = localStorage.getItem("BRData_cache_time");
+    var parsedBRData = null;
+    if (RawBRData !== null && cacheTime !== null) {
+        if (dateInDays(Date.parse(cacheTime) - Date.now()) < 7) {
+            try {
+                parsedBRData = JSON.parse(RawBRData);
+                if (parsedBRData.length <= 0) {
+                    BRLog("No burned data in cache. Refectching...", WARNING);
+                    parsedBRData = null;
+                }
             }
-            BRQuestion.SetAnswered(true);
-        }
-    } else {
-        shakeAnswerForm();
-        $("#user-response").attr("disabled", false).focus();
-    }
-}
-
-function addTerminalN(str = '') {
-    return /n/i.test(str.slice(-1)) ? `${str.slice(0, -1)}ん` : str;
-}
-
-function isAnswerCorrect(response, answers) {
-    for (var a = 0; a < answers.length; a++) {
-        if (response.toLocaleLowerCase() === answers[a].toLocaleLowerCase()) {
-            return true;
+            catch(e) {
+                BRLog("Could not parse cached data. Refetching...", WARNING);
+                parsedBRData = null;
+            }
         }
     }
-    return false;
+    return parsedBRData;
 }
 
-function shakeAnswerForm() {
-    $('#answer-form').addClass('shake')
-        .delay(1000)
-        .queue(function(next) {
-            $(this).removeClass('shake');
-            next();
-        });
+function clearBurnedItemData() {
+    localStorage.removeItem("BRData");
+    BRData = { radical: [], kanji: [], vocabulary: [] };
 }
 
-function setInputValue(text) {
-    $("#user-response").val(text);
+function getCachedUISettings() {
+    BRLangJP                    =  (localStorage.getItem("BRLangJP") == "true");
+    BRConfig.RadicalsEnabled    =  (localStorage.getItem("BRRadicalsEnabled") != "false");
+    BRConfig.KanjiEnabled       =  (localStorage.getItem("BRKanjiEnabled") != "false");
+    BRConfig.VocabEnabled       =  (localStorage.getItem("BRVocabEnabled") != "false");
 }
 
-function onCorrectAnswer(answer) {
-    $("#answer-form fieldset").removeClass("incorrect").addClass("correct");
-    setInputValue(answer);
-}
-
-function onIncorrectAnswer(answer) {
-    $("#answer-form fieldset").removeClass("correct").addClass("incorrect");
-    setInputValue(answer);
-    displayIncorrectAnswerMessage();
-}
-
-function responseIsValid(response) {
-    return ((BRQuestion.IsAskingForMeaning() && isAsciiPresent(response)) ||
-        (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "";
-}
-
-function displayIncorrectAnswerMessage() {
-    // concat in to string of comma-separated answers
-    var answerList = BRQuestion.GetAnswers();//.join(", ");
-    var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
-
-    var answerTextEng = '<div class="br-en">The answer was:<br />"' + answerList + '"<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
-    var answerTextJp  = '<div class="br-jp">解答は<br />「' + answerList + '」であった。<br />この項目を' + resurrectButton + '復活</a>したいか？</div>';
-    $('.answer-exception-form span').html(answerTextEng + answerTextJp);
-    setLanguage();
-
-    $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp");
-    $('.resurrect-btn').on('click', confirmResurrection);
-}
-
-function isIncorrectReading(response, answerIsCorrect) {
-    return (!answerIsCorrect && BRQuestion.IsKanji() && BRQuestion.IsAskingForReading() && ((BRQuestion.Item.important_reading == "onyomi" &&
-        compareKunyomiReading(response, BRQuestion.Item.kunyomi)) || (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi)));
-}
-
-function displayIncorrectReadingMessage() {
-    var incorrectReadingText = '<div class="br-en">Oops! You entered the wrong reading.</div>' +
-        '<div class="br-jp">おっと、異なる読みを入力してしまった。</div>';
-    $(".answer-exception-form span").html(incorrectReadingText);
-    setLanguage();
-
-    $(".answer-exception-form").css({"display": "block"}).addClass("animated fadeInUp").delay(5000).queue(function(){
-        $(this).addClass("fadeOut").dequeue().delay(800).queue(function(){
-            $(this).removeClass("fadeOut").css("display", "none").dequeue();
-        });
-    });
-}
-
-function compareKunyomiReading(input, reading) {
-    return (input == reading || input == reading.toString().substring(0, reading.indexOf(".")) || input == reading.toString().replace("*", input.substring(reading.indexOf(".") + 1)).replace(".", ""));
-}
-
-function submitBRAnswer() {
-    if (!BRQuestion.IsAnswered()) {
-        checkBurnReviewAnswer();
-    }
-    else {
-        nextQuestion();
-    }
-}
-
-function isAsciiPresent(e){
-    return (BRQuestion.IsAskingForMeaning()) ? !/[^a-z \-0-9]/i.test(e) : /[^ぁ-ー0-9 ]/.test(e);
-}
+// Initialization and Cleanup functions
 
 function startWaniKaniBurnReviews() {
     if (!useCache) {
@@ -965,60 +991,62 @@ function startWaniKaniBurnReviews() {
     }, 250);
 }
 
-function pageIsDashboard() {
-    return $('title').text().search("Dashboard") > 0;
+function initBurnReviews() {
+    BRLog("Initialising the Burn Review widget");
+
+    var loadStylesAndConstructWidget = function() {
+        useCache = false;
+        $("#loadingBR").remove();
+        addBurnReviewStylesThen(constructBurnReviewWidget);
+    };
+    getBurnReviewDataThen(loadStylesAndConstructWidget);
+}
+
+function constructBurnReviewWidget() {
+    BRLog("Getting new burn review item");
+    newBRItem();
+
+    BRLog("Adding burn review section");
+    constructBurnReviewHtml();
+
+    $("#answer-button").click(function() {
+        submitBRAnswer();
+    });
+    updateBRItem(false);
+    configureInputForEnglishOrJapanese();
+
+    resizeWidget.complete = true;
+    bindMouseClickEvents();
 }
 
 function main() {
-
     if (!pageIsDashboard()) {
         BRLog("Script not running on dashboard, exiting...");
         return;
     }
 
-
     getApiKeyThen(function(key) {
-
         if (key === null) {
             BRLog("Couldn't fetch API key. It's all gone Pete Tong. Cannot continue ;__;", ERROR);
             return;
         }
-
         apiKey = key; //global
         BRLog("Running!");
 
-        useCache            =  !(localStorage.getItem("burnedRadicals") === null || localStorage.getItem("burnedKanji") === null || localStorage.getItem("burnedVocab") === null);
-        BRIsChrome          =  (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
+        useCache                    =  !(localStorage.getItem("BRData") === null);
+        BRIsChrome                  =  (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
         BRQuestion.Reset();
-        queueBRAnim              =  false;
-        allowQueueBRAnim         =  true;
-        BRLangJP                 =  (localStorage.getItem("BRLangJP") == "true");
-        BRConfig.RadicalsEnabled =  (localStorage.getItem("BRRadicalsEnabled") != "false");
-        BRConfig.KanjiEnabled    =  (localStorage.getItem("BRKanjiEnabled") != "false");
-        BRConfig.VocabEnabled    =  (localStorage.getItem("BRVocabEnabled") != "false");
-
-
-        String.prototype.trim = function() {
-            return(this.replace(/^ +/,'').replace(/ +$/,''));
-        };
-
+        getCachedUISettings();
+        queueBRAnim                 =  false;
+        allowQueueBRAnim            =  true;
+        String.prototype.trim       =  stringTrim; 
+        
         appendPriorityCSS();
         injectWidgetHtmlWrapper();
-
         displayStartMessage();
         bindStartButtonClickEvent();
 
-        function submitOnEnterPress(event) {
-            const isEnterKey = event.keyCode == 13;
-            const isNotWkSearchInput = !event.target.matches('#query.search-query');
-            if(isNotWkSearchInput && isEnterKey) {
-                BRLog("User pressed Enter");
-                submitBRAnswer();
-            }
-        }
-
         $(document).unbind('keypress', submitOnEnterPress).bind('keypress', submitOnEnterPress);
-
         if (localStorage.getItem("BRStartButton") === null)
         {
             startWaniKaniBurnReviews();
