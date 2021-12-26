@@ -16,8 +16,8 @@
 // Use site jquery and other variables
 // Todo fix this properly to work with Greasmonkey
 try {
-  localStorage = unsafeWindow.localStorage;
-  window = unsafeWindow;
+    localStorage = unsafeWindow.localStorage;
+    window = unsafeWindow;
 }
 catch {}
 
@@ -42,7 +42,8 @@ var PURPLE   = "#a000f1";
 // Globals....ewww
 var BRLoggingEnabled = (localStorage.getItem("BRLoggingEnabled") == "true");
 
-BRData = { Radicals: [], Kanji: [], Vocab: [] };
+BRData = { radical: [], kanji: [], vocabulary: [] };
+BRRef = { radical: [], kanji: [], vocabulary: [] };
 BRConfig = { RadicalsEnabled: true, KanjiEnabled: true, VocabEnabled: true };
 
 BRQuestion = {
@@ -69,10 +70,10 @@ BRQuestion = {
         else {
             if (BRQuestion.IsKanji()) {
                 var importantReading = BRQuestion.Item.important_reading;
-                return BRQuestion.Item[importantReading];
+                return [importantReading];
             }
             else {
-                return BRQuestion.Item.kana;
+                return [BRQuestion.Item.kana];
             }
         }
     },
@@ -107,8 +108,8 @@ function BRLog(logdata, level) {
     var logmethod = console.log.bind(console);
     if (typeof level !== "undefined" && level !== DEBUG) {
         logmethod = (level == WARNING ? console.warn.bind(console) :
-                     level == ERROR ? console.error.bind(console) :
-                     logmethod);
+            level == ERROR ? console.error.bind(console) :
+            logmethod);
     }
 
     logmethod("WKBurnReview: " + logdata);
@@ -135,15 +136,15 @@ function getApiKeyThen(callback) {
     }
     else {
         // We don't have the API key.  Fetch it from the /settings/personal_access_tokens page.
-      	$.get('https://www.wanikani.com/settings/personal_access_tokens')
+        $.get('https://www.wanikani.com/settings/personal_access_tokens')
             .done(function(page) {
                 if (typeof page !== 'string') return callback(null);
 
-                // Extract the API key.
-                api_key = $(page).find('#user_api_key').val();
-                if (typeof api_key == 'string' && api_key.length == 32) {
-                    	// Store the updated user info.
-                    	localStorage.setItem('apiKey', api_key);
+                // Extract the API key. (This is pretty hacky)
+                api_key = $(page).find("code")[0].firstChild.data;
+                if (typeof api_key == 'string' && api_key.length == 36) {
+                    // Store the updated user info.
+                    localStorage.setItem('apiKey', api_key);
                 }
                 else {
                     BRLog("Failed to get API key :( instead got: '" + api_key + "'", ERROR);
@@ -195,43 +196,43 @@ function appendExternalBurnReviewStylesheetThen(callback) {
         $('head').append('<style id="burnReviewStyles"></style>');
         $('#burnReviewStyles').text(content);
 
-    callback();
+        callback();
     });
 }
 
 // This is for dumping CSS that must be present before loading main stylesheet
 function appendPriorityCSS() {
     var priorityStyles =
-    '<style type="text/css">'                                                                                             +
+        '<style type="text/css">'                                                                                         +
         '.burn-review-container { float:left;}'                                                                           +
         '#loadingBR { position: relative; background-color: #d4d4d4; margin-top: 0px; padding-top: 42px; height: 99px; }' +
         '#dim-overlay { position: fixed; background-color: black; opacity: 0.75; width: 100%; height: 100%; z-index: 1; margin-top: -122px; padding-bottom: 122px; display: none; }' +
-    '</style>';
+        '</style>';
     $(priorityStyles).appendTo($("head"));
 }
 
 function injectWidgetHtmlWrapper() {
-        $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col burn-review-container"></div>');
-        $("<br />" + wrapperHTML() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section"));
-        setLanguage();
+    $(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().wrap('<div class="col burn-review-container"></div>');
+    $("<br />" + wrapperHTML() + "<!-- span4 -->").insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section"));
+    setLanguage();
 }
 
 function wrapperHTML() {
     var html =
-        '<div class="">'                                                                                                                     +
-            '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">' +
-                '<h3 class="small-caps">'                                                                                                         +
-                    '<span class="br-en">BURN REVIEWS</span>'                                                                                     +
-                    '<span class="br-jp">焦げた復習</span>'                                                                                       +
-                '</h3>'                                                                                                                           +
-                '<div id="loadingBR" align="center" style=""></div>'                                                                              +
-                '<div class="see-more" style="margin-top: -1px">'                                                                                 +
-                    '<a href="javascript:void(0)" id="new-item" class="small-caps">'                                                              +
-                        '<span class="br-en">NEW ITEM</span>'                                                                                     +
-                        '<span class="br-jp">新しい項目</span>'                                                                                   +
-                    '</a>'                                                                                                                        +
-                '</div>'                                                                                                                          +
-            '</section>'                                                                                                                          +
+        '<div class="">'                                                                                                    +
+        '<section class="burn-reviews kotoba-table-list dashboard-sub-section one-second-transition" style="z-index: 2; position: relative">' +
+        '<h3 class="small-caps">'                                                                                                         +
+        '<span class="br-en">BURN REVIEWS</span>'                                                                                     +
+        '<span class="br-jp">焦げた復習</span>'                                                                                       +
+        '</h3>'                                                                                                                           +
+        '<div id="loadingBR" align="center" style=""></div>'                                                                              +
+        '<div class="see-more" style="margin-top: -1px">'                                                                                 +
+        '<a href="javascript:void(0)" id="new-item" class="small-caps">'                                                              +
+        '<span class="br-en">NEW ITEM</span>'                                                                                     +
+        '<span class="br-jp">新しい項目</span>'                                                                                   +
+        '</a>'                                                                                                                        +
+        '</div>'                                                                                                                          +
+        '</section>'                                                                                                                          +
         '</div>';
     return html;
 }
@@ -245,54 +246,54 @@ function constructBurnReviewHtml() {
     BRLog("Overlay applied");
 
     var strReview =
-       '<div class="answer-exception-form" id="answer-exception" align="center">'                                                                                                       +
-           '<span>Answer goes here</span>'                                                                                                                                              +
+        '<div class="answer-exception-form" id="answer-exception" align="center">'                                                                                                       +
+        '<span>Answer goes here</span>'                                                                                                                                              +
         '</div>'                                                                                                                                                                        +
         '<div id="question" class="br-question">'                                                                                                                                       +
-            '<div class="item-toggle-buttons">'                                                                                                                                         +
-                '<div class="radicals-toggle' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                         +
-                    '<span lang="ja">部</span>'                                                                                                                                         +
-                '</div>'                                                                                                                                                                +
-                '<div class="kanji-toggle' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px">'                                                                      +
-                    '<span lang="ja">漢</span>'                                                                                                                                         +
-                '</div>'                                                                                                                                                                +
-                '<div class="vocab-toggle' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                               +
-                    '<span lang="ja">語</span>'                                                                                                                                         +
-                '</div>'                                                                                                                                                                +
-            '</div>'                                                                                                                                                                    +
-            '<div class="left-side-action-buttons">'                                                                                                                                    +
-                '<div class="load-button">'                                                                                                                                             +
-                    '<span class="br-en" lang="ja">Load</span>'                                                                                                                         +
-                    '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                       +
-                '</div>'                                                                                                                                                                +
-                '<div class="start-button-toggle' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                               +
-                    '<span lang="ja" class="br-en">Start Button</span>'                                                                                                                 +
-                    '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                                                                             +
-                '</div>'                                                                                                                                                                +
-            '</div>'                                                                                                                                                                    +
-            '<div class="right-side-toggle-buttons">'                                                                                                                                   +
-                '<div class="toggle-language-button">'                                                                                                                                  +
-                    '<span lang="ja" class="br-en">日本語</span>'                                                                                                                       +
-                    '<span lang="ja" class="br-jp">English</span>'                                                                                                                      +
-                '</div>'                                                                                                                                                                +
-                '<div class="resize-button">'                                                                                                                                           +
-                    '<span lang="ja" class="br-en">Resize</span>'                                                                                                                       +
-                    '<span lang="ja" class="br-jp">拡大する</span>'                                                                                                                     +
-                '</div>'                                                                                                                                                                +
-                '</div>'                                                                                                                                                                +
-                '<div class="review-item-container">'                                                                                                                                   +
-                    '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                                                                       +
-                '</div>'                                                                                                                                                                +
-                '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
-                '<div id="answer-form" tabindex="10">'                                                                                                                                  +
-                    '<form onSubmit="return false">'                                                                                                                                    +
-                        '<fieldset>'                                                                                                                                                    +
-                            '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text"></input>' +
-                            '<button id="answer-button" type="button"><i class="icon-chevron-right"></i></button>'                                                                      +
-                        '</fieldset>'                                                                                                                                                   +
-                    '</form>'                                                                                                                                                           +
-                '</div>'                                                                                                                                                                +
-            '</div>'                                                                                                                                                                    +
+        '<div class="item-toggle-buttons">'                                                                                                                                         +
+        '<div class="radicals-toggle' + ((BRConfig.RadicalsEnabled) ? ' on' : '') +'">'                                                                                         +
+        '<span lang="ja">部</span>'                                                                                                                                         +
+        '</div>'                                                                                                                                                                +
+        '<div class="kanji-toggle' + ((BRConfig.KanjiEnabled) ? ' on' : '') +'" style="padding-top: 1px">'                                                                      +
+        '<span lang="ja">漢</span>'                                                                                                                                         +
+        '</div>'                                                                                                                                                                +
+        '<div class="vocab-toggle' + ((BRConfig.VocabEnabled) ? ' on' : '') +'">'                                                                                               +
+        '<span lang="ja">語</span>'                                                                                                                                         +
+        '</div>'                                                                                                                                                                +
+        '</div>'                                                                                                                                                                    +
+        '<div class="left-side-action-buttons">'                                                                                                                                    +
+        '<div class="load-button">'                                                                                                                                             +
+        '<span class="br-en" lang="ja">Load</span>'                                                                                                                         +
+        '<span class="br-jp" lang="ja">ロード</span>'                                                                                                                       +
+        '</div>'                                                                                                                                                                +
+        '<div class="start-button-toggle' + ((localStorage.getItem('BRStartButton') !== null) ? ' on' : '') +'">'                                                               +
+        '<span lang="ja" class="br-en">Start Button</span>'                                                                                                                 +
+        '<span lang="ja" class="br-jp">開始<br />ボタン</span>'                                                                                                             +
+        '</div>'                                                                                                                                                                +
+        '</div>'                                                                                                                                                                    +
+        '<div class="right-side-toggle-buttons">'                                                                                                                                   +
+        '<div class="toggle-language-button">'                                                                                                                                  +
+        '<span lang="ja" class="br-en">日本語</span>'                                                                                                                       +
+        '<span lang="ja" class="br-jp">English</span>'                                                                                                                      +
+        '</div>'                                                                                                                                                                +
+        '<div class="resize-button">'                                                                                                                                           +
+        '<span lang="ja" class="br-en">Resize</span>'                                                                                                                       +
+        '<span lang="ja" class="br-jp">拡大する</span>'                                                                                                                     +
+        '</div>'                                                                                                                                                                +
+        '</div>'                                                                                                                                                                +
+        '<div class="review-item-container">'                                                                                                                                   +
+        '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                                                                       +
+        '</div>'                                                                                                                                                                +
+        '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'                                                              +
+        '<div id="answer-form" tabindex="10">'                                                                                                                                  +
+        '<form onSubmit="return false">'                                                                                                                                    +
+        '<fieldset>'                                                                                                                                                    +
+        '<input autocapitalize="off" autocomplete="off" autocorrect="off" id="user-response" name="user-response" placeholder="Your Response" type="text"></input>' +
+        '<button id="answer-button" type="button"><i class="icon-chevron-right"></i></button>'                                                                      +
+        '</fieldset>'                                                                                                                                                   +
+        '</form>'                                                                                                                                                           +
+        '</div>'                                                                                                                                                                +
+        '</div>'                                                                                                                                                                    +
         '</div>';
 
     BRLog(strReview);
@@ -305,11 +306,15 @@ function rand(low, high) {
 }
 
 function enableKanaInput() {
-    wanakana.bind(document.getElementById('user-response'));
+    if (document.getElementById('user-response')){
+        wanakana.bind(document.getElementById('user-response'));
+    }
 }
 
 function disableKanaInput() {
-    wanakana.unbind(document.getElementById('user-response'));
+    if (document.getElementById('user-response')){
+        wanakana.unbind(document.getElementById('user-response'));
+    }
 }
 
 function nextQuestion() {
@@ -370,17 +375,17 @@ function newBRItem() {
     // Need to get a weighted Random
     var itemTypeArray = [];
     if (BRConfig.RadicalsEnabled) {
-        itemTypeArray = itemTypeArray.concat(new Array(BRData.Radicals.length).fill(RADICAL));
+        itemTypeArray = itemTypeArray.concat(new Array(BRData.radical.length).fill(RADICAL));
     }
     if (BRConfig.KanjiEnabled) {
-        itemTypeArray = itemTypeArray.concat(new Array(BRData.Kanji.length).fill(KANJI));
+        itemTypeArray = itemTypeArray.concat(new Array(BRData.kanji.length).fill(KANJI));
     }
     if (BRConfig.VocabEnabled) {
-        itemTypeArray = itemTypeArray.concat(new Array(BRData.Vocab.length).fill(VOCAB));
+        itemTypeArray = itemTypeArray.concat(new Array(BRData.vocabulary.length).fill(VOCAB));
     }
     BRQuestion.itemType = itemTypeArray[rand(0, itemTypeArray.length)];
 
-    var dataBank = [BRData.Radicals, BRData.Kanji, BRData.Vocab][BRQuestion.itemType];
+    var dataBank = [BRData.radical, BRData.kanji, BRData.vocabulary][BRQuestion.itemType];
     BRQuestion.ItemIndex = rand(0, dataBank.length - 1);
 
     BRQuestion.Item = dataBank[BRQuestion.ItemIndex];
@@ -432,7 +437,7 @@ function setItemFontSize() {
 }
 
 function skipItem() {
-   	BRQuestion.Skip();
+    BRQuestion.Skip();
     nextQuestion();
     return false;
 }
@@ -467,7 +472,7 @@ function displayVocabLoadingMessage() {
 
 function getRadicalCharacter(radical) {
     return radical.character ? radical.character :
-            "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
+        "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
 }
 
 function itemIsBurned(item) {
@@ -480,101 +485,143 @@ function getMeaning(item) {
     return usyn !== null ? meaning.concat(usyn) : meaning;
 }
 
-function fetchAndCacheBurnedRadicalsThen(callback) {
-    fetchAndCacheBurnedItemsThen(callback, "radicals", "Radicals", "burnedRadicals",
-        function(radical) {
-            return { character : getRadicalCharacter(radical),
-                     meaning   : getMeaning(radical)
-            };
-        });
+function radicalMap(radical) {
+    return {
+        id: radical.id,
+        character: radical.data.characters,
+        image: (radical.data.character_images.length > 0) ? radical.data.character_images[0].url:null,
+        meaning: radical.data.meanings.map(function(meaning){return meaning.meaning}),
+    }
 }
 
-function fetchAndCacheBurnedKanjiThen(callback) {
-    fetchAndCacheBurnedItemsThen(callback, "kanji", "Kanji", "burnedKanji",
-        function(kanji) {
-            return { character         : kanji.character,
-                     meaning           : getMeaning(kanji),
-                     onyomi            : kanji.onyomi ? kanji.onyomi.split(", ") : null,
-                     kunyomi           : kanji.kunyomi ? kanji.kunyomi.split(", ") : null,
-                     important_reading : kanji.important_reading,
-            };
-        });
+function kanjiMap(kanji) {
+    return {
+        id: kanji.id,
+        character: kanji.data.characters,
+        meaning: kanji.data.meanings.map(function(meaning){return meaning.meaning}),
+        onyomi: getKanjiReading(kanji, "onyomi"),
+        kunyomi: getKanjiReading(kanji, "kunyomi"),
+        important_reading: getKanjiReading(kanji, "primary"),
+    }
 }
 
-function fetchAndCacheBurnedVocabThen(callback) {
-    fetchAndCacheBurnedItemsThen(callback, "vocabulary", "Vocab", "burnedVocab",
-        function(vocab) {
-            return { character : vocab.character,
-                     meaning   : getMeaning(vocab),
-                     kana      : vocab.kana.split(", "),
-            };
-        });
+function getKanjiReading(kanji, readingType) {
+    var reading;
+    if (readingType === "primary"){
+        reading = kanji.data.readings.filter(reading => reading.primary);
+    }
+    else {
+        reading = kanji.data.readings.filter(reading => reading.type === readingType);
+    }
+    if (reading.length > 0) {
+        return reading[0]["reading"];
+    }
+    return null;
 }
 
-function fetchAndCacheBurnedItemsThen(callback, requestedResource, type, storageKey, mapFunction) {
-    $.ajax({url:"https://www.wanikani.com/api/user/" + apiKey + "/" + requestedResource, dataType:"json"})
-        .done(function(response) {
-            // vocabulary for some reason has everything in a child called general, kanji and radicals do not
-            var requestData = response.requested_information.general ?
-                                response.requested_information.general : response.requested_information;
-            var burnedItems = requestData.filter(itemIsBurned);
-            BRData[type] = burnedItems.map(mapFunction);
-
-            localStorage.setItem(storageKey, JSON.stringify(BRData[type]));
-            callback();
-        })
-        .fail(function() {
-            BRLog("Request to WaniKani API failed. Catastrophic failure ermagerd D:", ERROR);
-        });
+function vocabularyMap(vocabulary) {
+    return {
+        id: vocabulary.id,
+        character: vocabulary.data.characters,
+        meaning: vocabulary.data.meanings.map(function(meaning){return meaning.meaning}),
+        kana: vocabulary.data.readings[0]["reading"],
+    }
 }
 
-function maybeGetBurnedItemsThen(callback, storageKey, type, fetchFunction) {
+function fetchAndCacheBurnedItemsThen(callback, storageKey) {
+    var nextUrl = "https://api.wanikani.com/v2/assignments?burned=true";
+
+    while(nextUrl) {
+        $.ajax(
+            {
+                url: nextUrl,
+                headers: {
+                    "Wanikani-Revision": "20170710",
+                    "Authorization": "Bearer " + apiKey,
+                },
+                dataType:"json",
+                async: false,
+            }
+        ).done(function(response) {
+            var burnedItems = response.data;
+            burnedItems.forEach(item => {
+                BRRef[item.data.subject_type].push(item);
+            });
+            nextUrl = response.pages.next_url;
+        }).fail(function(XMLHttpRequest, textStatus, errorThrown) {
+            BRLog("Request to WaniKani API failed (" + nextUrl + ").\nERROR: " +
+                errorThrown + "\nCatastrophic failure ermagerd D:", ERROR);
+            nextUrl = null;
+        });
+    }
+    fetchAndCacheSubjects("radical", "RADICAL", radicalMap, BRRef["radical"]);
+    fetchAndCacheSubjects("kanji", "KANJI", kanjiMap, BRRef["kanji"]);
+    fetchAndCacheSubjects("vocabulary", "VOCABULARY", vocabularyMap, BRRef["vocabulary"]);
+    localStorage.setItem(storageKey, JSON.stringify(BRData));
+    callback();
+}
+
+function fetchAndCacheSubjects(type, storageKey, mapFunction, assignment_items) {
+    var ids = assignment_items.map(function(item){return item.data.subject_id;});
+    var nextUrl = "https://api.wanikani.com/v2/subjects?types=" + type + "&ids=" + ids.join(",");
+    var mappedData = [];
+    while (nextUrl) {
+        $.ajax(
+            {
+                url:nextUrl,
+                headers: {
+                    "Wanikani-Revision": "20170710",
+                    "Authorization": "Bearer " + apiKey,
+                },
+                dataType:"json",
+                async: false, // Can't be async or the next call will not have a url yet
+            }
+        ).done(function(response) {
+            if (response.data) {
+                var data = response.data.map(mapFunction);
+                data = data.map(function(data_item) {
+                    data_item["assignment"] = assignment_items.filter(item => item.data.subject_id == data_item.id)[0];
+                    return data_item;
+                });
+                mappedData = mappedData.concat(data);
+            }
+            nextUrl = response.pages.next_url;
+        }).fail(function(XMLHttpRequest, textStatus, errorThrown) {
+            BRLog("Request to WaniKani API failed (" + nextUrl + ").\nERROR: " +
+                errorThrown + "\nCatastrophic failure ermagerd D:", ERROR);
+            nextUrl = null;
+        });
+    }
+    BRData[type] = mappedData;
+    localStorage.setItem(storageKey, JSON.stringify(mappedData));
+}
+
+function maybeGetBurnedItemsThen(callback, storageKey, fetchFunction) {
     var RawBRData = localStorage.getItem(storageKey);
     if (RawBRData !== null) {
         try {
-            BRData[type] = JSON.parse(RawBRData);
-            if (BRData[type].length > 0) {
+            BRData = JSON.parse(RawBRData);
+            if (BRData.length > 0) {
                 return callback();
             }
             BRLog("No burned " + type + " in cache. Refectching...", WARNING);
         }
         catch(e) {
-            BRLog("Could not parse cached radical data. Refetching...", WARNING);
+            BRLog("Could not parse cached data. Refetching...", WARNING);
         }
     }
-    return fetchFunction(callback);
-}
-
-
-function maybeGetBurnedRadicalsThen(callback) {
-    displayRadicalLoadingMessage();
-    maybeGetBurnedItemsThen(callback, "burnedRadicals", "Radicals", fetchAndCacheBurnedRadicalsThen);
-}
-
-function maybeGetBurnedKanjiThen(callback) {
-    displayKanjiLoadingMessage();
-    maybeGetBurnedItemsThen(callback, "burnedKanji", "Kanji", fetchAndCacheBurnedKanjiThen);
-}
-
-function maybeGetBurnedVocabThen(callback) {
-    displayVocabLoadingMessage();
-    maybeGetBurnedItemsThen(callback, "burnedVocab", "Vocab", fetchAndCacheBurnedVocabThen);
+    return fetchFunction(callback, storageKey);
 }
 
 function getBurnReviewDataThen(callback) {
     BRLog("Getting WaniKana data");
 
-    maybeGetBurnedRadicalsThen(function() {
-        maybeGetBurnedKanjiThen(function() {
-            maybeGetBurnedVocabThen(function() {
-
-                BRLog("Data items { RadicalData: " + BRData.Radicals.length +
-                                 "; KanjiData: " + BRData.Kanji.length +
-                                 "; VocabData: " + BRData.Vocab.length + "}");
-                callback();
-            });
-        });
-    });
+    maybeGetBurnedItemsThen( function() {
+        BRLog("Data items { RadicalData: " + BRData.radical.length +
+            "; KanjiData: " + BRData.kanji.length +
+            "; VocabData: " + BRData.vocabulary.length + "}");
+        callback();
+    }, "BRDATA", fetchAndCacheBurnedItemsThen);
 
 }
 
@@ -582,9 +629,9 @@ function clearBurnedItemData() {
     localStorage.removeItem("burnedRadicals");
     localStorage.removeItem("burnedKanji");
     localStorage.removeItem("burnedVocab");
-    BRData.Radicals = [];
-    BRData.Kanji    = [];
-    BRData.Vocab    = [];
+    BRData.radical = [];
+    BRData.kanji    = [];
+    BRData.vocabulary    = [];
 }
 
 function confirmResurrection() {
@@ -592,14 +639,14 @@ function confirmResurrection() {
     $(".answer-exception-form").addClass("animated fadeInUp");
 
     var itemTypeForUrl = BRQuestion.DependingOnTypeUse("radicals/", "kanji/", "vocabulary/");
-    var resurrectionUrl = "https://www.wanikani.com/retired/" + itemTypeForUrl + BRQuestion.Item.character + "?resurrect=true";
-    var resurrectionLink = '<a href="' + resurrectionUrl + '" target="_blank" class="btn btn-mini resurrect-btn" data-method="put" rel="nofollow">';
+    var resurrectionUrl = "https://www.wanikani.com/assignments/" + BRQuestion.Item.id + "/resurrect";
+    var resurrectionLink = '<a id="resurrect_prompt" class="btn btn-mini resurrect-btn" rel="nofollow" data-method="put" href="' + resurrectionUrl + '">';
 
     var resurrectEng = '<div class="br-en">Are you sure you want to ' + resurrectionLink + 'Resurrect</a> the ' +
-                            BRQuestion.DependingOnTypeUse("radical", "kanji item", "vocabulary item") + ' "' + BRQuestion.Item.character + '"?</div>';
+        BRQuestion.DependingOnTypeUse("radical", "kanji item", "vocabulary item") + ' "' + BRQuestion.Item.character + '"?</div>';
 
     var resurrectJp  = '<div class="br-jp">' + BRQuestion.DependingOnTypeUse("部首", "漢字", "単語") + "「" + BRQuestion.Item.character  + "」を" +
-                            resurrectionLink + '復活</a>する<br />本当によろしいですか？</div>';
+        resurrectionLink + '復活</a>する<br />本当によろしいですか？</div>';
 
     $(".answer-exception-form span").html(resurrectEng + resurrectJp);
     setLanguage();
@@ -617,7 +664,6 @@ function initBurnReviews() {
         $("#loadingBR").remove();
         addBurnReviewStylesThen(constructBurnReviewWidget);
     };
-
     getBurnReviewDataThen(loadStylesAndConstructWidget);
 
 }
@@ -714,7 +760,7 @@ function bindLoadButtonClickEvent() {
         BRQuestion.Reset();
         queueBRAnim = false;
         allowQueueBRAnim = true;
-        $(wrapperHTML()).insertAfter($(".low-percentage.kotoba-table-list.dashboard-sub-section").parent().next());
+        injectWidgetHtmlWrapper();
         displayStartMessage();
         clearBurnedItemData();
         initBurnReviews();
@@ -785,7 +831,7 @@ function switchBRLang() {
 
 function checkBurnReviewAnswer() {
     BRLog("Checking answer");
-    var response = $("#user-response").val().toLowerCase().trim();
+    var response = $("#user-response").val().trim();
     response = BRQuestion.IsAskingForReading() ? addTerminalN(response) : response;
     var answers = BRQuestion.GetAnswers();
     var answerIsCorrect = isAnswerCorrect(response, answers);
@@ -806,7 +852,7 @@ function checkBurnReviewAnswer() {
                 onIncorrectAnswer(response);
             }
             BRQuestion.SetAnswered(true);
-    	}
+        }
     } else {
         shakeAnswerForm();
         $("#user-response").attr("disabled", false).focus();
@@ -814,12 +860,12 @@ function checkBurnReviewAnswer() {
 }
 
 function addTerminalN(str = '') {
-  return /n/i.test(str.slice(-1)) ? `${str.slice(0, -1)}ん` : str;
+    return /n/i.test(str.slice(-1)) ? `${str.slice(0, -1)}ん` : str;
 }
 
 function isAnswerCorrect(response, answers) {
     for (var a = 0; a < answers.length; a++) {
-        if (response == answers[a]) {
+        if (response.toLocaleLowerCase() === answers[a].toLocaleLowerCase()) {
             return true;
         }
     }
@@ -828,11 +874,11 @@ function isAnswerCorrect(response, answers) {
 
 function shakeAnswerForm() {
     $('#answer-form').addClass('shake')
-                     .delay(1000)
-                     .queue(function(next) {
-                        $(this).removeClass('shake');
-                        next();
-                     });
+        .delay(1000)
+        .queue(function(next) {
+            $(this).removeClass('shake');
+            next();
+        });
 }
 
 function setInputValue(text) {
@@ -852,12 +898,12 @@ function onIncorrectAnswer(answer) {
 
 function responseIsValid(response) {
     return ((BRQuestion.IsAskingForMeaning() && isAsciiPresent(response)) ||
-            (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "";
+        (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "";
 }
 
 function displayIncorrectAnswerMessage() {
     // concat in to string of comma-separated answers
-    var answerList = BRQuestion.GetAnswers().join(", ");
+    var answerList = BRQuestion.GetAnswers();//.join(", ");
     var resurrectButton = '<a href="#" class="btn btn-mini resurrect-btn">';
 
     var answerTextEng = '<div class="br-en">The answer was:<br />"' + answerList + '"<br />' + resurrectButton + 'Resurrect</a> this item?</div>';
@@ -871,12 +917,12 @@ function displayIncorrectAnswerMessage() {
 
 function isIncorrectReading(response, answerIsCorrect) {
     return (!answerIsCorrect && BRQuestion.IsKanji() && BRQuestion.IsAskingForReading() && ((BRQuestion.Item.important_reading == "onyomi" &&
-       		compareKunyomiReading(response, BRQuestion.Item.kunyomi)) || (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi)));
+        compareKunyomiReading(response, BRQuestion.Item.kunyomi)) || (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi)));
 }
 
 function displayIncorrectReadingMessage() {
     var incorrectReadingText = '<div class="br-en">Oops! You entered the wrong reading.</div>' +
-                               '<div class="br-jp">おっと、異なる読みを入力してしまった。</div>';
+        '<div class="br-jp">おっと、異なる読みを入力してしまった。</div>';
     $(".answer-exception-form span").html(incorrectReadingText);
     setLanguage();
 
@@ -969,7 +1015,7 @@ function main() {
                 BRLog("User pressed Enter");
                 submitBRAnswer();
             }
-         }
+        }
 
         $(document).unbind('keypress', submitOnEnterPress).bind('keypress', submitOnEnterPress);
 
