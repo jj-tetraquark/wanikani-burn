@@ -69,12 +69,23 @@ BRQuestion = {
         }
         else {
             if (BRQuestion.IsKanji()) {
-                var importantReading = BRQuestion.Item.important_reading;
-                return [importantReading];
+                var importantReadings = BRQuestion.Item.important_reading;
+                return importantReadings;
             }
             else {
                 return [BRQuestion.Item.kana];
             }
+        }
+    },
+
+    GetAlternativeAnswers : function() {
+        if (BRQuestion.IsKanji()) {
+            var altReadings = BRQuestion.Item.onyomi.concat(BRQuestion.Item.kunyomi);
+            altReadings = altReadings.filter(r => !BRQuestion.Item.important_reading.includes(r));
+            return altReadings;
+        }
+        else {
+            return [];
         }
     },
 
@@ -270,7 +281,7 @@ function vocabularyMap(vocabulary) {
         id: vocabulary.id,
         character: vocabulary.data.characters,
         meaning: vocabulary.data.meanings.map(function(meaning){return meaning.meaning}),
-        kana: vocabulary.data.readings[0]["reading"],
+        kana: vocabulary.data.readings.map(function(r){return r["reading"];}),
     }
 }
 
@@ -283,7 +294,7 @@ function getKanjiReading(kanji, readingType) {
         reading = kanji.data.readings.filter(reading => reading.type === readingType);
     }
     if (reading.length > 0) {
-        return reading[0]["reading"];
+        return reading.map(function(r){return r["reading"];});
     }
     return null;
 }
@@ -538,13 +549,15 @@ function checkBurnReviewAnswer() {
     var response = $("#user-response").val().trim();
     response = BRQuestion.IsAskingForReading() ? addTerminalN(response) : response;
     var answers = BRQuestion.GetAnswers();
+    var altAnswers = BRQuestion.GetAlternativeAnswers();
     var answerIsCorrect = isAnswerCorrect(response, answers);
+    var answerIsAltReading = isAnswerCorrect(response, altAnswers);
 
     $("#answer-form").focus(); // fix for FF to stop focus being trapped
     $("#user-response").attr("disabled", true);
 
     if (responseIsValid(response)) {
-        if (isIncorrectReading(response, answerIsCorrect)) {
+        if (answerIsAltReading) {
             shakeAnswerForm();
             displayIncorrectReadingMessage();
             $("#user-response").attr("disabled", false).focus();
@@ -590,10 +603,6 @@ function onIncorrectAnswer(answer) {
 function responseIsValid(response) {
     return ((BRQuestion.IsAskingForMeaning() && isAsciiPresent(response)) ||
         (!isAsciiPresent(response) && BRQuestion.IsAskingForReading())) && response !== "";
-}
-
-function compareKunyomiReading(input, reading) {
-    return (input == reading || input == reading.toString().substring(0, reading.indexOf(".")) || input == reading.toString().replace("*", input.substring(reading.indexOf(".") + 1)).replace(".", ""));
 }
 
 function submitBRAnswer() {
@@ -773,17 +782,8 @@ function displayIncorrectAnswerMessage() {
     $('.resurrect-btn').on('click', confirmResurrection);
 }
 
-function isIncorrectReading(response, answerIsCorrect) {
-    return (
-            !answerIsCorrect && BRQuestion.IsKanji() && BRQuestion.IsAskingForReading() && (
-                (BRQuestion.Item.important_reading == "onyomi" && compareKunyomiReading(response, BRQuestion.Item.kunyomi)) ||
-                (BRQuestion.Item.important_reading == "kunyomi" && response == BRQuestion.Item.onyomi)
-            )
-    );
-}
-
 function displayIncorrectReadingMessage() {
-    var incorrectReadingText =  '<div class="br-en">Oops! You entered the wrong reading.</div>' +
+    var incorrectReadingText =  '<div class="br-en">Oops! That\'s not the reading we were looking for.</div>' +
                                 '<div class="br-jp">おっと、異なる読みを入力してしまった。</div>';
     $(".answer-exception-form span").html(incorrectReadingText);
     setLanguage();
