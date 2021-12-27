@@ -741,13 +741,11 @@ function confirmResurrection() {
     var itemTypeForUrl = BRQuestion.DependingOnTypeUse("radicals/", "kanji/", "vocabulary/");
     var resurrectionUrl = "https://www.wanikani.com/assignments/" + BRQuestion.Item.id + "/resurrect";
 
-    // TODO Change this so that it does an ajax request instead of taking the user to a new page
-    var resurrectionLink =  '<a id="resurrect_prompt" class="btn btn-mini ' + 
-                            'resurrect-btn" rel="nofollow" data-method='    +
-                            '"put" href="' + resurrectionUrl + '">';
+    var resurrectionLink =  '<div id="resurrect_prompt" class="btn btn-mini ' + 
+                            'resurrect-btn">';
 
     var resurrectEng =      '<div class="br-en">Are you sure you want to '                              +
-                            resurrectionLink + 'Resurrect</a> the '                                     +
+                            resurrectionLink + 'Resurrect</div> the '                                     +
                             BRQuestion.DependingOnTypeUse("radical", "kanji item", "vocabulary item")   +
                             ' "' + BRQuestion.Item.character + '"?</div>';
 
@@ -755,7 +753,7 @@ function confirmResurrection() {
                             BRQuestion.DependingOnTypeUse("部首", "漢字", "単語")   +
                             "「" + BRQuestion.Item.character  + "」を"              +
                             resurrectionLink                                        + 
-                            '復活</a>する<br />本当によろしいですか？</div>';
+                            '復活</div>する<br />本当によろしいですか？</div>';
 
     $(".answer-exception-form span").html(resurrectEng + resurrectJp);
     setLanguage();
@@ -769,9 +767,16 @@ function confirmResurrection() {
         $.ajax(
             {
                 url: resurrectionUrl,
-                type: "PUT",
-                data: $("meta[name=csrf-token]")[0].content,
-                success: nextQuestion, 
+                type: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                data: {
+                    "_method":"put",
+                    "authenticity_token":$("meta[name=csrf-token]")[0].content,
+                },
+                success: function(){
+                    skipItem();
+                    // TODO remove this item from the cache
+                }, 
             }
         ).fail(function(XMLHttpRequest, textStatus, errorThrown) {
             BRLog("Request to resurrect failed " + resurrectionUrl + ".\nERROR: " +
