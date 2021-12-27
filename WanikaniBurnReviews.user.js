@@ -73,7 +73,7 @@ BRQuestion = {
                 return importantReadings;
             }
             else {
-                return [this.Item.kana];
+                return this.Item.kana;
             }
         }
     },
@@ -761,6 +761,24 @@ function confirmResurrection() {
     setLanguage();
 
     document.getElementById("answer-exception").onclick = "return false";
+    document.getElementById("resurrect_prompt").onclick = function(){
+        var csrf = $("meta[name=csrf-token]")[0].content;
+        if (!csrf) {
+            BRLog("Failed to find CSRF token.", ERROR);
+        }
+        $.ajax(
+            {
+                url: resurrectionUrl,
+                type: "PUT",
+                data: $("meta[name=csrf-token]")[0].content,
+                success: nextQuestion, 
+            }
+        ).fail(function(XMLHttpRequest, textStatus, errorThrown) {
+            BRLog("Request to resurrect failed " + resurrectionUrl + ".\nERROR: " +
+                errorThrown + "\nCatastrophic failure ermagerd D:", ERROR);
+        });
+
+    }
     return false;
 }
 
