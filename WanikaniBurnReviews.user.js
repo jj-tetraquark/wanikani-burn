@@ -11,7 +11,7 @@
 // @include     https://www.wanikani.com/dashboard
 // @require     https://greasyfork.org/scripts/19781-wanakana/code/WanaKana.js?version=126349
 // @grant       none
-// @require 		http://code.jquery.com/jquery-1.12.4.min.js
+// @require     http://code.jquery.com/jquery-1.12.4.min.js
 
 // Use site jquery and other variables
 // Todo fix this properly to work with Greasmonkey
@@ -68,19 +68,19 @@ BRQuestion = {
             return this.Item.meaning;
         }
         else {
-            if (BRQuestion.IsKanji()) {
-                var importantReadings = BRQuestion.Item.important_reading;
+            if (this.IsKanji()) {
+                var importantReadings = this.Item.important_reading;
                 return importantReadings;
             }
             else {
-                return [BRQuestion.Item.kana];
+                return [this.Item.kana];
             }
         }
     },
 
     GetAlternativeAnswers : function() {
-        if (BRQuestion.IsKanji()) {
-            var altReadings = BRQuestion.Item.onyomi.concat(BRQuestion.Item.kunyomi);
+        if (this.IsKanji() && !this.IsAskingForMeaning()) {
+            var altReadings = this.Item.onyomi.concat(this.Item.kunyomi);
             altReadings = altReadings.filter(r => !BRQuestion.Item.important_reading.includes(r));
             return altReadings;
         }
@@ -296,7 +296,7 @@ function getKanjiReading(kanji, readingType) {
     if (reading.length > 0) {
         return reading.map(function(r){return r["reading"];});
     }
-    return null;
+    return [];
 }
 
 // CSS generation functions
