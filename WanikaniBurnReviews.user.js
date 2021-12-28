@@ -535,6 +535,7 @@ function updateBRItem(updateText) {
     BRLog("Updating Burn review item");
     if (updateText) {
         $(".review-item").html(BRQuestion.Item.character);
+	$(".review-item")[0].href = BRQuestion.Item.assignment.data.subject_type + '/' + BRQuestion.Item.character;
         setItemFontSize();
     }
 
