@@ -431,7 +431,8 @@ function constructBurnReviewHtml() {
         '</div>'                                                                                                            +
         '</div>'                                                                                                            +
         '<div class="review-item-container">'                                                                               +
-        '<span class="review-item" lang="ja">' + BRQuestion.Item.character +'</span>'                                       +
+        '<a class="review-item" lang="ja" href="https://www.wanikani.com/' + BRQuestion.Item.assignment.data.subject_type   +
+	'/' + BRQuestion.Item.character + '" target="_blank">' + BRQuestion.Item.character + '</a>'                         +
         '</div>'                                                                                                            +
         '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'          +
         '<div id="answer-form" tabindex="10">'                                                                              +
