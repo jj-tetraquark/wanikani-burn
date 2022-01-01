@@ -67,7 +67,7 @@ BRQuestion = {
         if ( BRQuestion.Item.character ) {
           return BRQuestion.Item.character;
         }
-        else if ( BRQuestion.Item.subject_type === "radical" ) {
+        else if ( BRQuestion.Item.assignment.data.subject_type === "radical" ) {
           return "<img class=\"radical-question\" src=\"" + BRquestion.Item.image + "\" />";
         }
         return null;
