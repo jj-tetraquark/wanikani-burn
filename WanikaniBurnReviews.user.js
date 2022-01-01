@@ -68,7 +68,7 @@ BRQuestion = {
           return BRQuestion.Item.character;
         }
         else if ( BRQuestion.Item.assignment.data.subject_type === "radical" ) {
-          return "<img class=\"radical-question\" src=\"" + BRquestion.Item.image + "\" />";
+          return "<img class=\"radical-question\" src=\"" + BRQuestion.Item.image + "\" />";
         }
         return null;
     },
