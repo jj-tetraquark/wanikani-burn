@@ -73,12 +73,16 @@ BRQuestion = {
         return null;
     },
 
-    GetLinkCharacter : function() { 
+    GetCharacterLink : function() { 
+      var type = BRQuestion.Item.assignment.data.subject_type;
+      if ( type === "radical" ) {
+        type = "radicals";
+      }
       if ( BRQuestion.Item.character ) {
-        return BRQuestion.Item.character;
+        return type + "/" + BRQuestion.Item.character;
       }
       else {
-        return BRQuestion.Item.meaning[0].toLocaleLowerCase();
+        return type + "/" + BRQuestion.Item.meaning[0].toLocaleLowerCase();
       }
     },
 
@@ -450,8 +454,8 @@ function constructBurnReviewHtml() {
         '</div>'                                                                                                            +
         '</div>'                                                                                                            +
         '<div class="review-item-container">'                                                                               +
-        '<a class="review-item" lang="ja" href="https://www.wanikani.com/' + BRQuestion.Item.assignment.data.subject_type   +
-	      '/' + BRQuestion.GetLinkCharacter() + '" target="_blank">' + BRQuestion.GetCharacter() + '</a>'           +
+        '<a class="review-item" lang="ja" href="https://www.wanikani.com/' + BRQuestion.GetCharacterLink()                  +
+        '" target="_blank">' + BRQuestion.GetCharacter() + '</a>'                                                           +
         '</div>'                                                                                                            +
         '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'          +
         '<div id="answer-form" tabindex="10">'                                                                              +
@@ -553,7 +557,7 @@ function updateBRItem(updateText) {
     BRLog("Updating Burn review item");
     if (updateText) {
         $(".review-item").html(BRQuestion.GetCharacter());
-	      $(".review-item")[0].href = BRQuestion.Item.assignment.data.subject_type + '/' + BRQuestion.GetLinkCharacter();
+	      $(".review-item")[0].href = BRQuestion.GetCharacterLink();
         setItemFontSize();
     }
 
