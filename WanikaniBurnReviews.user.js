@@ -280,11 +280,12 @@ function fetchSubjects(type, mapFunction, assignment_items) {
 }
 
 function radicalMap(radical) {
+    var images = radical.data.character_images.filter(img => img.content_type === "image/png");
+    var image  = ( images.length > 0 ) ? images[0] : null;
     return {
         id: radical.id,
         character: radical.data.characters,
-        image: (radical.data.character_images.length > 0) ? 
-                  radical.data.character_images[radical.data.character_images.length-1].url:null,
+        image: image,
         meaning: radical.data.meanings.map(function(meaning){return meaning.meaning}),
     }
 }
