@@ -689,7 +689,7 @@ function submitOnEnterPress(event) {
 // UI Functions
 
 function setItemFontSize() {
-    var itemLength = BRQuestion.Item.character.length;
+    var itemLength = BRQuestion.Item.character ? BRQuestion.Item.character.length : 1;
     var fontSize = 48;
     switch(itemLength) {
         case 1:
