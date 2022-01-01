@@ -451,7 +451,7 @@ function constructBurnReviewHtml() {
         '</div>'                                                                                                            +
         '<div class="review-item-container">'                                                                               +
         '<a class="review-item" lang="ja" href="https://www.wanikani.com/' + BRQuestion.Item.assignment.data.subject_type   +
-	      '/' + BRQuestion.Item.GetLinkCharacter() + '" target="_blank">' + BRQuestion.Item.GetCharacter() + '</a>'           +
+	      '/' + BRQuestion.GetLinkCharacter() + '" target="_blank">' + BRQuestion.GetCharacter() + '</a>'           +
         '</div>'                                                                                                            +
         '<div id="question-type"><h1 id="question-type-text" align="center">' + getReviewTypeText() +'</h1></div>'          +
         '<div id="answer-form" tabindex="10">'                                                                              +
@@ -763,11 +763,11 @@ function confirmResurrection() {
     var resurrectEng =      '<div class="br-en">Are you sure you want to '                              +
                             resurrectionLink + 'Resurrect</div> the '                                     +
                             BRQuestion.DependingOnTypeUse("radical", "kanji item", "vocabulary item")   +
-                            ' "' + BRQuestion.Item.GetCharacter() + '"?</div>';
+                            ' "' + BRQuestion.GetCharacter() + '"?</div>';
 
     var resurrectJp  =      '<div class="br-jp">'                                   + 
                             BRQuestion.DependingOnTypeUse("部首", "漢字", "単語")   +
-                            "「" + BRQuestion.Item.GetCharacter()  + "」を"              +
+                            "「" + BRQuestion.GetCharacter()  + "」を"              +
                             resurrectionLink                                        + 
                             '復活</div>する<br />本当によろしいですか？</div>';
 
