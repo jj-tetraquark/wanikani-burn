@@ -68,7 +68,7 @@ BRQuestion = {
           return BRQuestion.Item.character;
         }
         else if ( BRQuestion.Item.subject_type === "radical" ) {
-          return "<img class=\"radical-question\" src=\"" + radical.image + "\" />";
+          return "<img class=\"radical-question\" src=\"" + BRquestion.Item.image + "\" />";
         }
         return null;
     },
@@ -550,11 +550,10 @@ function newBRItem() {
 }
 
 function updateBRItem(updateText) {
-
     BRLog("Updating Burn review item");
     if (updateText) {
-        $(".review-item").html(BRQuestion.Item.character);
-	$(".review-item")[0].href = BRQuestion.Item.assignment.data.subject_type + '/' + BRQuestion.Item.character;
+        $(".review-item").html(BRQuestion.GetCharacter());
+	      $(".review-item")[0].href = BRQuestion.Item.assignment.data.subject_type + '/' + BRQuestion.GetCharacter();
         setItemFontSize();
     }
 
