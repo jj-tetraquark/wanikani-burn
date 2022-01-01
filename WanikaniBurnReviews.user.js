@@ -283,7 +283,8 @@ function radicalMap(radical) {
     return {
         id: radical.id,
         character: radical.data.characters,
-        image: (radical.data.character_images.length > 0) ? radical.data.character_images[0].url:null,
+        image: (radical.data.character_images.length > 0) ? 
+                  radical.data.character_images[radical.data.character_images.length-1].url:null,
         meaning: radical.data.meanings.map(function(meaning){return meaning.meaning}),
     }
 }
