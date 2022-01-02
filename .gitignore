@@ -1,2 +1,4 @@
 WanikaniBurnReviews.user.js~
 .jshintrc
+~.*
+*.swp
